@@ -1,53 +1,88 @@
-import { useEffect } from "react";
+import { useState, createContext, useContext } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { Toaster } from "@/components/ui/sonner";
+import LandingPage from "@/pages/LandingPage";
+import ClarityMoment from "@/pages/ClarityMoment";
+import RelationshipPulse from "@/pages/RelationshipPulse";
+import DeepAnalysis from "@/pages/DeepAnalysis";
+import ResultsDashboard from "@/pages/ResultsDashboard";
+import MirrorMode from "@/pages/MirrorMode";
+import ConversationCoach from "@/pages/ConversationCoach";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Analysis Context
+const AnalysisContext = createContext();
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
+export const useAnalysis = () => {
+  const context = useContext(AnalysisContext);
+  if (!context) throw new Error("useAnalysis must be used within AnalysisProvider");
+  return context;
+};
+
+const AnalysisProvider = ({ children }) => {
+  const [sessionId, setSessionId] = useState(null);
+  const [analysisType, setAnalysisType] = useState("pulse");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [analysisData, setAnalysisData] = useState({
+    baseline: null,
+    changes: [],
+    timeline: null,
+    questionsAnswered: 0,
+    trustIndex: 0,
+    stabilityHearts: 4,
+  });
+
+  const resetAnalysis = () => {
+    setSessionId(null);
+    setAnalysisType("pulse");
+    setCurrentStep(0);
+    setAnalysisData({
+      baseline: null,
+      changes: [],
+      timeline: null,
+      questionsAnswered: 0,
+      trustIndex: 0,
+      stabilityHearts: 4,
+    });
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <AnalysisContext.Provider
+      value={{
+        sessionId,
+        setSessionId,
+        analysisType,
+        setAnalysisType,
+        currentStep,
+        setCurrentStep,
+        analysisData,
+        setAnalysisData,
+        resetAnalysis,
+      }}
+    >
+      {children}
+    </AnalysisContext.Provider>
   );
 };
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <AnalysisProvider>
+      <div className="App min-h-screen bg-[#14213D]">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/clarity" element={<ClarityMoment />} />
+            <Route path="/pulse" element={<RelationshipPulse />} />
+            <Route path="/analysis" element={<DeepAnalysis />} />
+            <Route path="/results" element={<ResultsDashboard />} />
+            <Route path="/mirror" element={<MirrorMode />} />
+            <Route path="/coach" element={<ConversationCoach />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="top-right" />
+      </div>
+    </AnalysisProvider>
   );
 }
 
