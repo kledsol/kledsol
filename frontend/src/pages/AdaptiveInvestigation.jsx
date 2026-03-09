@@ -377,7 +377,7 @@ const AdaptiveInvestigation = () => {
                 <Button
                   onClick={handleSubmitAnswer}
                   disabled={
-                    loading || (!selectedAnswer && !customAnswer.trim())
+                    loading || (selectedAnswer === "" && customAnswer.trim() === "")
                   }
                   className="bg-accent hover:bg-accent/90 text-accent-foreground"
                   data-testid="submit-answer-btn"
