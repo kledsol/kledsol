@@ -1,0 +1,174 @@
+{
+  "identity": {
+    "persona": "E1 - The Anti-AI Designer",
+    "mission": "Create a relationship intelligence platform that feels like a high-end psychology journal meeting a NASA control center. No generic SaaS gradients. No 'cute' illustrations.",
+    "core_principles": [
+      "Fusion over Imitation: Psychology Journal x Dark Mode Analytics",
+      "Emotion First: Data must feel human, not robotic.",
+      "Content is King: Every chart tells a relationship story.",
+      "Zoom In: Focus on the micro-changes in trust.",
+      "Negative Space: Silence is as important as conversation."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "heading": "Fraunces, serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "installation_command": "yarn add @fontsource/fraunces @fontsource/manrope @fontsource/jetbrains-mono",
+    "scale": {
+      "h1": "text-5xl md:text-7xl font-light tracking-tight leading-none",
+      "h2": "text-4xl md:text-5xl font-light tracking-tight",
+      "h3": "text-2xl md:text-3xl font-medium",
+      "body_lg": "text-lg leading-relaxed text-muted-foreground",
+      "body": "text-base leading-relaxed text-muted-foreground",
+      "caption": "text-sm tracking-wider uppercase text-muted-foreground/60 font-mono"
+    },
+    "rules": [
+      "Use Fraunces ONLY for major emotional headings (Hero, Section Titles).",
+      "Use Manrope for all UI elements, data inputs, and long text.",
+      "Use JetBrains Mono for small data labels, timestamps, and indexes."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "DEFAULT": "#14213D",
+        "secondary": "#0A1120",
+        "surface": "#1E2D4A"
+      },
+      "foreground": {
+        "DEFAULT": "#F5F7FA",
+        "muted": "#94A3B8"
+      },
+      "primary": {
+        "DEFAULT": "#2EC4B6",
+        "foreground": "#000000",
+        "hover": "#259F94"
+      },
+      "secondary": {
+        "DEFAULT": "#FCA311",
+        "foreground": "#000000"
+      },
+      "accent": {
+        "analytical": "#2EC4B6",
+        "emotional": "#FF4D6D",
+        "positive": "#7BD389",
+        "neutral": "#E5E5E5"
+      },
+      "border": {
+        "DEFAULT": "rgba(255, 255, 255, 0.1)",
+        "active": "rgba(46, 196, 182, 0.5)"
+      }
+    },
+    "gradients": {
+      "hero_glow": "radial-gradient(circle at 50% 0%, rgba(46, 196, 182, 0.15) 0%, transparent 60%)",
+      "card_surface": "linear-gradient(180deg, rgba(30, 45, 74, 0.6) 0%, rgba(20, 33, 61, 0.8) 100%)",
+      "glass": "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)"
+    }
+  },
+  "layout_strategy": {
+    "modes": {
+      "marketing": "Tetris Grid - Asymmetrical, artful, large images.",
+      "dashboard": "Bento Grid - High density, glass panels, 1px borders."
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-12 lg:p-24",
+      "gap": "gap-4 md:gap-8",
+      "section_vertical": "py-24 md:py-32"
+    },
+    "grid_rules": [
+      "Never create a symmetrical 2-column grid for the hero.",
+      "Dashboard widgets must stretch to fill height (h-full).",
+      "Use aspect-ratio classes to force specific shapes."
+    ]
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 text-lg font-medium shadow-[0_0_20px_rgba(46,196,182,0.3)] transition-all hover:scale-105",
+      "secondary": "bg-transparent border border-white/20 text-white hover:bg-white/5 rounded-full px-8 py-6 text-lg transition-all",
+      "ghost": "text-[#2EC4B6] hover:text-[#259F94] hover:bg-[#2EC4B6]/10 px-4 py-2 rounded-lg"
+    },
+    "cards": {
+      "glass": "bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-8 hover:border-[#2EC4B6]/30 transition-colors duration-500",
+      "solid": "bg-[#1E2D4A] border border-white/5 rounded-2xl p-6"
+    },
+    "inputs": {
+      "style": "bg-black/20 border-white/10 focus:border-[#2EC4B6] text-white h-12 rounded-xl px-4 transition-all focus:ring-1 focus:ring-[#2EC4B6]"
+    },
+    "charts": {
+      "library": "Recharts (via Shadcn)",
+      "style": "Minimalist. Remove grid lines. Use gradients for areas. Tooltips must be dark glass.",
+      "colors": ["#2EC4B6", "#FF4D6D", "#7BD389", "#FCA311"]
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": {
+        "url": "https://images.unsplash.com/photo-1566121822676-ce12612f5600?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Abstract white lines network on black background",
+        "usage": "Hero section background with heavy overlay/opacity"
+      },
+      "clarity_moment": {
+        "url": "https://images.unsplash.com/photo-1765710029742-d92e3156a8f5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Calm gray ocean horizon",
+        "usage": "Background for the Clarity Moment breathing exercise"
+      },
+      "pattern_engine": {
+        "url": "https://images.unsplash.com/photo-1758876377882-6ae5b186b6e7?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Abstract white mesh undulating",
+        "usage": "Visual for the AI analysis/pattern section"
+      },
+      "mirror_mode": {
+        "url": "https://images.unsplash.com/photo-1749566787207-bd56427f4454?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Silhouette of two figures at sunset",
+        "usage": "Illustration for the Perception Gap/Mirror Mode feature"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px. Use 'Heart', 'Activity', 'Brain', 'Zap', 'Shield' icons."
+    }
+  },
+  "motion": {
+    "principles": [
+      "Slow and heavy. Things should feel like they have mass.",
+      "Staggered entrances for list items.",
+      "Parallax on scroll for background elements."
+    ],
+    "transitions": {
+      "default": "transition-all duration-300 ease-out",
+      "slow": "transition-all duration-700 ease-[0.22, 1, 0.36, 1]"
+    }
+  },
+  "tech_stack": {
+    "framework": "React",
+    "styling": "Tailwind CSS",
+    "ui_library": "Shadcn/UI",
+    "animation": "Framer Motion",
+    "icons": "Lucide React",
+    "charts": "Recharts"
+  },
+  "universal_guidelines": {
+    "do_not": [
+      "Do NOT use gradients for text.",
+      "Do NOT use the default Shadcn 'slate' colors. Use the defined palette.",
+      "Do NOT use 'Inter' font.",
+      "Do NOT center text in the Hero unless it is a specific artistic choice.",
+      "Do NOT use aggressive borders. Use 1px with low opacity."
+    ],
+    "must_do": [
+      "MUST use 'data-testid' on all interactive elements.",
+      "MUST respect 'prefers-reduced-motion'.",
+      "MUST use 'sonner' for toasts.",
+      "MUST implement a 'Light/Dark' toggle if requested, but default to Dark."
+    ]
+  },
+  "instructions_to_main_agent": {
+    "setup": "Install fonts first. Configure Tailwind theme next. Create the 'Layout' component that handles the background color and global font smoothing.",
+    "landing_page": "Build the Landing Page with the 'Tetris' grid. Use the Hero image with a gradient overlay to ensure text readability.",
+    "dashboard": "The Deep Analysis flow is a wizard. Use a 'StepIndicator' component. Each step should animate in.",
+    "charts": "Customize Recharts components to remove axes lines and use custom tooltips."
+  }
+}
