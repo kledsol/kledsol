@@ -71,16 +71,16 @@ const LandingPage = () => {
       {/* Cinematic Background Slideshow */}
       <div className="hero-slideshow">
         <div
-          className="hero-slide hero-slide-1"
-          style={{ backgroundImage: "url(/hero_scene_1.png)" }}
+          className="hero-slide"
+          style={{ backgroundImage: "url(/hero_scene_1.jpg)" }}
         />
         <div
           className="hero-slide"
-          style={{ backgroundImage: "url(/hero_scene_2.png)" }}
+          style={{ backgroundImage: "url(/hero_scene_2.jpg)" }}
         />
       </div>
       <div className="hero-overlay" />
-      <div className="absolute inset-0 hero-glow opacity-40 z-[2]" />
+      <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
 
       {/* Navigation */}
       <header className="relative z-50">
@@ -153,56 +153,55 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <main className="relative z-10 container mx-auto px-6 pt-16 md:pt-24 pb-32">
-        <div className="max-w-4xl flex flex-col justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-6"
-          >
-            <span className="text-sm sm:text-base md:text-lg tracking-widest uppercase text-[#3DD9C5] font-mono leading-relaxed block">
-              Wondering if something is going on behind your back?
-            </span>
-          </motion.div>
-
+        <div className="max-w-3xl flex flex-col justify-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-5xl lg:text-7xl font-light text-white tracking-tight mb-8 leading-[1.1]"
-            style={{ fontFamily: 'Fraunces, serif' }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="font-light text-white tracking-tight mb-8 leading-[1.15]"
+            style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(38px, 6vw, 64px)' }}
+            data-testid="hero-headline"
           >
-            Is your partner cheating?
+            Millions of people question what is really happening in their relationship.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-base sm:text-lg md:text-xl text-[#B8C4CE] max-w-2xl mb-12 leading-relaxed"
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[#C8D3DC] max-w-2xl mb-4 leading-relaxed"
+            style={{ fontSize: 'clamp(18px, 2.5vw, 22px)' }}
+            data-testid="hero-subheadline"
           >
-            Millions of people question what is really happening in their relationship.
-            <br /><br />
             Sometimes it's distance.
             <br />
             Sometimes it's misunderstanding.
             <br />
             Sometimes it's something deeper.
-            <br /><br />
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[#3DD9C5] font-medium max-w-2xl mb-12"
+            style={{ fontSize: 'clamp(18px, 2.5vw, 22px)' }}
+            data-testid="hero-tagline"
+          >
             TrustLens helps you interpret the signals.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col sm:flex-row gap-4"
           >
             <Button
               onClick={() => handleStartAnalysis("deep")}
               disabled={loading}
               size="lg"
-              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-lg sm:text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
               data-testid="start-analysis-btn"
             >
               {loading ? "Starting..." : "Start Relationship Analysis"}
@@ -213,7 +212,7 @@ const LandingPage = () => {
               disabled={loading}
               variant="outline"
               size="lg"
-              className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-lg"
+              className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-base sm:text-lg"
               data-testid="pulse-btn"
             >
               <HeartLensIcon size={22} />
@@ -225,8 +224,9 @@ const LandingPage = () => {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-8 text-sm sm:text-base text-[#8899A6]"
+            transition={{ duration: 0.7, delay: 0.45 }}
+            className="mt-8 text-[#8899A6]"
+            style={{ fontSize: 'clamp(16px, 2vw, 18px)' }}
             data-testid="privacy-reassurance"
           >
             Private. Anonymous. No account required.
