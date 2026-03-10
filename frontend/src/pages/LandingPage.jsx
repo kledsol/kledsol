@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
+import { HeartLensIcon } from "@/components/custom/Logo";
 import { useAnalysis } from "@/App";
 import { startAnalysis } from "@/lib/api";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import {
   Brain,
   Shield,
   Heart,
-  MessageSquare,
   ChevronRight,
   Menu,
   X,
@@ -70,21 +69,30 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0B132B] relative overflow-hidden">
-      {/* Hero Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1566121822676-ce12612f5600?crop=entropy&cs=srgb&fm=jpg&q=85)",
-        }}
-      />
-      <div className="absolute inset-0 hero-glow opacity-50" />
+      {/* Cinematic Background Slideshow */}
+      <div className="hero-slideshow">
+        <div
+          className="hero-slide"
+          style={{ backgroundImage: "url(/hero_scene_1.png)" }}
+        />
+        <div
+          className="hero-slide"
+          style={{ backgroundImage: "url(/hero_scene_2.png)" }}
+        />
+      </div>
+      <div className="hero-overlay" />
+      <div className="absolute inset-0 hero-glow opacity-40 z-[2]" />
 
       {/* Navigation */}
       <header className="relative z-50">
         <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
           <Link to="/" data-testid="logo-link">
-            <TrustLensLogo size="md" />
+            <img
+              src="/trustlens-logo.png"
+              alt="TrustLens"
+              className="h-10 md:h-12 w-auto"
+              data-testid="trustlens-logo"
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -145,15 +153,15 @@ const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <main className="relative z-10 container mx-auto px-6 pt-16 pb-32">
-        <div className="max-w-4xl">
+      <main className="relative z-10 container mx-auto px-6 pt-16 md:pt-24 pb-32">
+        <div className="max-w-4xl flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mb-6"
           >
-            <span className="text-[22px] md:text-base tracking-wide uppercase text-[#3DD9C5] font-mono leading-relaxed">
+            <span className="text-sm sm:text-base md:text-lg tracking-widest uppercase text-[#3DD9C5] font-mono leading-relaxed block">
               Wondering if something is going on behind your back?
             </span>
           </motion.div>
@@ -162,7 +170,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[40px] leading-[1.1] md:text-7xl font-light text-white tracking-tight mb-8"
+            className="text-4xl sm:text-5xl lg:text-7xl font-light text-white tracking-tight mb-8 leading-[1.1]"
             style={{ fontFamily: 'Fraunces, serif' }}
           >
             Is your partner cheating?
@@ -172,7 +180,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[18px] md:text-xl text-[#B8C4CE] max-w-2xl mb-12 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-[#B8C4CE] max-w-2xl mb-12 leading-relaxed"
           >
             Millions of people ask themselves the same question.
             Most struggle to interpret the signs.
@@ -214,7 +222,8 @@ const LandingPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-8 text-[16px] text-[#8899A6]"
+            className="mt-8 text-sm sm:text-base text-[#8899A6]"
+            data-testid="privacy-reassurance"
           >
             Private. Anonymous. No account required.
           </motion.p>
@@ -308,7 +317,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/10 py-12">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <TrustLensLogo size="sm" />
+          <img src="/trustlens-logo.png" alt="TrustLens" className="h-8 w-auto" />
           <p className="text-sm text-muted-foreground">
             Empathetic relationship analysis powered by AI
           </p>
