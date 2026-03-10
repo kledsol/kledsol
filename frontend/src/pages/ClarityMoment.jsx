@@ -35,7 +35,7 @@ const ClarityMoment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#14213D] relative overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen bg-[#0B132B] relative overflow-hidden flex items-center justify-center">
       {/* Return to Home Button */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -62,7 +62,7 @@ const ClarityMoment = () => {
             "url(https://images.unsplash.com/photo-1765710029742-d92e3156a8f5?crop=entropy&cs=srgb&fm=jpg&q=85)",
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#14213D]/80 via-[#14213D]/90 to-[#14213D]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0B132B]/80 via-[#0B132B]/90 to-[#0B132B]" />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 text-center max-w-2xl">
@@ -88,7 +88,7 @@ const ClarityMoment = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
-                className="text-3xl md:text-4xl font-light text-[#F5F7FA] mb-10 leading-tight"
+                className="text-3xl md:text-4xl font-light text-[#E6EDF3] mb-10 leading-tight"
                 style={{ fontFamily: 'Fraunces, serif' }}
               >
                 What made you start wondering about this?
@@ -109,15 +109,15 @@ const ClarityMoment = () => {
                     onClick={() => handleReasonSelect(option.id)}
                     className={`w-full p-5 rounded-xl text-left transition-all flex items-center gap-4 ${
                       selectedReason === option.id
-                        ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
-                        : "glass-card hover:border-[#2EC4B6]/30"
+                        ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                        : "glass-card hover:border-[#3DD9C5]/30"
                     }`}
                     data-testid={`reason-${option.id}`}
                   >
                     <div
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                         selectedReason === option.id
-                          ? "border-[#2EC4B6] bg-[#2EC4B6]"
+                          ? "border-[#3DD9C5] bg-[#3DD9C5]"
                           : "border-white/30"
                       }`}
                     >
@@ -128,8 +128,8 @@ const ClarityMoment = () => {
                     <span
                       className={`text-lg ${
                         selectedReason === option.id
-                          ? "text-[#2EC4B6]"
-                          : "text-[#F5F7FA]"
+                          ? "text-[#3DD9C5]"
+                          : "text-[#E6EDF3]"
                       }`}
                     >
                       {option.label}
@@ -168,7 +168,7 @@ const ClarityMoment = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
-                className="text-4xl md:text-5xl font-light text-[#F5F7FA] mb-6 leading-tight"
+                className="text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6 leading-tight"
                 style={{ fontFamily: 'Fraunces, serif' }}
               >
                 A Moment of Clarity
@@ -204,7 +204,7 @@ const ClarityMoment = () => {
                 <Button
                   onClick={() => handleProceed("deep")}
                   size="lg"
-                  className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 text-lg btn-glow"
+                  className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 text-lg btn-glow"
                   data-testid="deep-analysis-btn"
                 >
                   <Activity className="w-5 h-5 mr-2" />

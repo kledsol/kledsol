@@ -69,7 +69,7 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#14213D] relative overflow-hidden">
+    <div className="min-h-screen bg-[#0B132B] relative overflow-hidden">
       {/* Hero Background */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-10"
@@ -93,7 +93,7 @@ const LandingPage = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="text-sm text-muted-foreground hover:text-[#2EC4B6] transition-colors"
+                className="text-sm text-muted-foreground hover:text-[#3DD9C5] transition-colors"
               >
                 {item.label}
               </a>
@@ -101,7 +101,7 @@ const LandingPage = () => {
             <Button
               onClick={() => handleStartAnalysis("deep")}
               disabled={loading}
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-6 btn-glow"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 btn-glow"
               data-testid="nav-start-btn"
             >
               Start Analysis
@@ -129,14 +129,14 @@ const LandingPage = () => {
               <a
                 key={item.label}
                 href={item.href}
-                className="block py-3 text-muted-foreground hover:text-[#2EC4B6]"
+                className="block py-3 text-muted-foreground hover:text-[#3DD9C5]"
               >
                 {item.label}
               </a>
             ))}
             <Button
               onClick={() => handleStartAnalysis("deep")}
-              className="mt-4 w-full bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full"
+              className="mt-4 w-full bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full"
             >
               Start Analysis
             </Button>
@@ -153,7 +153,7 @@ const LandingPage = () => {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mb-6"
           >
-            <span className="text-xl md:text-sm tracking-wider uppercase text-[#2EC4B6] font-mono leading-relaxed">
+            <span className="text-xl md:text-sm tracking-wider uppercase text-[#3DD9C5] font-mono leading-relaxed">
               Wondering if something is going on behind your back?
             </span>
           </motion.div>
@@ -162,7 +162,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[34px] leading-tight md:text-7xl font-light text-[#F5F7FA] tracking-tight mb-8"
+            className="text-[34px] leading-tight md:text-7xl font-light text-[#E6EDF3] tracking-tight mb-8"
             style={{ fontFamily: 'Fraunces, serif' }}
           >
             Is your partner cheating?
@@ -190,7 +190,7 @@ const LandingPage = () => {
               onClick={() => handleStartAnalysis("deep")}
               disabled={loading}
               size="lg"
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 text-lg font-medium btn-glow transition-all hover:scale-105"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 text-lg font-medium btn-glow transition-all hover:scale-105"
               data-testid="start-analysis-btn"
             >
               {loading ? "Starting..." : "Start Relationship Analysis"}
@@ -234,13 +234,13 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-              className="glass-card rounded-2xl p-8 hover:border-[#2EC4B6]/30 transition-all duration-500"
+              className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
               data-testid={`feature-${index}`}
             >
-              <div className="w-12 h-12 rounded-xl bg-[#2EC4B6]/10 flex items-center justify-center mb-6">
-                <feature.icon className="w-6 h-6 text-[#2EC4B6]" />
+              <div className="w-12 h-12 rounded-xl bg-[#3DD9C5]/10 flex items-center justify-center mb-6">
+                <feature.icon className="w-6 h-6 text-[#3DD9C5]" />
               </div>
-              <h3 className="text-lg font-medium text-[#F5F7FA] mb-2">
+              <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
                 {feature.title}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -258,7 +258,7 @@ const LandingPage = () => {
           className="mt-32"
           id="how"
         >
-          <h2 className="text-4xl md:text-5xl font-light text-[#F5F7FA] mb-16" style={{ fontFamily: 'Fraunces, serif' }}>
+          <h2 className="text-4xl md:text-5xl font-light text-[#E6EDF3] mb-16" style={{ fontFamily: 'Fraunces, serif' }}>
             How TrustLens Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -268,10 +268,10 @@ const LandingPage = () => {
               { step: "03", title: "Gain Clarity", desc: "Receive insights and suggested actions to improve communication" },
             ].map((item, i) => (
               <div key={i} className="relative">
-                <span className="text-7xl font-light text-[#2EC4B6]/20" style={{ fontFamily: 'Fraunces, serif' }}>
+                <span className="text-7xl font-light text-[#3DD9C5]/20" style={{ fontFamily: 'Fraunces, serif' }}>
                   {item.step}
                 </span>
-                <h3 className="text-xl font-medium text-[#F5F7FA] mt-4 mb-2">
+                <h3 className="text-xl font-medium text-[#E6EDF3] mt-4 mb-2">
                   {item.title}
                 </h3>
                 <p className="text-muted-foreground">{item.desc}</p>
@@ -289,9 +289,9 @@ const LandingPage = () => {
           id="privacy"
         >
           <div className="flex items-start gap-6">
-            <Shield className="w-12 h-12 text-[#2EC4B6] flex-shrink-0" />
+            <Shield className="w-12 h-12 text-[#3DD9C5] flex-shrink-0" />
             <div>
-              <h2 className="text-3xl font-light text-[#F5F7FA] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+              <h2 className="text-3xl font-light text-[#E6EDF3] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
                 Your Privacy is Sacred
               </h2>
               <p className="text-muted-foreground leading-relaxed max-w-2xl">

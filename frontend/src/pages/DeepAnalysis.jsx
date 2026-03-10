@@ -211,16 +211,16 @@ const DeepAnalysis = () => {
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
               i < localStep
-                ? "bg-[#2EC4B6] text-black"
+                ? "bg-[#3DD9C5] text-black"
                 : i === localStep
-                ? "bg-[#2EC4B6]/20 text-[#2EC4B6] border-2 border-[#2EC4B6]"
+                ? "bg-[#3DD9C5]/20 text-[#3DD9C5] border-2 border-[#3DD9C5]"
                 : "bg-white/5 text-muted-foreground"
             }`}
           >
             {i < localStep ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
           </div>
           {i < STEPS.length - 1 && (
-            <div className={`w-12 h-0.5 mx-1 ${i < localStep ? "bg-[#2EC4B6]" : "bg-white/10"}`} />
+            <div className={`w-12 h-0.5 mx-1 ${i < localStep ? "bg-[#3DD9C5]" : "bg-white/10"}`} />
           )}
         </div>
       ))}
@@ -233,13 +233,13 @@ const DeepAnalysis = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <h2 className="text-2xl md:text-3xl font-light text-[#F5F7FA] mb-8 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
+      <h2 className="text-2xl md:text-3xl font-light text-[#E6EDF3] mb-8 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
         Relationship Baseline
       </h2>
       <div className="space-y-6">
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-3">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
               How long have you been in this relationship?
             </label>
             <Select
@@ -262,7 +262,7 @@ const DeepAnalysis = () => {
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-3">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
               Prior satisfaction level (before recent changes)
             </label>
             <Slider
@@ -275,7 +275,7 @@ const DeepAnalysis = () => {
             />
             <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>Unhappy</span>
-              <span className="font-mono text-[#2EC4B6]">{baseline.prior_satisfaction}/10</span>
+              <span className="font-mono text-[#3DD9C5]">{baseline.prior_satisfaction}/10</span>
               <span>Very Happy</span>
             </div>
           </CardContent>
@@ -283,7 +283,7 @@ const DeepAnalysis = () => {
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-3">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
               Describe your typical communication habits
             </label>
             <Textarea
@@ -298,7 +298,7 @@ const DeepAnalysis = () => {
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-3">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
               Emotional closeness
             </label>
             <Slider
@@ -310,7 +310,7 @@ const DeepAnalysis = () => {
             />
             <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>Distant</span>
-              <span className="font-mono text-[#2EC4B6]">{baseline.emotional_closeness}/10</span>
+              <span className="font-mono text-[#3DD9C5]">{baseline.emotional_closeness}/10</span>
               <span>Very Close</span>
             </div>
           </CardContent>
@@ -318,7 +318,7 @@ const DeepAnalysis = () => {
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-3">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
               Transparency level
             </label>
             <Slider
@@ -330,7 +330,7 @@ const DeepAnalysis = () => {
             />
             <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>Private</span>
-              <span className="font-mono text-[#2EC4B6]">{baseline.transparency_level}/10</span>
+              <span className="font-mono text-[#3DD9C5]">{baseline.transparency_level}/10</span>
               <span>Fully Open</span>
             </div>
           </CardContent>
@@ -341,7 +341,7 @@ const DeepAnalysis = () => {
         <Button
           onClick={handleBaselineSubmit}
           disabled={loading}
-          className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+          className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
           data-testid="baseline-continue-btn"
         >
           {loading ? "Saving..." : "Continue"}
@@ -357,7 +357,7 @@ const DeepAnalysis = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <h2 className="text-2xl md:text-3xl font-light text-[#F5F7FA] mb-4 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
+      <h2 className="text-2xl md:text-3xl font-light text-[#E6EDF3] mb-4 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
         What Has Changed?
       </h2>
       <p className="text-center text-muted-foreground mb-8">
@@ -377,20 +377,20 @@ const DeepAnalysis = () => {
               }
               className={`p-5 rounded-xl text-left transition-all ${
                 isSelected
-                  ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
-                  : "glass-card hover:border-[#2EC4B6]/30"
+                  ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                  : "glass-card hover:border-[#3DD9C5]/30"
               }`}
               data-testid={`change-${cat.id}`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? "bg-[#2EC4B6]/20" : "bg-white/5"}`}>
-                  <cat.icon className={`w-5 h-5 ${isSelected ? "text-[#2EC4B6]" : "text-muted-foreground"}`} />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? "bg-[#3DD9C5]/20" : "bg-white/5"}`}>
+                  <cat.icon className={`w-5 h-5 ${isSelected ? "text-[#3DD9C5]" : "text-muted-foreground"}`} />
                 </div>
                 <div>
-                  <h3 className={`font-medium ${isSelected ? "text-[#2EC4B6]" : "text-[#F5F7FA]"}`}>{cat.label}</h3>
+                  <h3 className={`font-medium ${isSelected ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}`}>{cat.label}</h3>
                   <p className="text-sm text-muted-foreground">{cat.desc}</p>
                 </div>
-                {isSelected && <Check className="w-5 h-5 text-[#2EC4B6] ml-auto" />}
+                {isSelected && <Check className="w-5 h-5 text-[#3DD9C5] ml-auto" />}
               </div>
             </button>
           );
@@ -398,7 +398,7 @@ const DeepAnalysis = () => {
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        <span className="font-mono text-[#2EC4B6]">{selectedChanges.length}</span> categories selected
+        <span className="font-mono text-[#3DD9C5]">{selectedChanges.length}</span> categories selected
       </p>
 
       <div className="mt-8 flex justify-between">
@@ -409,7 +409,7 @@ const DeepAnalysis = () => {
         <Button
           onClick={handleChangesSubmit}
           disabled={loading || selectedChanges.length === 0}
-          className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+          className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
           data-testid="changes-continue-btn"
         >
           {loading ? "Saving..." : "Continue"}
@@ -425,14 +425,14 @@ const DeepAnalysis = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <h2 className="text-2xl md:text-3xl font-light text-[#F5F7FA] mb-8 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
+      <h2 className="text-2xl md:text-3xl font-light text-[#E6EDF3] mb-8 text-center" style={{ fontFamily: 'Fraunces, serif' }}>
         Timeline Reconstruction
       </h2>
 
       <div className="space-y-6">
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-4">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-4">
               When did you first notice these changes?
             </label>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -448,7 +448,7 @@ const DeepAnalysis = () => {
                   onClick={() => setTimeline((p) => ({ ...p, when_started: opt.value }))}
                   className={`p-3 rounded-lg text-sm transition-all ${
                     timeline.when_started === opt.value
-                      ? "bg-[#2EC4B6] text-black"
+                      ? "bg-[#3DD9C5] text-black"
                       : "bg-white/5 text-muted-foreground hover:bg-white/10"
                   }`}
                   data-testid={`timeline-${opt.value}`}
@@ -462,7 +462,7 @@ const DeepAnalysis = () => {
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
-            <label className="block text-sm font-medium text-[#F5F7FA] mb-4">
+            <label className="block text-sm font-medium text-[#E6EDF3] mb-4">
               Did the changes occur gradually or suddenly?
             </label>
             <div className="grid grid-cols-2 gap-4">
@@ -475,12 +475,12 @@ const DeepAnalysis = () => {
                   onClick={() => setTimeline((p) => ({ ...p, gradual_or_sudden: opt.value }))}
                   className={`p-4 rounded-lg text-left transition-all ${
                     timeline.gradual_or_sudden === opt.value
-                      ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
+                      ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
                       : "bg-white/5 border-2 border-transparent hover:border-white/10"
                   }`}
                   data-testid={`timeline-${opt.value}`}
                 >
-                  <h3 className={timeline.gradual_or_sudden === opt.value ? "text-[#2EC4B6]" : "text-[#F5F7FA]"}>
+                  <h3 className={timeline.gradual_or_sudden === opt.value ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}>
                     {opt.label}
                   </h3>
                   <p className="text-sm text-muted-foreground">{opt.desc}</p>
@@ -494,13 +494,13 @@ const DeepAnalysis = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-[#F5F7FA]">Multiple changes at once?</h3>
+                <h3 className="text-sm font-medium text-[#E6EDF3]">Multiple changes at once?</h3>
                 <p className="text-sm text-muted-foreground">Did several changes appear together?</p>
               </div>
               <button
                 onClick={() => setTimeline((p) => ({ ...p, multiple_at_once: !p.multiple_at_once }))}
                 className={`w-12 h-7 rounded-full transition-all ${
-                  timeline.multiple_at_once ? "bg-[#2EC4B6]" : "bg-white/20"
+                  timeline.multiple_at_once ? "bg-[#3DD9C5]" : "bg-white/20"
                 }`}
                 data-testid="multiple-toggle"
               >
@@ -523,7 +523,7 @@ const DeepAnalysis = () => {
         <Button
           onClick={handleTimelineSubmit}
           disabled={loading || !timeline.when_started || !timeline.gradual_or_sudden}
-          className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+          className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
           data-testid="timeline-continue-btn"
         >
           {loading ? "Saving..." : "Begin Investigation"}
@@ -544,7 +544,7 @@ const DeepAnalysis = () => {
         <Card className="glass-card rounded-xl">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">Questions</p>
-            <p className="text-xl font-mono text-[#F5F7FA]">
+            <p className="text-xl font-mono text-[#E6EDF3]">
               {questionsAnswered}<span className="text-muted-foreground">/{MIN_QUESTIONS}</span>
             </p>
           </CardContent>
@@ -558,7 +558,7 @@ const DeepAnalysis = () => {
         <Card className="glass-card rounded-xl">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">Trust Index</p>
-            <p className="text-xl font-mono text-[#2EC4B6]">{trustIndex.toFixed(0)}</p>
+            <p className="text-xl font-mono text-[#3DD9C5]">{trustIndex.toFixed(0)}</p>
           </CardContent>
         </Card>
       </div>
@@ -573,14 +573,14 @@ const DeepAnalysis = () => {
           <Card className="glass-card rounded-xl mb-6">
             <CardContent className="p-8">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-[#2EC4B6]/10 flex items-center justify-center flex-shrink-0">
-                  <Brain className="w-5 h-5 text-[#2EC4B6]" />
+                <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-5 h-5 text-[#3DD9C5]" />
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-[#2EC4B6] mb-2 block">
+                  <span className="text-xs font-mono text-[#3DD9C5] mb-2 block">
                     {currentQuestion.category?.replace("_", " ").toUpperCase()}
                   </span>
-                  <h2 className="text-xl text-[#F5F7FA] leading-relaxed" data-testid="question-text">
+                  <h2 className="text-xl text-[#E6EDF3] leading-relaxed" data-testid="question-text">
                     {currentQuestion.question_text}
                   </h2>
                 </div>
@@ -600,19 +600,19 @@ const DeepAnalysis = () => {
                     }}
                     className={`w-full p-4 rounded-xl text-left transition-all flex items-center gap-3 ${
                       selectedAnswer === opt
-                        ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
-                        : "glass-card hover:border-[#2EC4B6]/30"
+                        ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                        : "glass-card hover:border-[#3DD9C5]/30"
                     }`}
                     data-testid={`answer-${i}`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedAnswer === opt ? "border-[#2EC4B6] bg-[#2EC4B6]" : "border-white/30"
+                        selectedAnswer === opt ? "border-[#3DD9C5] bg-[#3DD9C5]" : "border-white/30"
                       }`}
                     >
                       {selectedAnswer === opt && <Check className="w-3 h-3 text-black" />}
                     </div>
-                    <span className={selectedAnswer === opt ? "text-[#2EC4B6]" : "text-[#F5F7FA]"}>
+                    <span className={selectedAnswer === opt ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}>
                       {opt}
                     </span>
                   </button>
@@ -647,7 +647,7 @@ const DeepAnalysis = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate("/results")}
-                className="border-[#2EC4B6]/50 text-[#2EC4B6] hover:bg-[#2EC4B6]/10 rounded-full"
+                className="border-[#3DD9C5]/50 text-[#3DD9C5] hover:bg-[#3DD9C5]/10 rounded-full"
                 data-testid="view-results-btn"
               >
                 View Results
@@ -657,7 +657,7 @@ const DeepAnalysis = () => {
             <Button
               onClick={handleAnswerSubmit}
               disabled={loading || (selectedAnswer === "" && customAnswer.trim() === "")}
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
               data-testid="submit-answer-btn"
             >
               {loading ? (
@@ -692,7 +692,7 @@ const DeepAnalysis = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#14213D]">
+    <div className="min-h-screen bg-[#0B132B]">
       <header className="glass border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">

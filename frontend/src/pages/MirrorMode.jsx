@@ -77,7 +77,7 @@ const MirrorMode = () => {
     const { perception_gap, has_significant_mismatch, insight } = results;
 
     return (
-      <div className="min-h-screen bg-[#14213D]">
+      <div className="min-h-screen bg-[#0B132B]">
         <header className="glass border-b border-white/10">
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <Link to="/">
@@ -93,7 +93,7 @@ const MirrorMode = () => {
           >
             <div className="text-center mb-12">
               <HeartLensIcon size={60} />
-              <h1 className="text-3xl font-light text-[#F5F7FA] mt-6 mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+              <h1 className="text-3xl font-light text-[#E6EDF3] mt-6 mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
                 Perception Gap Analysis
               </h1>
               {has_significant_mismatch && (
@@ -108,7 +108,7 @@ const MirrorMode = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <Card className="glass-card rounded-2xl">
                 <CardHeader>
-                  <CardTitle className="text-base text-[#F5F7FA]">Your Perception</CardTitle>
+                  <CardTitle className="text-base text-[#E6EDF3]">Your Perception</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {["emotional", "communication", "trust"].map((key) => (
@@ -120,7 +120,7 @@ const MirrorMode = () => {
                             key={i}
                             className={`w-4 h-4 ${
                               i < perception_gap.user_view[key]
-                                ? "fill-[#2EC4B6] text-[#2EC4B6]"
+                                ? "fill-[#3DD9C5] text-[#3DD9C5]"
                                 : "fill-none text-white/20"
                             }`}
                           />
@@ -133,7 +133,7 @@ const MirrorMode = () => {
 
               <Card className="glass-card rounded-2xl">
                 <CardHeader>
-                  <CardTitle className="text-base text-[#F5F7FA]">Partner's Perception (Your Estimate)</CardTitle>
+                  <CardTitle className="text-base text-[#E6EDF3]">Partner's Perception (Your Estimate)</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {["emotional", "communication", "trust"].map((key) => (
@@ -160,8 +160,8 @@ const MirrorMode = () => {
             {/* Gap Analysis */}
             <Card className="glass-card rounded-2xl mb-8">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-[#F5F7FA]">
-                  <Users className="w-5 h-5 text-[#2EC4B6]" />
+                <CardTitle className="flex items-center gap-2 text-base text-[#E6EDF3]">
+                  <Users className="w-5 h-5 text-[#3DD9C5]" />
                   Gap Analysis
                 </CardTitle>
               </CardHeader>
@@ -171,14 +171,14 @@ const MirrorMode = () => {
                   return (
                     <div key={key}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-[#F5F7FA] capitalize">{key} gap</span>
-                        <span className={`font-mono ${gap > 2 ? "text-[#FF4D6D]" : gap > 1 ? "text-[#FCA311]" : "text-[#7BD389]"}`}>
+                        <span className="text-[#E6EDF3] capitalize">{key} gap</span>
+                        <span className={`font-mono ${gap > 2 ? "text-[#FF4D6D]" : gap > 1 ? "text-[#FCA311]" : "text-[#6EE7B7]"}`}>
                           {gap} point{gap !== 1 ? "s" : ""}
                         </span>
                       </div>
                       <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${gap > 2 ? "bg-[#FF4D6D]" : gap > 1 ? "bg-[#FCA311]" : "bg-[#7BD389]"}`}
+                          className={`h-full rounded-full ${gap > 2 ? "bg-[#FF4D6D]" : gap > 1 ? "bg-[#FCA311]" : "bg-[#6EE7B7]"}`}
                           style={{ width: `${(gap / 5) * 100}%` }}
                         />
                       </div>
@@ -189,7 +189,7 @@ const MirrorMode = () => {
             </Card>
 
             {/* Insight */}
-            <Card className="glass-card rounded-2xl border-[#2EC4B6]/30 mb-8">
+            <Card className="glass-card rounded-2xl border-[#3DD9C5]/30 mb-8">
               <CardContent className="p-6">
                 <p className="text-muted-foreground leading-relaxed">{insight}</p>
               </CardContent>
@@ -206,7 +206,7 @@ const MirrorMode = () => {
               </Button>
               <Button
                 onClick={() => navigate("/coach")}
-                className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Conversation Coach
@@ -220,7 +220,7 @@ const MirrorMode = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#14213D]">
+    <div className="min-h-screen bg-[#0B132B]">
       <header className="glass border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -245,8 +245,8 @@ const MirrorMode = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="text-center mb-12">
-            <Users className="w-12 h-12 text-[#2EC4B6] mx-auto mb-4" />
-            <h1 className="text-3xl font-light text-[#F5F7FA] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+            <Users className="w-12 h-12 text-[#3DD9C5] mx-auto mb-4" />
+            <h1 className="text-3xl font-light text-[#E6EDF3] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
               Mirror Mode
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
@@ -266,11 +266,11 @@ const MirrorMode = () => {
                 <Card className="glass-card rounded-xl">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-[#2EC4B6]/10 flex items-center justify-center">
-                        <q.icon className="w-5 h-5 text-[#2EC4B6]" />
+                      <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center">
+                        <q.icon className="w-5 h-5 text-[#3DD9C5]" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-[#F5F7FA]">{q.label}</h3>
+                        <h3 className="font-medium text-[#E6EDF3]">{q.label}</h3>
                         <p className="text-sm text-muted-foreground">{q.description}</p>
                       </div>
                     </div>
@@ -285,7 +285,7 @@ const MirrorMode = () => {
                     />
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>{q.low}</span>
-                      <span className="font-mono text-[#2EC4B6]">{partnerView[q.key]}/10</span>
+                      <span className="font-mono text-[#3DD9C5]">{partnerView[q.key]}/10</span>
                       <span>{q.high}</span>
                     </div>
                   </CardContent>
@@ -299,7 +299,7 @@ const MirrorMode = () => {
               onClick={handleSubmit}
               disabled={loading}
               size="lg"
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-10 py-6 text-lg btn-glow"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-6 text-lg btn-glow"
               data-testid="analyze-btn"
             >
               {loading ? "Analyzing..." : "Analyze Perception Gap"}

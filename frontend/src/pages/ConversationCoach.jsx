@@ -84,7 +84,7 @@ const ConversationCoach = () => {
 
   if (step === "guidance" && guidance) {
     return (
-      <div className="min-h-screen bg-[#14213D]">
+      <div className="min-h-screen bg-[#0B132B]">
         <header className="glass border-b border-white/10">
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <Link to="/">
@@ -99,8 +99,8 @@ const ConversationCoach = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="text-center mb-12">
-              <MessageSquare className="w-12 h-12 text-[#2EC4B6] mx-auto mb-4" />
-              <h1 className="text-3xl font-light text-[#F5F7FA] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+              <MessageSquare className="w-12 h-12 text-[#3DD9C5] mx-auto mb-4" />
+              <h1 className="text-3xl font-light text-[#E6EDF3] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
                 Conversation Guide
               </h1>
               <p className="text-muted-foreground">
@@ -111,31 +111,31 @@ const ConversationCoach = () => {
             {/* Opening Statement */}
             <Card className="glass-card rounded-2xl mb-6">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-[#F5F7FA]">
-                  <Heart className="w-5 h-5 text-[#2EC4B6]" />
+                <CardTitle className="flex items-center gap-2 text-base text-[#E6EDF3]">
+                  <Heart className="w-5 h-5 text-[#3DD9C5]" />
                   Suggested Opening
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-[#F5F7FA] leading-relaxed italic">"{guidance.opening}"</p>
+                <p className="text-[#E6EDF3] leading-relaxed italic">"{guidance.opening}"</p>
               </CardContent>
             </Card>
 
             {/* Questions to Ask */}
             <Card className="glass-card rounded-2xl mb-6">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-[#F5F7FA]">
-                  <MessageSquare className="w-5 h-5 text-[#2EC4B6]" />
+                <CardTitle className="flex items-center gap-2 text-base text-[#E6EDF3]">
+                  <MessageSquare className="w-5 h-5 text-[#3DD9C5]" />
                   Questions to Ask
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {guidance.questions?.map((q, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-white/5">
-                    <span className="w-6 h-6 rounded-full bg-[#2EC4B6]/20 flex items-center justify-center flex-shrink-0 text-xs font-mono text-[#2EC4B6]">
+                    <span className="w-6 h-6 rounded-full bg-[#3DD9C5]/20 flex items-center justify-center flex-shrink-0 text-xs font-mono text-[#3DD9C5]">
                       {i + 1}
                     </span>
-                    <p className="text-[#F5F7FA]">{q}</p>
+                    <p className="text-[#E6EDF3]">{q}</p>
                   </div>
                 ))}
               </CardContent>
@@ -144,7 +144,7 @@ const ConversationCoach = () => {
             {/* Things to Avoid */}
             <Card className="glass-card rounded-2xl mb-6 border-[#FF4D6D]/30">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-[#F5F7FA]">
+                <CardTitle className="flex items-center gap-2 text-base text-[#E6EDF3]">
                   <AlertTriangle className="w-5 h-5 text-[#FF4D6D]" />
                   Things to Avoid
                 </CardTitle>
@@ -162,23 +162,23 @@ const ConversationCoach = () => {
             {/* What to Observe */}
             <Card className="glass-card rounded-2xl mb-8">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-[#F5F7FA]">
-                  <Eye className="w-5 h-5 text-[#2EC4B6]" />
+                <CardTitle className="flex items-center gap-2 text-base text-[#E6EDF3]">
+                  <Eye className="w-5 h-5 text-[#3DD9C5]" />
                   What to Observe
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {guidance.observe?.map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-[#7BD389]" />
-                    <span className="text-[#F5F7FA]">{item}</span>
+                    <CheckCircle className="w-4 h-4 text-[#6EE7B7]" />
+                    <span className="text-[#E6EDF3]">{item}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
             {/* Disclaimer */}
-            <Card className="glass-card rounded-2xl border-[#2EC4B6]/20 mb-8">
+            <Card className="glass-card rounded-2xl border-[#3DD9C5]/20 mb-8">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <HeartLensIcon size={32} />
@@ -202,7 +202,7 @@ const ConversationCoach = () => {
               </Button>
               <Button
                 onClick={() => navigate("/results")}
-                className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
               >
                 Back to Results
                 <ChevronRight className="w-5 h-5 ml-2" />
@@ -215,7 +215,7 @@ const ConversationCoach = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#14213D]">
+    <div className="min-h-screen bg-[#0B132B]">
       <header className="glass border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -240,8 +240,8 @@ const ConversationCoach = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="text-center mb-12">
-            <MessageSquare className="w-12 h-12 text-[#2EC4B6] mx-auto mb-4" />
-            <h1 className="text-3xl font-light text-[#F5F7FA] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
+            <MessageSquare className="w-12 h-12 text-[#3DD9C5] mx-auto mb-4" />
+            <h1 className="text-3xl font-light text-[#E6EDF3] mb-4" style={{ fontFamily: 'Fraunces, serif' }}>
               Conversation Coach
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
@@ -253,7 +253,7 @@ const ConversationCoach = () => {
           <div className="space-y-8">
             {/* Tone Selection */}
             <div>
-              <h3 className="text-sm font-medium text-[#F5F7FA] mb-4">Select Your Tone</h3>
+              <h3 className="text-sm font-medium text-[#E6EDF3] mb-4">Select Your Tone</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {tones.map((tone) => (
                   <button
@@ -261,12 +261,12 @@ const ConversationCoach = () => {
                     onClick={() => setFormData((p) => ({ ...p, tone: tone.value }))}
                     className={`p-4 rounded-xl text-left transition-all ${
                       formData.tone === tone.value
-                        ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
-                        : "glass-card hover:border-[#2EC4B6]/30"
+                        ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                        : "glass-card hover:border-[#3DD9C5]/30"
                     }`}
                     data-testid={`tone-${tone.value}`}
                   >
-                    <h4 className={formData.tone === tone.value ? "text-[#2EC4B6]" : "text-[#F5F7FA]"}>
+                    <h4 className={formData.tone === tone.value ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}>
                       {tone.label}
                     </h4>
                     <p className="text-sm text-muted-foreground">{tone.desc}</p>
@@ -277,7 +277,7 @@ const ConversationCoach = () => {
 
             {/* Topic Selection */}
             <div>
-              <h3 className="text-sm font-medium text-[#F5F7FA] mb-4">Select Your Topic</h3>
+              <h3 className="text-sm font-medium text-[#E6EDF3] mb-4">Select Your Topic</h3>
               <div className="space-y-3">
                 {topics.map((topic) => (
                   <button
@@ -285,16 +285,16 @@ const ConversationCoach = () => {
                     onClick={() => setFormData((p) => ({ ...p, topic: topic.value }))}
                     className={`w-full p-4 rounded-xl text-left transition-all flex items-center gap-4 ${
                       formData.topic === topic.value
-                        ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
-                        : "glass-card hover:border-[#2EC4B6]/30"
+                        ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                        : "glass-card hover:border-[#3DD9C5]/30"
                     }`}
                     data-testid={`topic-${topic.value}`}
                   >
                     <div className={`w-4 h-4 rounded-full border-2 ${
-                      formData.topic === topic.value ? "border-[#2EC4B6] bg-[#2EC4B6]" : "border-white/30"
+                      formData.topic === topic.value ? "border-[#3DD9C5] bg-[#3DD9C5]" : "border-white/30"
                     }`} />
                     <div>
-                      <h4 className={formData.topic === topic.value ? "text-[#2EC4B6]" : "text-[#F5F7FA]"}>
+                      <h4 className={formData.topic === topic.value ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}>
                         {topic.label}
                       </h4>
                       <p className="text-sm text-muted-foreground">{topic.desc}</p>
@@ -310,7 +310,7 @@ const ConversationCoach = () => {
               onClick={handleGetGuidance}
               disabled={loading || !formData.tone || !formData.topic}
               size="lg"
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-10 py-6 text-lg btn-glow"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-6 text-lg btn-glow"
               data-testid="get-guidance-btn"
             >
               {loading ? (

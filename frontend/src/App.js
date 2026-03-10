@@ -68,7 +68,7 @@ const AnalysisProvider = ({ children }) => {
 function App() {
   return (
     <AnalysisProvider>
-      <div className="App min-h-screen bg-[#14213D]">
+      <div className="App min-h-screen bg-[#0B132B]">
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />

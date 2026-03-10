@@ -23,39 +23,39 @@ code, .mono {
 
 @layer base {
     :root {
-        --background: 222 47% 16%;
-        --foreground: 210 20% 98%;
-        --card: 222 40% 18%;
-        --card-foreground: 210 20% 98%;
-        --popover: 222 40% 18%;
-        --popover-foreground: 210 20% 98%;
-        --primary: 174 65% 47%;
+        --background: 223 60% 11%;
+        --foreground: 210 33% 93%;
+        --card: 223 55% 13%;
+        --card-foreground: 210 33% 93%;
+        --popover: 223 55% 13%;
+        --popover-foreground: 210 33% 93%;
+        --primary: 171 66% 55%;
         --primary-foreground: 0 0% 0%;
-        --secondary: 222 35% 25%;
-        --secondary-foreground: 210 20% 98%;
-        --muted: 222 35% 25%;
+        --secondary: 223 45% 18%;
+        --secondary-foreground: 210 33% 93%;
+        --muted: 223 45% 18%;
         --muted-foreground: 215 20% 65%;
-        --accent: 174 65% 47%;
+        --accent: 171 66% 55%;
         --accent-foreground: 0 0% 0%;
         --destructive: 349 100% 65%;
         --destructive-foreground: 0 0% 100%;
         --border: 0 0% 100% / 0.1;
         --input: 0 0% 100% / 0.1;
-        --ring: 174 65% 47%;
+        --ring: 171 66% 55%;
         --radius: 0.75rem;
         
         /* TrustLens Custom */
-        --deep-blue: 222 47% 16%;
-        --turquoise: 174 65% 47%;
+        --deep-blue: 223 60% 11%;
+        --turquoise: 171 66% 55%;
         --coral: 349 100% 65%;
-        --mint: 134 47% 65%;
-        --silver: 210 20% 98%;
+        --mint: 160 76% 67%;
+        --silver: 210 33% 93%;
         
-        --chart-1: 174 65% 47%;
+        --chart-1: 171 66% 55%;
         --chart-2: 349 100% 65%;
-        --chart-3: 134 47% 65%;
+        --chart-3: 160 76% 67%;
         --chart-4: 38 92% 50%;
-        --chart-5: 222 35% 45%;
+        --chart-5: 223 45% 45%;
     }
 }
 
@@ -65,13 +65,13 @@ code, .mono {
     }
     body {
         @apply bg-background text-foreground;
-        background-color: #14213D;
+        background-color: #0B132B;
     }
 }
 
 /* Glass morphism */
 .glass {
-    background: linear-gradient(180deg, rgba(30, 45, 74, 0.6) 0%, rgba(20, 33, 61, 0.8) 100%);
+    background: linear-gradient(180deg, rgba(17, 28, 53, 0.6) 0%, rgba(11, 19, 43, 0.8) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -81,12 +81,12 @@ code, .mono {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Hero glow effect */
 .hero-glow {
-    background: radial-gradient(circle at 50% 0%, rgba(46, 196, 182, 0.15) 0%, transparent 60%);
+    background: radial-gradient(circle at 50% 0%, rgba(61, 217, 197, 0.12) 0%, transparent 60%);
 }
 
 /* Lens animation */
@@ -138,24 +138,24 @@ code, .mono {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(20, 33, 61, 0.5);
+    background: rgba(11, 19, 43, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(46, 196, 182, 0.3);
+    background: rgba(61, 217, 197, 0.3);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(46, 196, 182, 0.5);
+    background: rgba(61, 217, 197, 0.5);
 }
 
 /* Gauge gradient */
 .gauge-gradient {
     background: conic-gradient(
         from 180deg,
-        #7BD389 0deg,
-        #2EC4B6 90deg,
+        #6EE7B7 0deg,
+        #3DD9C5 90deg,
         #FCA311 180deg,
         #FF4D6D 270deg,
         #FF4D6D 360deg
@@ -164,11 +164,11 @@ code, .mono {
 
 /* Button glow */
 .btn-glow {
-    box-shadow: 0 0 20px rgba(46, 196, 182, 0.3);
+    box-shadow: 0 0 20px rgba(61, 217, 197, 0.3);
 }
 
 .btn-glow:hover {
-    box-shadow: 0 0 30px rgba(46, 196, 182, 0.5);
+    box-shadow: 0 0 30px rgba(61, 217, 197, 0.5);
 }
 
 @layer base {

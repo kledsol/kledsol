@@ -83,7 +83,7 @@ const RelationshipPulse = () => {
 
   if (step === "results" && results) {
     return (
-      <div className="min-h-screen bg-[#14213D] relative">
+      <div className="min-h-screen bg-[#0B132B] relative">
         <header className="glass border-b border-white/10">
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <TrustLensLogo size="md" />
@@ -102,7 +102,7 @@ const RelationshipPulse = () => {
             </div>
 
             <h1
-              className="text-4xl font-light text-[#F5F7FA] mb-4"
+              className="text-4xl font-light text-[#E6EDF3] mb-4"
               style={{ fontFamily: 'Fraunces, serif' }}
             >
               Relationship Pulse
@@ -128,7 +128,7 @@ const RelationshipPulse = () => {
               <Button
                 onClick={() => navigate("/analysis")}
                 size="lg"
-                className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 btn-glow"
+                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 btn-glow"
                 data-testid="deep-analysis-btn"
               >
                 <Activity className="w-5 h-5 mr-2" />
@@ -150,7 +150,7 @@ const RelationshipPulse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#14213D]">
+    <div className="min-h-screen bg-[#0B132B]">
       <header className="glass border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -177,7 +177,7 @@ const RelationshipPulse = () => {
         >
           <div className="text-center mb-12">
             <h1
-              className="text-3xl md:text-4xl font-light text-[#F5F7FA] mb-4"
+              className="text-3xl md:text-4xl font-light text-[#E6EDF3] mb-4"
               style={{ fontFamily: 'Fraunces, serif' }}
             >
               Quick Relationship Pulse
@@ -198,11 +198,11 @@ const RelationshipPulse = () => {
                 <Card className="glass-card rounded-2xl">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-[#2EC4B6]/10 flex items-center justify-center">
-                        <q.icon className="w-5 h-5 text-[#2EC4B6]" />
+                      <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center">
+                        <q.icon className="w-5 h-5 text-[#3DD9C5]" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-[#F5F7FA]">{q.label}</h3>
+                        <h3 className="font-medium text-[#E6EDF3]">{q.label}</h3>
                         <p className="text-sm text-muted-foreground">{q.description}</p>
                       </div>
                     </div>
@@ -220,7 +220,7 @@ const RelationshipPulse = () => {
                       />
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>{q.low}</span>
-                        <span className="font-mono text-[#2EC4B6]">{formData[q.key]}/5</span>
+                        <span className="font-mono text-[#3DD9C5]">{formData[q.key]}/5</span>
                         <span>{q.high}</span>
                       </div>
                     </div>
@@ -240,7 +240,7 @@ const RelationshipPulse = () => {
               onClick={handleSubmit}
               disabled={loading}
               size="lg"
-              className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-10 py-6 text-lg btn-glow"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-6 text-lg btn-glow"
               data-testid="submit-pulse-btn"
             >
               {loading ? "Analyzing..." : "Get My Pulse Reading"}

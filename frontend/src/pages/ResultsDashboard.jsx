@@ -106,7 +106,7 @@ const ResultsDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#14213D] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B132B] flex items-center justify-center">
         <div className="text-center">
           <HeartLensIcon size={80} animate />
           <p className="mt-6 text-muted-foreground">Loading analysis...</p>
@@ -120,7 +120,7 @@ const ResultsDashboard = () => {
   const secondaryPattern = getSecondaryPattern(results.hypotheses);
 
   return (
-    <div className="min-h-screen bg-[#14213D]">
+    <div className="min-h-screen bg-[#0B132B]">
       {/* Header - Always visible */}
       <header className="glass border-b border-white/10 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -177,7 +177,7 @@ const ResultsDashboard = () => {
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 1.5, ease: "easeInOut" }}
-                    className="h-full bg-[#2EC4B6]"
+                    className="h-full bg-[#3DD9C5]"
                   />
                 </div>
               </motion.div>
@@ -235,7 +235,7 @@ const ResultsDashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.6 }}
                 className={`text-2xl font-light ${
-                  results.stability_hearts >= 3 ? "text-[#7BD389]" :
+                  results.stability_hearts >= 3 ? "text-[#6EE7B7]" :
                   results.stability_hearts >= 2 ? "text-[#FCA311]" : "text-[#FF4D6D]"
                 }`}
                 style={{ fontFamily: 'Fraunces, serif' }}
@@ -251,7 +251,7 @@ const ResultsDashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <Card className="glass-card rounded-3xl border-[#2EC4B6]/20 overflow-hidden">
+                <Card className="glass-card rounded-3xl border-[#3DD9C5]/20 overflow-hidden">
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
                       {/* Trust Disruption Index */}
@@ -268,10 +268,10 @@ const ResultsDashboard = () => {
                         <p className="text-sm text-muted-foreground mb-4">Confidence Level</p>
                         <div className="flex items-center justify-center gap-3 mb-2">
                           <div className={`w-4 h-4 rounded-full ${
-                            results.confidence_level === "high" ? "bg-[#7BD389]" :
+                            results.confidence_level === "high" ? "bg-[#6EE7B7]" :
                             results.confidence_level === "moderate" ? "bg-[#FCA311]" : "bg-white/30"
                           }`} />
-                          <span className="text-3xl font-light text-[#F5F7FA] capitalize" style={{ fontFamily: 'Fraunces, serif' }}>
+                          <span className="text-3xl font-light text-[#E6EDF3] capitalize" style={{ fontFamily: 'Fraunces, serif' }}>
                             {results.confidence_level}
                           </span>
                         </div>
@@ -283,7 +283,7 @@ const ResultsDashboard = () => {
                       {/* Narrative Consistency */}
                       <div className="p-8 text-center flex flex-col justify-center">
                         <p className="text-sm text-muted-foreground mb-4">Narrative Consistency</p>
-                        <div className="text-4xl font-light text-[#F5F7FA] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+                        <div className="text-4xl font-light text-[#E6EDF3] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
                           {results.narrative_consistency.toFixed(0)}
                           <span className="text-lg text-muted-foreground">%</span>
                         </div>
@@ -341,11 +341,11 @@ const ResultsDashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <Card className="glass-card rounded-3xl border-[#2EC4B6]/30">
+                <Card className="glass-card rounded-3xl border-[#3DD9C5]/30">
                   <CardContent className="p-10">
                     <div className="flex flex-col items-center text-center">
                       <HeartLensIcon size={48} />
-                      <h3 className="text-xl font-light text-[#F5F7FA] mt-6 mb-6" style={{ fontFamily: 'Fraunces, serif' }}>
+                      <h3 className="text-xl font-light text-[#E6EDF3] mt-6 mb-6" style={{ fontFamily: 'Fraunces, serif' }}>
                         TrustLens Perspective
                       </h3>
                       <p className="text-muted-foreground leading-relaxed max-w-2xl text-lg">
@@ -404,7 +404,7 @@ const ResultsDashboard = () => {
                         transition={{ delay: 0.3 }}
                         className="p-4"
                       >
-                        <p className="text-4xl font-light text-[#7BD389] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+                        <p className="text-4xl font-light text-[#6EE7B7] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
                           {results.pattern_statistics.resolved_positively}%
                         </p>
                         <p className="text-sm text-muted-foreground">
@@ -443,10 +443,10 @@ const ResultsDashboard = () => {
                             transition={{ delay: i * 0.1 }}
                             className="flex flex-col items-center gap-2 p-4"
                           >
-                            <div className="w-14 h-14 rounded-xl bg-[#2EC4B6]/10 flex items-center justify-center">
-                              <IconComponent className="w-7 h-7 text-[#2EC4B6]" />
+                            <div className="w-14 h-14 rounded-xl bg-[#3DD9C5]/10 flex items-center justify-center">
+                              <IconComponent className="w-7 h-7 text-[#3DD9C5]" />
                             </div>
-                            <p className="text-sm text-[#F5F7FA] capitalize">
+                            <p className="text-sm text-[#E6EDF3] capitalize">
                               {context.replace(/_/g, " ")}
                             </p>
                           </motion.div>
@@ -467,8 +467,8 @@ const ResultsDashboard = () => {
               >
                 <Card className="glass-card rounded-2xl">
                   <CardHeader className="text-center">
-                    <CardTitle className="flex items-center justify-center gap-2 text-lg text-[#F5F7FA]">
-                      <Lightbulb className="w-5 h-5 text-[#2EC4B6]" />
+                    <CardTitle className="flex items-center justify-center gap-2 text-lg text-[#E6EDF3]">
+                      <Lightbulb className="w-5 h-5 text-[#3DD9C5]" />
                       What You Can Do Next
                     </CardTitle>
                   </CardHeader>
@@ -482,10 +482,10 @@ const ResultsDashboard = () => {
                           transition={{ delay: i * 0.1 }}
                           className="flex items-start gap-3 p-4 rounded-xl bg-white/5"
                         >
-                          <div className="w-6 h-6 rounded-full bg-[#2EC4B6]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-xs font-mono text-[#2EC4B6]">{i + 1}</span>
+                          <div className="w-6 h-6 rounded-full bg-[#3DD9C5]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-mono text-[#3DD9C5]">{i + 1}</span>
                           </div>
-                          <p className="text-sm text-[#F5F7FA]">{action}</p>
+                          <p className="text-sm text-[#E6EDF3]">{action}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -493,7 +493,7 @@ const ResultsDashboard = () => {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4 border-t border-white/10">
                       <Button
                         onClick={() => navigate("/coach")}
-                        className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-6 py-5 btn-glow"
+                        className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-5 btn-glow"
                         data-testid="coach-btn"
                       >
                         <MessageSquare className="w-5 h-5 mr-2" />
@@ -533,7 +533,7 @@ const ResultsDashboard = () => {
                 className="text-center py-12"
               >
                 <div className="max-w-xl mx-auto">
-                  <Shield className="w-8 h-8 text-[#2EC4B6] mx-auto mb-6" />
+                  <Shield className="w-8 h-8 text-[#3DD9C5] mx-auto mb-6" />
                   <p className="text-muted-foreground leading-relaxed mb-2">
                     Uncertainty can be emotionally difficult.
                   </p>

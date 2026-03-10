@@ -10,19 +10,19 @@ export const TrustLensLogo = ({ size = "md", animate = false }) => {
 
   return (
     <div className="flex items-center gap-1">
-      <span className={`font-light text-[#F5F7FA] tracking-tight ${sizes[size].text}`} style={{ fontFamily: 'Fraunces, serif' }}>
+      <span className={`font-light text-[#E6EDF3] tracking-tight ${sizes[size].text}`} style={{ fontFamily: 'Fraunces, serif' }}>
         Trust
       </span>
       <div className={`relative ${sizes[size].lens} ${animate ? 'lens-animate' : ''}`}>
         {/* Concentric circles lens */}
         <svg viewBox="0 0 40 40" className="w-full h-full">
-          <circle cx="20" cy="20" r="18" fill="none" stroke="#2EC4B6" strokeWidth="1.5" opacity="0.3" />
-          <circle cx="20" cy="20" r="13" fill="none" stroke="#2EC4B6" strokeWidth="1.5" opacity="0.5" />
-          <circle cx="20" cy="20" r="8" fill="none" stroke="#2EC4B6" strokeWidth="1.5" opacity="0.7" />
-          <circle cx="20" cy="20" r="3" fill="#2EC4B6" />
+          <circle cx="20" cy="20" r="18" fill="none" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.3" />
+          <circle cx="20" cy="20" r="13" fill="none" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.5" />
+          <circle cx="20" cy="20" r="8" fill="none" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.7" />
+          <circle cx="20" cy="20" r="3" fill="#3DD9C5" />
         </svg>
       </div>
-      <span className={`font-light text-[#F5F7FA] tracking-tight ${sizes[size].text}`} style={{ fontFamily: 'Fraunces, serif' }}>
+      <span className={`font-light text-[#E6EDF3] tracking-tight ${sizes[size].text}`} style={{ fontFamily: 'Fraunces, serif' }}>
         ens
       </span>
     </div>
@@ -42,9 +42,9 @@ export const HeartLensIcon = ({ size = 24, animate = false }) => {
           opacity="0.8"
         />
         {/* Lens in center */}
-        <circle cx="20" cy="17" r="6" fill="none" stroke="#2EC4B6" strokeWidth="1" opacity="0.5" />
-        <circle cx="20" cy="17" r="3" fill="none" stroke="#2EC4B6" strokeWidth="1" opacity="0.7" />
-        <circle cx="20" cy="17" r="1.5" fill="#2EC4B6" />
+        <circle cx="20" cy="17" r="6" fill="none" stroke="#3DD9C5" strokeWidth="1" opacity="0.5" />
+        <circle cx="20" cy="17" r="3" fill="none" stroke="#3DD9C5" strokeWidth="1" opacity="0.7" />
+        <circle cx="20" cy="17" r="1.5" fill="#3DD9C5" />
       </svg>
     </div>
   );

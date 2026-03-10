@@ -25,8 +25,8 @@ export const StabilityHearts = ({ count = 4, size = "md" }) => {
 };
 
 export const StabilityLabel = ({ hearts }) => {
-  if (hearts >= 4) return <span className="text-[#7BD389]">Stable</span>;
-  if (hearts >= 3) return <span className="text-[#7BD389]">Mostly Stable</span>;
+  if (hearts >= 4) return <span className="text-[#6EE7B7]">Stable</span>;
+  if (hearts >= 3) return <span className="text-[#6EE7B7]">Mostly Stable</span>;
   if (hearts >= 2) return <span className="text-[#FCA311]">Moderate Strain</span>;
   if (hearts >= 1) return <span className="text-[#FF4D6D]">Significant Stress</span>;
   return <span className="text-[#FF4D6D]">Critical</span>;

@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 
 export const TrustGauge = ({ value = 0 }) => {
   const getColor = (val) => {
-    if (val < 25) return "#7BD389";
-    if (val < 50) return "#2EC4B6";
+    if (val < 25) return "#6EE7B7";
+    if (val < 50) return "#3DD9C5";
     if (val < 75) return "#FCA311";
     return "#FF4D6D";
   };
@@ -56,8 +56,8 @@ export const TrustGauge = ({ value = 0 }) => {
 };
 
 export const TrustIndexLabel = ({ value }) => {
-  if (value < 20) return <span className="text-[#7BD389]">Minimal Disruption</span>;
-  if (value < 40) return <span className="text-[#2EC4B6]">Mild Changes</span>;
+  if (value < 20) return <span className="text-[#6EE7B7]">Minimal Disruption</span>;
+  if (value < 40) return <span className="text-[#3DD9C5]">Mild Changes</span>;
   if (value < 60) return <span className="text-[#FCA311]">Noticeable Shift</span>;
   if (value < 80) return <span className="text-[#FF4D6D]">Significant Disruption</span>;
   return <span className="text-[#FF4D6D]">Critical Level</span>;
