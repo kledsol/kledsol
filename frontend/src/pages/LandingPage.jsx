@@ -72,7 +72,7 @@ const LandingPage = () => {
       <div className="hero-slideshow">
         <div
           className="hero-slide"
-          style={{ backgroundImage: "url(/hero_scene_1.png)", backgroundPosition: "70% center" }}
+          style={{ backgroundImage: "url(/hero_scene_1.png)", backgroundPosition: "85% center" }}
         />
         <div
           className="hero-slide"
