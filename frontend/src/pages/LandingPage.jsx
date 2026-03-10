@@ -10,7 +10,6 @@ import {
   Activity,
   Brain,
   Shield,
-  Heart,
   ChevronRight,
   Menu,
   X,
@@ -44,26 +43,26 @@ const LandingPage = () => {
     { label: "Privacy", href: "#privacy" },
   ];
 
-  const features = [
+  const whyBlocks = [
+    {
+      icon: Activity,
+      title: "The Reality of Infidelity",
+      description: "Studies suggest that 20-40% of relationships experience some form of infidelity. If you're questioning your partner's behavior, you're not alone — and your instincts deserve to be explored.",
+    },
     {
       icon: Brain,
-      title: "AI-Powered Analysis",
-      description: "Intelligent pattern recognition using relationship psychology",
+      title: "Why People Miss the Signs",
+      description: "Emotions cloud judgment. Love creates blind spots. When you're emotionally invested, it's nearly impossible to analyze behavioral changes objectively. Small shifts get rationalized away.",
     },
     {
       icon: Activity,
-      title: "Behavioral Signals",
-      description: "Track and analyze changes in relationship dynamics",
-    },
-    {
-      icon: Heart,
-      title: "Emotional Intelligence",
-      description: "Empathetic insights without judgment or accusations",
+      title: "What TrustLens Does",
+      description: "TrustLens uses behavioral psychology and AI to help you map relationship patterns — communication shifts, emotional distance, routine changes — and identify what they may actually mean.",
     },
     {
       icon: Shield,
-      title: "Complete Privacy",
-      description: "Anonymous analysis with no data sharing or tracking",
+      title: "Not Accusations, Only Clarity",
+      description: "We don't tell you what to think. We help you see clearly. TrustLens provides structured analysis so you can make informed decisions about your own relationship — with empathy, not paranoia.",
     },
   ];
 
@@ -229,35 +228,51 @@ const LandingPage = () => {
           </motion.p>
         </div>
 
-        {/* Features Grid */}
-        <motion.div
+        {/* Why TrustLens Section */}
+        <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="mt-32"
           id="why"
         >
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-              className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
-              data-testid={`feature-${index}`}
-            >
-              <div className="w-12 h-12 rounded-xl bg-[#3DD9C5]/10 flex items-center justify-center mb-6">
-                <feature.icon className="w-6 h-6 text-[#3DD9C5]" />
-              </div>
-              <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {feature.description}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
+            style={{ fontFamily: "Fraunces, serif" }}
+          >
+            Why TrustLens
+          </h2>
+          <p className="text-base sm:text-lg text-[#8899A6] max-w-2xl mb-16 leading-relaxed">
+            Understanding what's really happening in your relationship shouldn't require guesswork.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {whyBlocks.map((block, index) => (
+              <motion.div
+                key={block.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
+                data-testid={`why-block-${index}`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <block.icon className="w-5 h-5 text-[#3DD9C5]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
+                      {block.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                      {block.description}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
 
         {/* How It Works Section */}
         <motion.section
