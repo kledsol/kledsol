@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { useAnalysis } from "@/App";
-import { Heart, Activity } from "lucide-react";
+import { Heart, Activity, ArrowLeft } from "lucide-react";
 
 const ClarityMoment = () => {
   const { analysisType } = useAnalysis();
@@ -19,6 +19,24 @@ const ClarityMoment = () => {
 
   return (
     <div className="min-h-screen bg-[#14213D] relative overflow-hidden flex items-center justify-center">
+      {/* Return to Home Button */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="absolute top-6 left-6 z-20"
+      >
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="text-muted-foreground hover:text-white hover:bg-white/10 rounded-full px-4 py-2"
+          data-testid="return-home-btn"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Return to Home
+        </Button>
+      </motion.div>
+
       {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-20"
