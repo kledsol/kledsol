@@ -72,13 +72,13 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#0B132B] relative overflow-hidden">
       {/* Hero Background */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-10"
+        className="absolute inset-0 bg-cover bg-center opacity-[0.06]"
         style={{
           backgroundImage:
             "url(https://images.unsplash.com/photo-1566121822676-ce12612f5600?crop=entropy&cs=srgb&fm=jpg&q=85)",
         }}
       />
-      <div className="absolute inset-0 hero-glow" />
+      <div className="absolute inset-0 hero-glow opacity-50" />
 
       {/* Navigation */}
       <header className="relative z-50">
@@ -153,7 +153,7 @@ const LandingPage = () => {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mb-6"
           >
-            <span className="text-xl md:text-sm tracking-wider uppercase text-[#3DD9C5] font-mono leading-relaxed">
+            <span className="text-[22px] md:text-base tracking-wide uppercase text-[#3DD9C5] font-mono leading-relaxed">
               Wondering if something is going on behind your back?
             </span>
           </motion.div>
@@ -162,7 +162,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[34px] leading-tight md:text-7xl font-light text-[#E6EDF3] tracking-tight mb-8"
+            className="text-[40px] leading-[1.1] md:text-7xl font-light text-white tracking-tight mb-8"
             style={{ fontFamily: 'Fraunces, serif' }}
           >
             Is your partner cheating?
@@ -172,7 +172,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[17px] md:text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed"
+            className="text-[18px] md:text-xl text-[#B8C4CE] max-w-2xl mb-12 leading-relaxed"
           >
             Millions of people ask themselves the same question.
             Most struggle to interpret the signs.
@@ -190,21 +190,21 @@ const LandingPage = () => {
               onClick={() => handleStartAnalysis("deep")}
               disabled={loading}
               size="lg"
-              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-6 text-lg font-medium btn-glow transition-all hover:scale-105"
+              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
               data-testid="start-analysis-btn"
             >
               {loading ? "Starting..." : "Start Relationship Analysis"}
-              <ChevronRight className="w-5 h-5 ml-2" />
+              <ChevronRight className="w-6 h-6 ml-2" />
             </Button>
             <Button
               onClick={() => handleStartAnalysis("pulse")}
               disabled={loading}
               variant="outline"
               size="lg"
-              className="border-white/20 text-white hover:bg-white/5 rounded-full px-8 py-6 text-lg"
+              className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-lg"
               data-testid="pulse-btn"
             >
-              <HeartLensIcon size={20} />
+              <HeartLensIcon size={22} />
               <span className="ml-2">Check Relationship Pulse</span>
             </Button>
           </motion.div>
@@ -214,7 +214,7 @@ const LandingPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-6 text-[15px] md:text-sm text-muted-foreground"
+            className="mt-8 text-[16px] text-[#8899A6]"
           >
             Private. Anonymous. No account required.
           </motion.p>
