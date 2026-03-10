@@ -1,13 +1,30 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { useAnalysis } from "@/App";
-import { Heart, Activity, ArrowLeft } from "lucide-react";
+import { Heart, Activity, ArrowLeft, Check } from "lucide-react";
 
 const ClarityMoment = () => {
-  const { analysisType } = useAnalysis();
+  const { analysisType, setAnalysisData } = useAnalysis();
   const navigate = useNavigate();
+  const [step, setStep] = useState("engagement"); // engagement | clarity
+  const [selectedReason, setSelectedReason] = useState(null);
+
+  const engagementOptions = [
+    { id: "changed", label: "Something changed recently" },
+    { id: "behavior", label: "I noticed unusual behavior" },
+    { id: "feeling", label: "I just have a feeling something is wrong" },
+  ];
+
+  const handleReasonSelect = (reason) => {
+    setSelectedReason(reason);
+    // Store the reason in analysis data
+    setAnalysisData((prev) => ({ ...prev, engagementReason: reason }));
+    // Move to clarity step after a brief moment
+    setTimeout(() => setStep("clarity"), 300);
+  };
 
   const handleProceed = (type) => {
     if (type === "pulse") {
@@ -49,71 +66,163 @@ const ClarityMoment = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 text-center max-w-2xl">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-8"
-        >
-          <HeartLensIcon size={80} animate />
-        </motion.div>
+        <AnimatePresence mode="wait">
+          {step === "engagement" ? (
+            <motion.div
+              key="engagement"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-8"
+              >
+                <HeartLensIcon size={80} animate />
+              </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-4xl md:text-5xl font-light text-[#F5F7FA] mb-6 leading-tight"
-          style={{ fontFamily: 'Fraunces, serif' }}
-        >
-          A Moment of Clarity
-        </motion.h1>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="text-3xl md:text-4xl font-light text-[#F5F7FA] mb-10 leading-tight"
+                style={{ fontFamily: 'Fraunces, serif' }}
+              >
+                What made you start wondering about this?
+              </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-lg text-muted-foreground mb-12 leading-relaxed"
-        >
-          Sometimes uncertainty is harder than the truth. TrustLens can help you
-          understand relationship signals through calm, empathetic analysis.
-          Take a breath, and choose how you'd like to proceed.
-        </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="space-y-4"
+              >
+                {engagementOptions.map((option, index) => (
+                  <motion.button
+                    key={option.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                    onClick={() => handleReasonSelect(option.id)}
+                    className={`w-full p-5 rounded-xl text-left transition-all flex items-center gap-4 ${
+                      selectedReason === option.id
+                        ? "bg-[#2EC4B6]/10 border-2 border-[#2EC4B6]"
+                        : "glass-card hover:border-[#2EC4B6]/30"
+                    }`}
+                    data-testid={`reason-${option.id}`}
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        selectedReason === option.id
+                          ? "border-[#2EC4B6] bg-[#2EC4B6]"
+                          : "border-white/30"
+                      }`}
+                    >
+                      {selectedReason === option.id && (
+                        <Check className="w-4 h-4 text-black" />
+                      )}
+                    </div>
+                    <span
+                      className={`text-lg ${
+                        selectedReason === option.id
+                          ? "text-[#2EC4B6]"
+                          : "text-[#F5F7FA]"
+                      }`}
+                    >
+                      {option.label}
+                    </span>
+                  </motion.button>
+                ))}
+              </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Button
-            onClick={() => handleProceed("pulse")}
-            size="lg"
-            variant="outline"
-            className="border-[#FF4D6D]/50 text-[#FF4D6D] hover:bg-[#FF4D6D]/10 rounded-full px-8 py-6 text-lg group"
-            data-testid="pulse-btn"
-          >
-            <Heart className="w-5 h-5 mr-2 group-hover:heart-pulse" />
-            Check Relationship Pulse
-          </Button>
-          <Button
-            onClick={() => handleProceed("deep")}
-            size="lg"
-            className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 text-lg btn-glow"
-            data-testid="deep-analysis-btn"
-          >
-            <Activity className="w-5 h-5 mr-2" />
-            Start Deep Analysis
-          </Button>
-        </motion.div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.7 }}
+                className="mt-10 text-sm text-muted-foreground/60"
+              >
+                Your response helps us personalize your analysis.
+              </motion.p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="clarity"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-8"
+              >
+                <HeartLensIcon size={80} animate />
+              </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-12 text-sm text-muted-foreground/60"
-        >
-          Your privacy is protected. All analysis is anonymous and confidential.
-        </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="text-4xl md:text-5xl font-light text-[#F5F7FA] mb-6 leading-tight"
+                style={{ fontFamily: 'Fraunces, serif' }}
+              >
+                A Moment of Clarity
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="text-lg text-muted-foreground mb-12 leading-relaxed"
+              >
+                Sometimes uncertainty is harder than the truth. TrustLens can help you
+                understand relationship signals through calm, empathetic analysis.
+                Take a breath, and choose how you'd like to proceed.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+              >
+                <Button
+                  onClick={() => handleProceed("pulse")}
+                  size="lg"
+                  variant="outline"
+                  className="border-[#FF4D6D]/50 text-[#FF4D6D] hover:bg-[#FF4D6D]/10 rounded-full px-8 py-6 text-lg group"
+                  data-testid="pulse-btn"
+                >
+                  <Heart className="w-5 h-5 mr-2 group-hover:heart-pulse" />
+                  Check Relationship Pulse
+                </Button>
+                <Button
+                  onClick={() => handleProceed("deep")}
+                  size="lg"
+                  className="bg-[#2EC4B6] text-black hover:bg-[#259F94] rounded-full px-8 py-6 text-lg btn-glow"
+                  data-testid="deep-analysis-btn"
+                >
+                  <Activity className="w-5 h-5 mr-2" />
+                  Start Deep Analysis
+                </Button>
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.6 }}
+                className="mt-12 text-sm text-muted-foreground/60"
+              >
+                Your privacy is protected. All analysis is anonymous and confidential.
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
