@@ -154,7 +154,7 @@ const LandingPage = () => {
             className="mb-6"
           >
             <span className="text-sm tracking-wider uppercase text-[#2EC4B6] font-mono">
-              Relationship Intelligence Platform
+              Wondering if something is going on behind your back?
             </span>
           </motion.div>
 
@@ -165,7 +165,7 @@ const LandingPage = () => {
             className="text-5xl md:text-7xl font-light text-[#F5F7FA] tracking-tight leading-none mb-8"
             style={{ fontFamily: 'Fraunces, serif' }}
           >
-            Understand relationship signals through intelligent analysis
+            Is your partner cheating?
           </motion.h1>
 
           <motion.p
@@ -174,9 +174,10 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed"
           >
-            TrustLens combines psychology and AI to help you understand behavioral
-            changes in your relationship. No accusations, no surveillance — just
-            clarity through empathetic analysis.
+            Millions of people ask themselves the same question.
+            Most struggle to interpret the signs.
+            <br /><br />
+            TrustLens helps you understand what may really be happening through intelligent relationship analysis.
           </motion.p>
 
           <motion.div
@@ -207,6 +208,16 @@ const LandingPage = () => {
               <span className="ml-2">Check Relationship Pulse</span>
             </Button>
           </motion.div>
+
+          {/* Reassurance Line */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="mt-6 text-sm text-muted-foreground"
+          >
+            Private. Anonymous. No account required.
+          </motion.p>
         </div>
 
         {/* Features Grid */}
