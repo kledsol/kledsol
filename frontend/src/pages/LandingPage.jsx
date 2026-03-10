@@ -181,10 +181,15 @@ const LandingPage = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-base sm:text-lg md:text-xl text-[#B8C4CE] max-w-2xl mb-12 leading-relaxed"
           >
-            Millions of people ask themselves the same question.
-            Most struggle to interpret the signs.
+            Millions of people question what is really happening in their relationship.
             <br /><br />
-            TrustLens helps you understand what may really be happening through intelligent relationship analysis.
+            Sometimes it's distance.
+            <br />
+            Sometimes it's misunderstanding.
+            <br />
+            Sometimes it's something deeper.
+            <br /><br />
+            TrustLens helps you interpret the signals.
           </motion.p>
 
           <motion.div
