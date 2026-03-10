@@ -71,8 +71,8 @@ const LandingPage = () => {
       {/* Cinematic Background Slideshow */}
       <div className="hero-slideshow">
         <div
-          className="hero-slide"
-          style={{ backgroundImage: "url(/hero_scene_1.png)", backgroundPosition: "85% center" }}
+          className="hero-slide hero-slide-1"
+          style={{ backgroundImage: "url(/hero_scene_1.png)" }}
         />
         <div
           className="hero-slide"
