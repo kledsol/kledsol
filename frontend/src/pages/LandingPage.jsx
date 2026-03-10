@@ -153,7 +153,7 @@ const LandingPage = () => {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mb-6"
           >
-            <span className="text-sm tracking-wider uppercase text-[#2EC4B6] font-mono">
+            <span className="text-xl md:text-sm tracking-wider uppercase text-[#2EC4B6] font-mono leading-relaxed">
               Wondering if something is going on behind your back?
             </span>
           </motion.div>
@@ -162,7 +162,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-7xl font-light text-[#F5F7FA] tracking-tight leading-none mb-8"
+            className="text-[34px] leading-tight md:text-7xl font-light text-[#F5F7FA] tracking-tight mb-8"
             style={{ fontFamily: 'Fraunces, serif' }}
           >
             Is your partner cheating?
@@ -172,7 +172,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed"
+            className="text-[17px] md:text-lg text-muted-foreground max-w-2xl mb-12 leading-relaxed"
           >
             Millions of people ask themselves the same question.
             Most struggle to interpret the signs.
@@ -214,7 +214,7 @@ const LandingPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-6 text-sm text-muted-foreground"
+            className="mt-6 text-[15px] md:text-sm text-muted-foreground"
           >
             Private. Anonymous. No account required.
           </motion.p>
