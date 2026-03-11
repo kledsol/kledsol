@@ -432,51 +432,165 @@ Only JSON."""
     return {}
 
 async def generate_conversation_guidance(session: dict, tone: str, topic: str) -> dict:
-    prompt = f"""
-Generate conversation guidance for someone wanting to discuss relationship concerns with their partner.
+    """Generate personalized conversation guidance using full analysis context."""
 
-Tone requested: {tone}
-Topic to discuss: {topic}
+    # Build rich context from the session
+    changes = session.get('changes_data') or []
+    signals = session.get('signals', {})
+    baseline = session.get('baseline_data') or {}
+    timeline = session.get('timeline_data') or {}
+    qa_history = session.get('qa_history') or []
 
-Current relationship state:
-- Trust Disruption Index: {session.get('trust_disruption_index', 0)}
-- Dominant patterns: {session.get('dominant_pattern', 'Not determined')}
+    # Compute suspicion score for context
+    comparison = await compare_with_case_database(session)
+    suspicion_score = calculate_suspicion_score(session, comparison.get("similar_case_count", 0))
+    score_label = get_suspicion_label(suspicion_score)
 
-Provide:
-1. Opening statement suggestion
-2. 3-4 questions to ask
-3. Things to avoid saying
-4. What to observe during conversation
+    # Get dominant signal areas
+    top_signals = sorted(signals.items(), key=lambda x: x[1], reverse=True)[:3]
+    signal_summary = ", ".join(f"{k.replace('_',' ')} ({v:.0%})" for k, v in top_signals) if top_signals else "none detected"
 
-Respond in JSON:
+    # Check for mirror/perception gap context
+    mirror_context = ""
+    if session.get('mirror_id'):
+        mirror = await db.mirror_sessions.find_one({"mirror_id": session['mirror_id']}, {"_id": 0})
+        if mirror and mirror.get("report"):
+            report = mirror["report"]
+            gaps = report.get("perception_gaps", {})
+            top_gaps = sorted(gaps.items(), key=lambda x: x[1].get("gap", 0), reverse=True)[:3]
+            gap_text = ", ".join(f"{k.replace('_',' ')} ({v['gap']}% gap)" for k, v in top_gaps)
+            mirror_context = f"""
+Mirror Mode active — both partners have completed analyses.
+Key perception gaps: {gap_text}
+Average perception gap: {report.get('average_gap', 0)}%
+Partner A score: {report['partner_a']['suspicion_score']}, Partner B score: {report['partner_b']['suspicion_score']}
+Use these gaps to suggest targeted discussion areas where perceptions differ most."""
+
+    # Summarize recent QA for context
+    recent_answers = ""
+    for qa in qa_history[-5:]:
+        recent_answers += f"- {qa.get('category', 'general')}: {qa.get('answer', '')}\n"
+
+    prompt = f"""You are TrustLens Conversation Coach — a supportive, empathetic guide helping someone prepare for a constructive conversation with their partner about relationship concerns.
+
+USER CONTEXT:
+- Suspicion Score: {suspicion_score}/100 ({score_label})
+- Detected signals: {signal_summary}
+- Selected change categories: {', '.join(changes) if changes else 'none'}
+- Relationship duration: {baseline.get('relationship_duration', 'unknown')}
+- Prior satisfaction: {baseline.get('prior_satisfaction', 'unknown')}/10
+- Timeline: changes started {timeline.get('when_started', 'recently')}, pattern: {timeline.get('gradual_or_sudden', 'unknown')}
+{mirror_context}
+
+Recent investigation answers:
+{recent_answers if recent_answers.strip() else "No detailed answers yet."}
+
+CONVERSATION PARAMETERS:
+- Preferred tone: {tone}
+- Topic to discuss: {topic}
+
+GENERATE a comprehensive conversation guide. Be specific to the user's situation — reference the actual signals and patterns detected. Never accuse the partner. Focus on understanding and clarity.
+
+Respond STRICTLY in this JSON format:
 {{
-    "opening": "Suggested opening statement",
-    "questions": ["Question 1", "Question 2", "Question 3"],
-    "avoid": ["Thing to avoid 1", "Thing to avoid 2"],
-    "observe": ["What to watch for 1", "What to watch for 2"]
+    "framing": {{
+        "approach": "A 2-sentence description of how to frame this conversation",
+        "tone_guidance": "Specific advice for maintaining a {tone} tone during this conversation",
+        "timing_suggestion": "When and where to have this conversation"
+    }},
+    "openings": [
+        "Opening line option 1 — tailored to detected signals",
+        "Opening line option 2 — softer alternative",
+        "Opening line option 3 — most indirect approach"
+    ],
+    "questions": [
+        "Thoughtful question 1 focused on understanding",
+        "Thoughtful question 2 focused on clarification",
+        "Thoughtful question 3 focused on emotional context",
+        "Thoughtful question 4 exploring partner perspective",
+        "Thoughtful question 5 forward-looking"
+    ],
+    "avoid": [
+        "Specific thing to avoid 1",
+        "Specific thing to avoid 2",
+        "Specific thing to avoid 3",
+        "Specific thing to avoid 4"
+    ],
+    "emotional_preparation": {{
+        "before": "Advice on emotional preparation before the conversation",
+        "during": "How to stay centered and listen actively during the conversation",
+        "if_difficult": "What to do if the conversation becomes tense or emotional"
+    }},
+    "observe": [
+        "What to observe 1",
+        "What to observe 2",
+        "What to observe 3"
+    ]
 }}
 
-Only JSON."""
+Only valid JSON, nothing else."""
 
     try:
         response = await get_ai_response(session['id'], prompt)
-        import json
         start = response.find('{')
         end = response.rfind('}') + 1
         if start >= 0 and end > start:
-            return json.loads(response[start:end])
+            parsed = json.loads(response[start:end])
+            # Validate expected keys exist
+            if "openings" in parsed and "questions" in parsed:
+                return parsed
     except Exception as e:
         logger.error(f"Conversation coach error: {e}")
-    
+
+    # Rich fallback based on detected signals
+    signal_specific_qs = []
+    if "phone_secrecy" in changes or "digital_behavior" in changes:
+        signal_specific_qs.append("I've noticed we don't share our phones as freely as before. Is there a reason things feel more private lately?")
+    if "emotional_distance" in changes or "emotional_indicators" in changes:
+        signal_specific_qs.append("I've been feeling a bit of distance between us emotionally. Have you noticed that too?")
+    if "schedule_changes" in changes or "routine_changes" in changes:
+        signal_specific_qs.append("Your routine seems different lately. I'd love to understand what's changed in your day-to-day.")
+    if "communication" in changes or "communication_changes" in changes:
+        signal_specific_qs.append("I feel like our conversations have shifted. How are you feeling about how we communicate?")
+    if "intimacy_changes" in changes:
+        signal_specific_qs.append("Our closeness has felt different recently. I'd like to understand how you're feeling about us.")
+
+    fallback_qs = signal_specific_qs[:5] if signal_specific_qs else [
+        "How have you been feeling about our relationship recently?",
+        "Is there anything on your mind you'd like to share with me?",
+        "What do you think we could do to feel more connected?",
+        "How do you feel about how we communicate lately?",
+        "What would make you feel more comfortable and closer to me?",
+    ]
+
     return {
-        "opening": "I've been feeling like we should talk about how things have been between us lately.",
-        "questions": [
-            "How have you been feeling about us recently?",
-            "Is there anything on your mind you'd like to share?",
-            "What do you think we could do to feel more connected?"
+        "framing": {
+            "approach": f"Approach this as a shared check-in rather than a confrontation. You're inviting dialogue about {topic.replace('_', ' ')}, not delivering a verdict.",
+            "tone_guidance": f"A {tone} tone works best here. Focus on using 'I feel' statements and expressing curiosity rather than certainty.",
+            "timing_suggestion": "Choose a calm, private moment when neither of you is rushed or stressed. Avoid starting this during an argument or right before bed.",
+        },
+        "openings": [
+            "I've been doing some thinking about us lately, and I'd really like to talk about how things are going — just honestly and openly.",
+            "I care about us a lot, and I've noticed some things that I'd love to understand better. Can we talk?",
+            "There's something I've been wanting to bring up, not because anything is wrong, but because I want us to stay connected.",
         ],
-        "avoid": ["Accusations", "Bringing up past issues", "Ultimatums"],
-        "observe": ["Body language", "Willingness to engage", "Emotional responses"]
+        "questions": fallback_qs,
+        "avoid": [
+            "Making accusations or using phrases like 'you always' or 'you never'",
+            "Mentioning specific evidence or playing detective — focus on feelings, not proof",
+            "Giving ultimatums or making threats about the relationship",
+            "Interrupting or dismissing your partner's perspective",
+        ],
+        "emotional_preparation": {
+            "before": "Take a few deep breaths before starting. Remind yourself that the goal is understanding, not winning. Write down your key points so you stay focused.",
+            "during": "Listen fully before responding. If emotions rise, pause and acknowledge them: 'I'm feeling a lot right now, give me a moment.' Maintain eye contact and open body language.",
+            "if_difficult": "If the conversation becomes tense, suggest a break: 'Let's pause and come back to this when we've both had time to think.' It's okay to not resolve everything in one conversation.",
+        },
+        "observe": [
+            "Whether your partner seems open or defensive when the topic comes up",
+            "How they respond emotionally — discomfort can be natural and doesn't mean guilt",
+            "Whether they ask questions back or seem willing to engage deeply",
+        ],
     }
 
 def calculate_suspicion_score(session: dict, case_match_count: int = 0) -> int:
