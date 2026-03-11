@@ -1073,6 +1073,8 @@ async def get_results(session_id: str):
         "clarity_actions": clarity_actions,
         "timeline_events": timeline_events,
         "mirror_mode_data": session.get('mirror_mode_data'),
+        "mirror_id": session.get('mirror_id'),
+        "mirror_role": session.get('mirror_role'),
         "questions_answered": len(session.get('qa_history', [])),
         "trustlens_perspective": await generate_narrative_analysis(
             suspicion_score=suspicion_score,
@@ -1386,6 +1388,306 @@ async def get_shared_report(report_id: str):
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return report
+
+# ============= Dual Perspective / Mirror Mode =============
+
+class MirrorCreateInput(BaseModel):
+    session_id: str
+
+class MirrorConsentInput(BaseModel):
+    session_id: str
+
+
+@api_router.post("/mirror/create")
+async def create_mirror_session(data: MirrorCreateInput):
+    """Partner A creates a mirror session to invite their partner."""
+    session = await db.analysis_sessions.find_one({"id": data.session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    mirror_id = str(uuid.uuid4())[:12]
+    mirror = {
+        "mirror_id": mirror_id,
+        "partner_a_session_id": data.session_id,
+        "partner_b_session_id": None,
+        "partner_a_consented": False,
+        "partner_b_consented": False,
+        "status": "waiting_for_partner",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "report": None,
+    }
+    await db.mirror_sessions.insert_one(mirror)
+
+    # Tag Partner A's session with mirror info
+    await db.analysis_sessions.update_one(
+        {"id": data.session_id},
+        {"$set": {"mirror_id": mirror_id, "mirror_role": "a"}}
+    )
+
+    return {"mirror_id": mirror_id}
+
+
+@api_router.get("/mirror/{mirror_id}/join")
+async def join_mirror_session(mirror_id: str):
+    """Partner B joins via invite link. Creates a new analysis session for them."""
+    mirror = await db.mirror_sessions.find_one({"mirror_id": mirror_id}, {"_id": 0})
+    if not mirror:
+        raise HTTPException(status_code=404, detail="Mirror session not found")
+
+    # If partner B already joined, return their existing session
+    if mirror.get("partner_b_session_id"):
+        return {
+            "session_id": mirror["partner_b_session_id"],
+            "mirror_id": mirror_id,
+            "status": mirror["status"],
+            "already_joined": True,
+        }
+
+    # Create a new analysis session for partner B
+    session = AnalysisSession(analysis_type="deep")
+    session_dict = session.model_dump()
+    session_dict["mirror_id"] = mirror_id
+    session_dict["mirror_role"] = "b"
+    await db.analysis_sessions.insert_one(session_dict)
+
+    await db.mirror_sessions.update_one(
+        {"mirror_id": mirror_id},
+        {"$set": {"partner_b_session_id": session.id, "status": "partner_joined"}}
+    )
+
+    return {
+        "session_id": session.id,
+        "mirror_id": mirror_id,
+        "status": "partner_joined",
+        "already_joined": False,
+    }
+
+
+@api_router.get("/mirror/{mirror_id}/status")
+async def get_mirror_status(mirror_id: str):
+    """Check the status of a mirror session. No analysis data exposed."""
+    mirror = await db.mirror_sessions.find_one({"mirror_id": mirror_id}, {"_id": 0})
+    if not mirror:
+        raise HTTPException(status_code=404, detail="Mirror session not found")
+
+    partner_b_complete = False
+    if mirror.get("partner_b_session_id"):
+        b_session = await db.analysis_sessions.find_one(
+            {"id": mirror["partner_b_session_id"]},
+            {"_id": 0, "qa_history": 1}
+        )
+        partner_b_complete = len(b_session.get("qa_history", [])) >= 5 if b_session else False
+
+    return {
+        "mirror_id": mirror_id,
+        "status": mirror["status"],
+        "partner_b_joined": mirror.get("partner_b_session_id") is not None,
+        "partner_b_complete": partner_b_complete,
+        "partner_a_consented": mirror["partner_a_consented"],
+        "partner_b_consented": mirror["partner_b_consented"],
+        "report_ready": mirror["status"] == "report_ready",
+    }
+
+
+@api_router.post("/mirror/{mirror_id}/consent")
+async def consent_mirror(mirror_id: str, data: MirrorConsentInput):
+    """Partner explicitly consents to share their results."""
+    mirror = await db.mirror_sessions.find_one({"mirror_id": mirror_id}, {"_id": 0})
+    if not mirror:
+        raise HTTPException(status_code=404, detail="Mirror session not found")
+
+    # Determine which partner is consenting
+    if data.session_id == mirror["partner_a_session_id"]:
+        await db.mirror_sessions.update_one(
+            {"mirror_id": mirror_id},
+            {"$set": {"partner_a_consented": True}}
+        )
+        role = "a"
+    elif data.session_id == mirror.get("partner_b_session_id"):
+        await db.mirror_sessions.update_one(
+            {"mirror_id": mirror_id},
+            {"$set": {"partner_b_consented": True}}
+        )
+        role = "b"
+    else:
+        raise HTTPException(status_code=403, detail="Session not part of this mirror")
+
+    # Re-fetch to check if both consented
+    mirror = await db.mirror_sessions.find_one({"mirror_id": mirror_id}, {"_id": 0})
+    both_consented = mirror["partner_a_consented"] and mirror["partner_b_consented"]
+
+    if both_consented:
+        report = await generate_dual_perspective_report(mirror)
+        await db.mirror_sessions.update_one(
+            {"mirror_id": mirror_id},
+            {"$set": {"status": "report_ready", "report": report}}
+        )
+    else:
+        await db.mirror_sessions.update_one(
+            {"mirror_id": mirror_id},
+            {"$set": {"status": "waiting_for_consent"}}
+        )
+
+    return {
+        "consented": True,
+        "role": role,
+        "both_consented": both_consented,
+        "report_ready": both_consented,
+    }
+
+
+@api_router.get("/mirror/{mirror_id}/report")
+async def get_mirror_report(mirror_id: str):
+    """Get the dual perspective report. Only available if both partners consented."""
+    mirror = await db.mirror_sessions.find_one({"mirror_id": mirror_id}, {"_id": 0})
+    if not mirror:
+        raise HTTPException(status_code=404, detail="Mirror session not found")
+
+    if not (mirror["partner_a_consented"] and mirror["partner_b_consented"]):
+        raise HTTPException(status_code=403, detail="Both partners must consent before viewing the report")
+
+    if mirror.get("report"):
+        return mirror["report"]
+
+    # Generate report if not cached
+    report = await generate_dual_perspective_report(mirror)
+    await db.mirror_sessions.update_one(
+        {"mirror_id": mirror_id},
+        {"$set": {"report": report, "status": "report_ready"}}
+    )
+    return report
+
+
+async def generate_dual_perspective_report(mirror: dict) -> dict:
+    """Generate the dual perspective comparison report."""
+    a_session = await db.analysis_sessions.find_one(
+        {"id": mirror["partner_a_session_id"]}, {"_id": 0}
+    )
+    b_session = await db.analysis_sessions.find_one(
+        {"id": mirror["partner_b_session_id"]}, {"_id": 0}
+    )
+
+    if not a_session or not b_session:
+        raise HTTPException(status_code=404, detail="Analysis sessions not found")
+
+    # Compute suspicion scores for both partners
+    a_comparison = await compare_with_case_database(a_session)
+    b_comparison = await compare_with_case_database(b_session)
+
+    a_score = calculate_suspicion_score(a_session, a_comparison["similar_case_count"])
+    b_score = calculate_suspicion_score(b_session, b_comparison["similar_case_count"])
+
+    a_signals = a_session.get("signals", {})
+    b_signals = b_session.get("signals", {})
+    a_hypotheses = a_session.get("hypotheses", {})
+    b_hypotheses = b_session.get("hypotheses", {})
+
+    # Calculate perception gaps across key dimensions
+    gap_dimensions = {
+        "emotional_distance": ("hypotheses", "emotional_distance"),
+        "communication_quality": ("signals", "communication_changes"),
+        "trust_level": ("hypotheses", "trust_erosion"),
+        "behavioral_changes": ("signals", "routine_changes"),
+        "intimacy": ("hypotheses", "intimacy_decline"),
+    }
+
+    perception_gaps = {}
+    for label, (source, key) in gap_dimensions.items():
+        a_val = (a_hypotheses if source == "hypotheses" else a_signals).get(key, 0)
+        b_val = (b_hypotheses if source == "hypotheses" else b_signals).get(key, 0)
+        perception_gaps[label] = {
+            "partner_a": round(a_val * 100),
+            "partner_b": round(b_val * 100),
+            "gap": abs(round((a_val - b_val) * 100)),
+        }
+
+    total_gap = sum(g["gap"] for g in perception_gaps.values())
+    avg_gap = total_gap / len(perception_gaps) if perception_gaps else 0
+
+    # Generate AI narrative
+    narrative = await generate_dual_narrative(
+        a_score=a_score,
+        b_score=b_score,
+        perception_gaps=perception_gaps,
+        avg_gap=avg_gap,
+        a_changes=a_session.get("changes_data", []),
+        b_changes=b_session.get("changes_data", []),
+    )
+
+    return {
+        "mirror_id": mirror["mirror_id"],
+        "partner_a": {
+            "suspicion_score": a_score,
+            "suspicion_label": get_suspicion_label(a_score),
+            "signals_detected": a_session.get("changes_data", []),
+            "dominant_pattern": get_dominant_pattern(a_hypotheses),
+        },
+        "partner_b": {
+            "suspicion_score": b_score,
+            "suspicion_label": get_suspicion_label(b_score),
+            "signals_detected": b_session.get("changes_data", []),
+            "dominant_pattern": get_dominant_pattern(b_hypotheses),
+        },
+        "perception_gaps": perception_gaps,
+        "average_gap": round(avg_gap),
+        "gap_level": "significant" if avg_gap > 30 else "moderate" if avg_gap > 15 else "aligned",
+        "narrative": narrative,
+    }
+
+
+async def generate_dual_narrative(a_score, b_score, perception_gaps, avg_gap, a_changes, b_changes) -> str:
+    """Generate AI narrative for the dual perspective report."""
+    gap_lines = "\n".join(
+        f"- {k}: Partner A={v['partner_a']}%, Partner B={v['partner_b']}%, Gap={v['gap']}%"
+        for k, v in perception_gaps.items()
+    )
+
+    prompt = f"""You are TrustLens, a relationship intelligence system. Write a short narrative (4-6 sentences) analyzing the perception gap between two partners who independently completed a relationship analysis.
+
+Partner A Suspicion Score: {a_score}/100
+Partner B Suspicion Score: {b_score}/100
+Score difference: {abs(a_score - b_score)} points
+
+Perception gaps:
+{gap_lines}
+
+Average gap: {avg_gap:.0f}%
+
+Partner A detected signals: {', '.join(a_changes) if a_changes else 'none'}
+Partner B detected signals: {', '.join(b_changes) if b_changes else 'none'}
+
+Rules:
+- NEVER accuse either partner
+- Use careful language: "may suggest", "could reflect", "appears to indicate"
+- Explain what the gap means for communication and understanding
+- Suggest constructive next steps (open dialogue, shared reflection)
+- Tone: empathetic, measured, constructive — like a thoughtful couples counselor
+- Keep it under 120 words"""
+
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise ValueError("No key")
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"trustlens-dual-{uuid.uuid4().hex[:8]}",
+            system_message="You are TrustLens, an empathetic relationship analysis system providing dual perspective analysis. Never accuse. Always use measured, constructive language."
+        )
+        chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+
+        response = await chat.send_message(UserMessage(text=prompt))
+        if response and len(response.strip()) > 20:
+            return response.strip()
+        raise ValueError("Empty response")
+    except Exception as e:
+        logger.warning(f"Dual narrative LLM failed: {e}")
+        if avg_gap > 30:
+            return f"The two analyses show meaningful differences in how the relationship is currently perceived. With a perception gap of {avg_gap:.0f}%, this may reflect a communication gap rather than a shared understanding of recent changes. This kind of asymmetry often appears when partners are processing relationship dynamics at different speeds. An open, structured conversation about how each of you views things could help bridge this gap."
+        elif avg_gap > 15:
+            return f"There are moderate differences in how each partner perceives the relationship. The perception gap of {avg_gap:.0f}% suggests some areas where expectations or experiences may not be fully aligned. This is common and doesn't necessarily indicate a problem — but discussing these differences openly could strengthen mutual understanding."
+        else:
+            return f"Both analyses show relatively aligned perceptions of the relationship. The small gap of {avg_gap:.0f}% suggests that you and your partner share a similar view of where things stand. This alignment is a positive sign and a strong foundation for open communication."
 
 app.include_router(api_router)
 

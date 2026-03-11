@@ -10,6 +10,8 @@ import ResultsDashboard from "@/pages/ResultsDashboard";
 import SharedReport from "@/pages/SharedReport";
 import MirrorMode from "@/pages/MirrorMode";
 import ConversationCoach from "@/pages/ConversationCoach";
+import MirrorInvite from "@/pages/MirrorInvite";
+import DualReport from "@/pages/DualReport";
 
 // Analysis Context
 const AnalysisContext = createContext();
@@ -80,6 +82,8 @@ function App() {
             <Route path="/report/:reportId" element={<SharedReport />} />
             <Route path="/mirror" element={<MirrorMode />} />
             <Route path="/coach" element={<ConversationCoach />} />
+            <Route path="/mirror-invite/:mirrorId" element={<MirrorInvite />} />
+            <Route path="/dual-report/:mirrorId" element={<DualReport />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" />

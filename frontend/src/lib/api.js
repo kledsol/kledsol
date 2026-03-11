@@ -87,3 +87,30 @@ export const getSharedReport = async (reportId) => {
   const response = await api.get(`/reports/${reportId}`);
   return response.data;
 };
+
+// ============= Dual Perspective / Mirror Mode =============
+
+export const createMirrorSession = async (sessionId) => {
+  const response = await api.post("/mirror/create", { session_id: sessionId });
+  return response.data;
+};
+
+export const joinMirrorSession = async (mirrorId) => {
+  const response = await api.get(`/mirror/${mirrorId}/join`);
+  return response.data;
+};
+
+export const getMirrorStatus = async (mirrorId) => {
+  const response = await api.get(`/mirror/${mirrorId}/status`);
+  return response.data;
+};
+
+export const consentMirror = async (mirrorId, sessionId) => {
+  const response = await api.post(`/mirror/${mirrorId}/consent`, { session_id: sessionId });
+  return response.data;
+};
+
+export const getMirrorReport = async (mirrorId) => {
+  const response = await api.get(`/mirror/${mirrorId}/report`);
+  return response.data;
+};

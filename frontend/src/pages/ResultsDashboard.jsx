@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { TrustGauge, TrustIndexLabel } from "@/components/custom/TrustGauge";
 import { useAnalysis } from "@/App";
-import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport } from "@/lib/api";
+import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport, createMirrorSession, getMirrorStatus, consentMirror } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Heart,
@@ -28,6 +28,8 @@ import {
   Share2,
   Copy,
   Check,
+  Link2,
+  Lock,
 } from "lucide-react";
 
 // Animated counter hook
@@ -265,6 +267,15 @@ const ResultsDashboard = () => {
   const [shareUrl, setShareUrl] = useState(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [mirrorId, setMirrorId] = useState(null);
+  const [mirrorInviteUrl, setMirrorInviteUrl] = useState(null);
+  const [mirrorCreating, setMirrorCreating] = useState(false);
+  const [mirrorConsented, setMirrorConsented] = useState(false);
+  const [mirrorCopied, setMirrorCopied] = useState(false);
+  const [mirrorStatus, setMirrorStatus] = useState(null);
+  // For Partner B returning from analysis
+  const [isMirrorPartner, setIsMirrorPartner] = useState(false);
+  const [mirrorContext, setMirrorContext] = useState(null);
   // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perception, 7=perspective, 8=comparison, 9=timeline, 10=actions, 11=complete
 
   useEffect(() => {
@@ -281,6 +292,34 @@ const ResultsDashboard = () => {
       const data = await getResults(sessionId);
       setResults(data);
       setLoading(false);
+
+      // Check if this session belongs to a mirror
+      if (data.mirror_id) {
+        setMirrorId(data.mirror_id);
+        if (data.mirror_role === "b") {
+          setIsMirrorPartner(true);
+          setMirrorContext({ mirrorId: data.mirror_id, role: "b" });
+        } else if (data.mirror_role === "a") {
+          // Partner A - check if they already have an invite
+          setMirrorInviteUrl(`${window.location.origin}/mirror-invite/${data.mirror_id}`);
+          try {
+            const ms = await getMirrorStatus(data.mirror_id);
+            setMirrorStatus(ms);
+            setMirrorConsented(ms.partner_a_consented);
+          } catch {}
+        }
+      }
+
+      // Also check sessionStorage for Partner B context
+      try {
+        const stored = JSON.parse(sessionStorage.getItem("trustlens_mirror") || "null");
+        if (stored && stored.role === "b" && !data.mirror_id) {
+          setIsMirrorPartner(true);
+          setMirrorContext(stored);
+          setMirrorId(stored.mirrorId);
+        }
+      } catch {}
+
       // Start the dramatic analysis sequence
       setTimeout(() => setRevealStage(1), 100);
       // Save score to timeline
@@ -355,6 +394,52 @@ const ResultsDashboard = () => {
     setCopied(true);
     toast.success("Link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCreateMirror = async () => {
+    setMirrorCreating(true);
+    try {
+      const { mirror_id } = await createMirrorSession(sessionId);
+      setMirrorId(mirror_id);
+      const url = `${window.location.origin}/mirror-invite/${mirror_id}`;
+      setMirrorInviteUrl(url);
+    } catch {
+      toast.error("Failed to create mirror session");
+    } finally {
+      setMirrorCreating(false);
+    }
+  };
+
+  const handleMirrorConsent = async () => {
+    const mid = mirrorId || mirrorContext?.mirrorId;
+    if (!mid) return;
+    try {
+      const result = await consentMirror(mid, sessionId);
+      setMirrorConsented(true);
+      toast.success("Consent recorded");
+      if (result.report_ready) {
+        navigate(`/dual-report/${mid}`);
+      }
+    } catch {
+      toast.error("Failed to record consent");
+    }
+  };
+
+  const copyMirrorLink = async () => {
+    if (!mirrorInviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(mirrorInviteUrl);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = mirrorInviteUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setMirrorCopied(true);
+    toast.success("Invite link copied");
+    setTimeout(() => setMirrorCopied(false), 2000);
   };
 
   const getStabilityLabel = (hearts) => {
@@ -871,7 +956,7 @@ const ResultsDashboard = () => {
                         data-testid="coach-btn"
                       >
                         <MessageSquare className="w-5 h-5 mr-2" />
-                        Start Conversation Coach
+                        Conversation Coach
                         <ChevronRight className="w-5 h-5 ml-2" />
                       </Button>
                       <Button
@@ -883,15 +968,164 @@ const ResultsDashboard = () => {
                         <Heart className="w-5 h-5 mr-2" />
                         Track Relationship Pulse
                       </Button>
-                      <Button
-                        onClick={() => navigate("/mirror")}
-                        variant="outline"
-                        className="border-white/20 text-white hover:bg-white/5 rounded-full px-6 py-5"
-                        data-testid="mirror-btn"
-                      >
-                        <Users className="w-5 h-5 mr-2" />
-                        Mirror Mode
-                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {/* Mirror Invite Section - Partner A creates, Partner B consents */}
+            {revealStage >= 10 && (
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                data-testid="mirror-invite-section"
+              >
+                <Card className="glass-card rounded-2xl border-[#3DD9C5]/20">
+                  <CardContent className="p-8">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="relative inline-block mb-6">
+                        <div className="w-14 h-14 rounded-full bg-[#3DD9C5]/10 flex items-center justify-center">
+                          <Users className="w-7 h-7 text-[#3DD9C5]" />
+                        </div>
+                      </div>
+
+                      {/* Partner B flow: show consent prompt */}
+                      {isMirrorPartner && !mirrorConsented && (
+                        <>
+                          <h3 className="text-lg font-light text-[#E6EDF3] mb-3" style={{ fontFamily: "Fraunces, serif" }}>
+                            You were invited to a Mirror Analysis
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-6 max-w-md leading-relaxed">
+                            Your partner has also completed a TrustLens analysis. Would you like to compare perspectives?
+                            Your results will only be shared if you explicitly consent.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <Button
+                              onClick={handleMirrorConsent}
+                              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-5 btn-glow"
+                              data-testid="partner-b-consent-btn"
+                            >
+                              <Lock className="w-4 h-4 mr-2" />
+                              I Consent to Compare Perspectives
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => navigate(`/dual-report/${mirrorId || mirrorContext?.mirrorId}`)}
+                              className="border-white/20 text-white hover:bg-white/5 rounded-full px-6 py-5"
+                            >
+                              View Status
+                            </Button>
+                          </div>
+                        </>
+                      )}
+
+                      {isMirrorPartner && mirrorConsented && (
+                        <>
+                          <h3 className="text-lg font-light text-[#3DD9C5] mb-3" style={{ fontFamily: "Fraunces, serif" }}>
+                            Consent Recorded
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-6">
+                            The dual perspective report will be available once your partner also consents.
+                          </p>
+                          <Button
+                            onClick={() => navigate(`/dual-report/${mirrorId || mirrorContext?.mirrorId}`)}
+                            className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-5 btn-glow"
+                          >
+                            View Dual Report
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Partner A flow: create mirror & share link */}
+                      {!isMirrorPartner && !mirrorInviteUrl && (
+                        <>
+                          <h3 className="text-lg font-light text-[#E6EDF3] mb-3" style={{ fontFamily: "Fraunces, serif" }}>
+                            Invite Your Partner for a Mirror Analysis
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-6 max-w-md leading-relaxed">
+                            Generate a private link for your partner to complete their own TrustLens analysis.
+                            Once both of you consent, a Dual Perspective Report will compare your perceptions.
+                          </p>
+                          <Button
+                            onClick={handleCreateMirror}
+                            disabled={mirrorCreating}
+                            className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-8 py-5 btn-glow"
+                            data-testid="create-mirror-btn"
+                          >
+                            {mirrorCreating ? (
+                              <>Creating...</>
+                            ) : (
+                              <>
+                                <Users className="w-5 h-5 mr-2" />
+                                Generate Partner Invite
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Partner A: Invite link created */}
+                      {!isMirrorPartner && mirrorInviteUrl && (
+                        <>
+                          <h3 className="text-lg font-light text-[#E6EDF3] mb-3" style={{ fontFamily: "Fraunces, serif" }}>
+                            Partner Invite Ready
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                            Share this private link with your partner. They will complete their own analysis independently.
+                          </p>
+
+                          <button
+                            onClick={copyMirrorLink}
+                            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-sm text-[#E6EDF3] font-mono max-w-full mb-6"
+                            data-testid="mirror-invite-url"
+                          >
+                            {mirrorCopied ? <Check className="w-4 h-4 text-[#3DD9C5] flex-shrink-0" /> : <Copy className="w-4 h-4 flex-shrink-0" />}
+                            <span className="truncate">{mirrorInviteUrl}</span>
+                          </button>
+
+                          {/* Partner A consent */}
+                          {!mirrorConsented ? (
+                            <Button
+                              onClick={handleMirrorConsent}
+                              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-5 btn-glow mb-3"
+                              data-testid="partner-a-consent-btn"
+                            >
+                              <Lock className="w-4 h-4 mr-2" />
+                              I Consent to Share My Results
+                            </Button>
+                          ) : (
+                            <div className="flex items-center gap-2 text-[#3DD9C5] text-sm mb-3">
+                              <Check className="w-4 h-4" />
+                              You have consented
+                            </div>
+                          )}
+
+                          {mirrorStatus && (
+                            <p className="text-xs text-muted-foreground">
+                              {mirrorStatus.partner_b_joined
+                                ? mirrorStatus.partner_b_complete
+                                  ? mirrorStatus.partner_b_consented
+                                    ? "Both partners ready!"
+                                    : "Partner has completed their analysis. Waiting for their consent."
+                                  : "Your partner has started their analysis..."
+                                : "Waiting for your partner to join..."}
+                            </p>
+                          )}
+
+                          {mirrorStatus?.report_ready && (
+                            <Button
+                              onClick={() => navigate(`/dual-report/${mirrorId}`)}
+                              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-5 btn-glow mt-4"
+                              data-testid="view-dual-report-btn"
+                            >
+                              View Dual Perspective Report
+                              <ChevronRight className="w-5 h-5 ml-2" />
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
