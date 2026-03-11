@@ -593,6 +593,102 @@ Only valid JSON, nothing else."""
         ],
     }
 
+SIGNAL_META = {
+    "phone_secrecy": {"name": "Phone & Device Secrecy", "desc": "Changes in how devices are shared or protected were observed in your responses."},
+    "emotional_distance": {"name": "Emotional Distance", "desc": "Patterns suggesting emotional withdrawal or reduced availability were detected."},
+    "schedule_changes": {"name": "Schedule Inconsistencies", "desc": "Changes in daily routines or unexplained timing patterns appeared in your responses."},
+    "defensive_behavior": {"name": "Defensive Reactions", "desc": "Patterns of defensiveness or avoidance when certain topics arise were noted."},
+    "communication_changes": {"name": "Communication Shifts", "desc": "Changes in conversational depth, openness, or frequency were reflected."},
+    "communication": {"name": "Communication Changes", "desc": "Shifts in how you and your partner communicate were identified."},
+    "intimacy_changes": {"name": "Reduced Intimacy", "desc": "Changes in physical or emotional closeness patterns were identified."},
+    "routine_changes": {"name": "Routine Changes", "desc": "Shifts in established daily patterns or habits were noted."},
+    "financial_changes": {"name": "Financial Behavior", "desc": "Changes in spending patterns or financial transparency were observed."},
+    "social_behavior": {"name": "Social Behavior Changes", "desc": "Shifts in social circles, friendships, or social media activity were detected."},
+    "digital_behavior": {"name": "Digital Behavior Changes", "desc": "Changes in online activity, app usage, or digital privacy were noted."},
+    "emotional_indicators": {"name": "Emotional Indicators", "desc": "Shifts in emotional tone, mood, or emotional availability were observed."},
+}
+
+STRENGTH_LABELS = {
+    "strong": "This signal appeared prominently in your answers and contributed significantly to the analysis.",
+    "moderate": "This signal was present in your responses and factored into the overall pattern assessment.",
+    "weak": "This signal appeared with low intensity but was still noted as part of the broader picture.",
+}
+
+
+def generate_signal_strength_summary(session: dict) -> dict:
+    """Categorize detected signals by strength with explanations."""
+    signals = session.get('signals', {})
+    changes = session.get('changes_data') or []
+    qa_history = session.get('qa_history') or []
+
+    # Compute composite intensity per signal
+    # Sources: signals dict values + change_scores weight + core answer detection
+    change_weights = {
+        "communication": 0.3, "emotional_distance": 0.4, "schedule_changes": 0.3,
+        "phone_secrecy": 0.5, "intimacy_changes": 0.3, "financial_changes": 0.2,
+        "social_behavior": 0.3, "defensive_behavior": 0.4,
+        "digital_behavior": 0.3, "routine_changes": 0.3, "emotional_indicators": 0.3,
+        "communication_changes": 0.3,
+    }
+
+    # Core answer signal boost
+    core_boosts = {}
+    for qa in qa_history:
+        qid = qa.get("question_id", "")
+        answer = qa.get("answer", "")
+        if qid in CORE_SIGNAL_MAP:
+            mapping = CORE_SIGNAL_MAP[qid]
+            if answer in mapping["trigger_options"]:
+                core_boosts[mapping["category"]] = 0.3
+
+    # Build composite intensity for all detected signals
+    all_signal_keys = set()
+    for c in changes:
+        normalized = c.lower().replace(' ', '_')
+        all_signal_keys.add(normalized)
+    for k in signals:
+        if signals[k] > 0.05:
+            all_signal_keys.add(k)
+    for k in core_boosts:
+        all_signal_keys.add(k)
+
+    scored_signals = []
+    for key in all_signal_keys:
+        intensity = signals.get(key, 0)
+        change_boost = change_weights.get(key, 0.2) if key in [c.lower().replace(' ', '_') for c in changes] else 0
+        core_boost = core_boosts.get(key, 0)
+        composite = min(1.0, intensity + change_boost + core_boost)
+
+        meta = SIGNAL_META.get(key, {"name": key.replace("_", " ").title(), "desc": "This pattern was observed in your responses."})
+        scored_signals.append({"key": key, "intensity": round(composite, 2), **meta})
+
+    # Sort by intensity descending
+    scored_signals.sort(key=lambda x: x["intensity"], reverse=True)
+
+    # Group into strength tiers
+    strong = [s for s in scored_signals if s["intensity"] >= 0.55]
+    moderate = [s for s in scored_signals if 0.25 <= s["intensity"] < 0.55]
+    weak = [s for s in scored_signals if s["intensity"] < 0.25]
+
+    # Add tier explanation to each
+    for s in strong:
+        s["strength"] = "strong"
+        s["explanation"] = STRENGTH_LABELS["strong"]
+    for s in moderate:
+        s["strength"] = "moderate"
+        s["explanation"] = STRENGTH_LABELS["moderate"]
+    for s in weak:
+        s["strength"] = "weak"
+        s["explanation"] = STRENGTH_LABELS["weak"]
+
+    return {
+        "strong": strong,
+        "moderate": moderate,
+        "weak": weak,
+        "total_signals": len(scored_signals),
+    }
+
+
 def calculate_suspicion_score(session: dict, case_match_count: int = 0) -> int:
     """Calculate suspicion score 0-100 using signal intensity, pattern matches,
     micro-contradictions, and timeline consistency."""
@@ -1151,6 +1247,7 @@ async def get_results(session_id: str):
     suspicion_score = calculate_suspicion_score(session, case_comparison["similar_case_count"])
     suspicion_label = get_suspicion_label(suspicion_score)
     perception_check = detect_perception_inconsistencies(session)
+    signal_strength = generate_signal_strength_summary(session)
     
     # Use DB-driven stats if available, otherwise fallback
     if case_comparison["similar_case_count"] > 0:
@@ -1183,6 +1280,7 @@ async def get_results(session_id: str):
             "insights": case_comparison["insights"],
         },
         "perception_consistency": perception_check,
+        "signal_strength_summary": signal_strength,
         "context_estimation": session.get('context_estimation', []),
         "clarity_actions": clarity_actions,
         "timeline_events": timeline_events,

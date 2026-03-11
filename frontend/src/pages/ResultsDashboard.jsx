@@ -30,6 +30,7 @@ import {
   Check,
   Link2,
   Lock,
+  BarChart3,
 } from "lucide-react";
 
 // Animated counter hook
@@ -276,7 +277,7 @@ const ResultsDashboard = () => {
   // For Partner B returning from analysis
   const [isMirrorPartner, setIsMirrorPartner] = useState(false);
   const [mirrorContext, setMirrorContext] = useState(null);
-  // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perception, 7=perspective, 8=comparison, 9=timeline, 10=actions, 11=complete
+  // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=signal-strength, 7=perception, 8=perspective, 9=comparison, 10=timeline, 11=actions, 12=complete
 
   useEffect(() => {
     if (!sessionId) {
@@ -340,12 +341,13 @@ const ResultsDashboard = () => {
     setTimeout(() => setRevealStage(3), 2500);   // Hearts
     setTimeout(() => setRevealStage(4), 4000);   // Diagnosis
     setTimeout(() => setRevealStage(5), 5200);   // Patterns
-    setTimeout(() => setRevealStage(6), 6200);   // Perception
-    setTimeout(() => setRevealStage(7), 7200);   // Perspective
-    setTimeout(() => setRevealStage(8), 8200);   // Comparison
-    setTimeout(() => setRevealStage(9), 9000);   // Timeline
-    setTimeout(() => setRevealStage(10), 9800);  // Actions
-    setTimeout(() => setRevealStage(11), 10500); // Complete
+    setTimeout(() => setRevealStage(6), 6200);   // Signal Strength
+    setTimeout(() => setRevealStage(7), 7200);   // Perception
+    setTimeout(() => setRevealStage(8), 8200);   // Perspective
+    setTimeout(() => setRevealStage(9), 9200);   // Comparison
+    setTimeout(() => setRevealStage(10), 10000); // Timeline
+    setTimeout(() => setRevealStage(11), 10800); // Actions
+    setTimeout(() => setRevealStage(12), 11500); // Complete
   };
 
   const handleStartOver = () => {
@@ -491,7 +493,7 @@ const ResultsDashboard = () => {
           <Link to="/">
             <TrustLensLogo size="md" />
           </Link>
-          {revealStage >= 10 && (
+          {revealStage >= 11 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -717,8 +719,144 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 6: Perception Consistency Check */}
-            {revealStage >= 6 && results.perception_consistency && (
+            {/* Stage 6: Signal Strength Summary */}
+            {revealStage >= 6 && results.signal_strength_summary && (
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                data-testid="signal-strength-section"
+              >
+                <Card className="glass-card rounded-2xl">
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="flex items-center justify-center gap-2 text-lg text-[#E6EDF3]">
+                      <BarChart3 className="w-5 h-5 text-[#3DD9C5]" />
+                      Signal Strength Summary
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      The behavioral patterns that most influenced your analysis
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Strong Signals */}
+                    {results.signal_strength_summary.strong?.length > 0 && (
+                      <div data-testid="strong-signals">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="h-2 w-2 rounded-full bg-[#FF4D6D]" />
+                          <span className="text-xs font-mono tracking-wider text-[#FF4D6D]">STRONG SIGNALS</span>
+                        </div>
+                        <div className="space-y-2">
+                          {results.signal_strength_summary.strong.map((s, i) => (
+                            <motion.div
+                              key={s.key}
+                              initial={{ opacity: 0, x: -15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 * i }}
+                              className="p-4 rounded-xl bg-[#FF4D6D]/5 border border-[#FF4D6D]/15"
+                            >
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
+                                <span className="text-xs font-mono text-[#FF4D6D]">{Math.round(s.intensity * 100)}%</span>
+                              </div>
+                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${s.intensity * 100}%` }}
+                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                  className="h-full rounded-full bg-[#FF4D6D]"
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">{s.desc}</p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Moderate Signals */}
+                    {results.signal_strength_summary.moderate?.length > 0 && (
+                      <div data-testid="moderate-signals">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="h-2 w-2 rounded-full bg-[#FCA311]" />
+                          <span className="text-xs font-mono tracking-wider text-[#FCA311]">MODERATE SIGNALS</span>
+                        </div>
+                        <div className="space-y-2">
+                          {results.signal_strength_summary.moderate.map((s, i) => (
+                            <motion.div
+                              key={s.key}
+                              initial={{ opacity: 0, x: -15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 * i }}
+                              className="p-4 rounded-xl bg-[#FCA311]/5 border border-[#FCA311]/15"
+                            >
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
+                                <span className="text-xs font-mono text-[#FCA311]">{Math.round(s.intensity * 100)}%</span>
+                              </div>
+                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${s.intensity * 100}%` }}
+                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                  className="h-full rounded-full bg-[#FCA311]"
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">{s.desc}</p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Weak Signals */}
+                    {results.signal_strength_summary.weak?.length > 0 && (
+                      <div data-testid="weak-signals">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="h-2 w-2 rounded-full bg-[#6EE7B7]" />
+                          <span className="text-xs font-mono tracking-wider text-[#6EE7B7]">WEAK SIGNALS</span>
+                        </div>
+                        <div className="space-y-2">
+                          {results.signal_strength_summary.weak.map((s, i) => (
+                            <motion.div
+                              key={s.key}
+                              initial={{ opacity: 0, x: -15 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.1 * i }}
+                              className="p-3 rounded-xl bg-white/5 border border-white/10"
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm text-[#E6EDF3]">{s.name}</span>
+                                <span className="text-xs font-mono text-[#6EE7B7]">{Math.round(s.intensity * 100)}%</span>
+                              </div>
+                              <div className="h-1 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${s.intensity * 100}%` }}
+                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                  className="h-full rounded-full bg-[#6EE7B7]"
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground">{s.desc}</p>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Disclaimer */}
+                    <div className="pt-4 border-t border-white/10">
+                      <p className="text-xs text-muted-foreground text-center leading-relaxed">
+                        These signals reflect patterns observed in your responses. They describe perceptions,
+                        not conclusions. Each signal's strength indicates how prominently it appeared across your answers.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {/* Stage 7: Perception Consistency Check */}
+            {revealStage >= 7 && results.perception_consistency && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -754,8 +892,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 7: TrustLens Perspective */}
-            {revealStage >= 7 && (
+            {/* Stage 8: TrustLens Perspective */}
+            {revealStage >= 8 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -777,8 +915,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 8: Pattern Comparison (Case Database) */}
-            {revealStage >= 8 && results.pattern_statistics && (
+            {/* Stage 9: Pattern Comparison (Case Database) */}
+            {revealStage >= 9 && results.pattern_statistics && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -871,8 +1009,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 9: Relationship Timeline */}
-            {revealStage >= 9 && timelineHistory.length >= 1 && (
+            {/* Stage 10: Relationship Timeline */}
+            {revealStage >= 10 && timelineHistory.length >= 1 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -917,8 +1055,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 10: Clarity Actions */}
-            {revealStage >= 10 && (
+            {/* Stage 11: Clarity Actions */}
+            {revealStage >= 11 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -975,7 +1113,7 @@ const ResultsDashboard = () => {
             )}
 
             {/* Mirror Invite Section - Partner A creates, Partner B consents */}
-            {revealStage >= 10 && (
+            {revealStage >= 11 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1132,8 +1270,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 11: Closing Support Note */}
-            {revealStage >= 11 && (
+            {/* Stage 12: Closing Support Note */}
+            {revealStage >= 12 && (
               <motion.section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
