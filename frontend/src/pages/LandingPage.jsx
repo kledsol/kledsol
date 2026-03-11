@@ -49,23 +49,27 @@ const LandingPage = () => {
   const whyBlocks = [
     {
       icon: Activity,
+      accent: "#FF4D6D",
       title: "The Reality of Infidelity",
-      description: "Studies suggest that 20-40% of relationships experience some form of infidelity. If you're questioning your partner's behavior, you're not alone — and your instincts deserve to be explored.",
+      description: "20-40% of relationships face infidelity. If something feels off, your instincts are worth exploring — not dismissing.",
     },
     {
       icon: Brain,
+      accent: "#FCA311",
       title: "Why People Miss the Signs",
-      description: "Emotions cloud judgment. Love creates blind spots. When you're emotionally invested, it's nearly impossible to analyze behavioral changes objectively. Small shifts get rationalized away.",
+      description: "Love creates blind spots. When emotions run deep, small behavioral shifts get rationalized. Objective analysis becomes nearly impossible alone.",
     },
     {
       icon: Activity,
+      accent: "#3DD9C5",
       title: "What TrustLens Does",
-      description: "TrustLens uses behavioral psychology and AI to help you map relationship patterns — communication shifts, emotional distance, routine changes — and identify what they may actually mean.",
+      description: "Maps relationship patterns — communication shifts, emotional distance, routine changes — using behavioral psychology and AI to reveal what they may mean.",
     },
     {
       icon: Shield,
+      accent: "#6EE7B7",
       title: "Not Accusations, Only Clarity",
-      description: "We don't tell you what to think. We help you see clearly. TrustLens provides structured analysis so you can make informed decisions about your own relationship — with empathy, not paranoia.",
+      description: "We don't tell you what to think. We give you structured analysis so you can see clearly and decide with empathy, not paranoia.",
     },
   ];
 
@@ -245,38 +249,34 @@ const LandingPage = () => {
           id="why"
         >
           <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
+            className="text-3xl sm:text-4xl font-light text-[#E6EDF3] mb-4"
             style={{ fontFamily: "Fraunces, serif" }}
           >
             Why TrustLens
           </h2>
-          <p className="text-base sm:text-lg text-[#8899A6] max-w-2xl mb-16 leading-relaxed">
-            Understanding what's really happening in your relationship shouldn't require guesswork.
+          <p className="text-base text-[#8899A6] max-w-xl mb-14 leading-relaxed">
+            Understanding your relationship shouldn't require guesswork.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
+                className="glass-card rounded-2xl p-6 sm:p-8 hover:border-[#3DD9C5]/30 transition-all duration-500 group"
                 data-testid={`why-block-${index}`}
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <block.icon className="w-5 h-5 text-[#3DD9C5]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
-                      {block.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      {block.description}
-                    </p>
-                  </div>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${block.accent}15` }}>
+                  <block.icon className="w-5 h-5" style={{ color: block.accent }} />
                 </div>
+                <h3 className="text-base font-medium text-[#E6EDF3] mb-2">
+                  {block.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {block.description}
+                </p>
               </motion.div>
             ))}
           </div>
