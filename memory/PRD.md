@@ -13,10 +13,11 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 
 ### Pattern Comparison with Demographic Filtering
 - Compares user signals against 300+ cases with >=30% similarity threshold
-- Filters by relationship duration when demographic sample >= 8 cases
-- Falls back to full dataset when sample too small (safety rule)
+- **Phase 1 (current, ~300 cases)**: Filters by relationship duration when sample >= 8
+- **Phase 2 (planned, ~500+ cases)**: Add cohabitation status filtering
+- **Phase 3 (planned, ~1000+ cases)**: Add age range filtering
+- Falls back to full dataset when demographic subset too small (safety rule)
 - Generates contextual insights: "Among couples together for 1-3 years, 42% experienced..."
-- Frontend shows "Filtered: couples together for X years" badge when active
 
 ### Relationship Case Database
 - 300 synthetic cases seeded on startup (seed=42)
