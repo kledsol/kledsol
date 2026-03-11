@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { TrustGauge, TrustIndexLabel } from "@/components/custom/TrustGauge";
 import { useAnalysis } from "@/App";
-import { getResults } from "@/lib/api";
+import { getResults, getTimelineHistory, saveTimelineEntry } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Heart,
@@ -23,6 +23,8 @@ import {
   Home,
   RefreshCw,
   ChevronRight,
+  AlertTriangle,
+  TrendingUp,
 } from "lucide-react";
 
 // Animated counter hook
@@ -51,7 +53,154 @@ const useAnimatedCounter = (target, duration = 1200, start = false) => {
   return value;
 };
 
-// Suspicion Score color based on value
+// Analysis sequence steps
+const ANALYSIS_STEPS = [
+  { text: "Analyzing behavioral signals...", icon: Activity },
+  { text: "Comparing with relationship patterns...", icon: Brain },
+  { text: "Checking perception consistency...", icon: Target },
+  { text: "Final TrustLens Assessment", icon: Shield },
+];
+
+const AnalysisSequence = ({ onComplete }) => {
+  const [step, setStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const stepDuration = 1200;
+    const totalSteps = ANALYSIS_STEPS.length;
+
+    const interval = setInterval(() => {
+      setStep((s) => {
+        if (s >= totalSteps - 1) {
+          clearInterval(interval);
+          setTimeout(onComplete, 800);
+          return s;
+        }
+        return s + 1;
+      });
+    }, stepDuration);
+
+    // Progress bar animation
+    const progressInterval = setInterval(() => {
+      setProgress((p) => Math.min(p + 1.5, 100));
+    }, 50);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(progressInterval);
+    };
+  }, [onComplete]);
+
+  const CurrentIcon = ANALYSIS_STEPS[step].icon;
+
+  return (
+    <motion.div
+      key="analysis-sequence"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
+      data-testid="analysis-sequence"
+    >
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-16 h-16 rounded-2xl bg-[#3DD9C5]/10 flex items-center justify-center mb-8"
+      >
+        <CurrentIcon className="w-8 h-8 text-[#3DD9C5]" />
+      </motion.div>
+
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={step}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.3 }}
+          className="text-xl sm:text-2xl text-[#E6EDF3] font-light mb-8"
+          style={{ fontFamily: "Fraunces, serif" }}
+        >
+          {ANALYSIS_STEPS[step].text}
+        </motion.p>
+      </AnimatePresence>
+
+      {/* Step indicators */}
+      <div className="flex gap-3 mb-8">
+        {ANALYSIS_STEPS.map((_, i) => (
+          <div
+            key={i}
+            className={`w-2 h-2 rounded-full transition-all duration-500 ${
+              i <= step ? "bg-[#3DD9C5] scale-110" : "bg-white/15"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-56 h-1 bg-white/10 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-[#3DD9C5] rounded-full"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
+// Simple line chart for timeline
+const TimelineChart = ({ entries }) => {
+  if (!entries || entries.length < 2) return null;
+
+  const maxScore = 100;
+  const chartH = 140;
+  const chartW = entries.length > 1 ? 100 : 50; // percentage width
+  const points = entries.map((e, i) => ({
+    x: (i / (entries.length - 1)) * chartW,
+    y: chartH - (e.score / maxScore) * chartH,
+    ...e,
+  }));
+  const pathD = points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
+
+  return (
+    <div className="w-full" data-testid="timeline-chart">
+      <svg
+        viewBox={`-10 -10 ${chartW + 20} ${chartH + 40}`}
+        className="w-full h-auto max-h-[180px]"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* Grid lines */}
+        {[0, 25, 50, 75, 100].map((v) => (
+          <line
+            key={v}
+            x1="0" x2={chartW}
+            y1={chartH - (v / 100) * chartH}
+            y2={chartH - (v / 100) * chartH}
+            stroke="rgba(255,255,255,0.06)"
+            strokeDasharray="2"
+          />
+        ))}
+        {/* Line */}
+        <path d={pathD} fill="none" stroke="#3DD9C5" strokeWidth="2" strokeLinejoin="round" />
+        {/* Dots and labels */}
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="4" fill="#3DD9C5" />
+            <text x={p.x} y={p.y - 10} textAnchor="middle" fill="#E6EDF3" fontSize="8" fontFamily="monospace">
+              {p.score}
+            </text>
+            <text x={p.x} y={chartH + 16} textAnchor="middle" fill="#8899A6" fontSize="7" fontFamily="monospace">
+              {p.date_display}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+};
 const getScoreColor = (score) => {
   if (score <= 30) return "#6EE7B7";
   if (score <= 60) return "#FCA311";
@@ -109,7 +258,8 @@ const ResultsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState(null);
   const [revealStage, setRevealStage] = useState(0);
-  // Stages: 0=loading, 1=transition, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perspective, 7=comparison, 8=context, 9=actions, 10=complete
+  const [timelineHistory, setTimelineHistory] = useState([]);
+  // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perception, 7=perspective, 8=comparison, 9=timeline, 10=actions, 11=complete
 
   useEffect(() => {
     if (!sessionId) {
@@ -125,25 +275,32 @@ const ResultsDashboard = () => {
       const data = await getResults(sessionId);
       setResults(data);
       setLoading(false);
-      // Start reveal sequence
-      startRevealSequence();
+      // Start the dramatic analysis sequence
+      setTimeout(() => setRevealStage(1), 100);
+      // Save score to timeline
+      try {
+        await saveTimelineEntry(data.suspicion_score, data.suspicion_label);
+        const history = await getTimelineHistory();
+        setTimelineHistory(history.entries || []);
+      } catch (_) { /* timeline is optional */ }
     } catch (e) {
       toast.error("Failed to load results");
       navigate("/");
     }
   };
 
-  const startRevealSequence = () => {
-    setTimeout(() => setRevealStage(1), 100);
-    setTimeout(() => setRevealStage(2), 2000);   // Suspicion Score
-    setTimeout(() => setRevealStage(3), 4500);   // Hearts
-    setTimeout(() => setRevealStage(4), 6000);   // Diagnosis
-    setTimeout(() => setRevealStage(5), 7200);   // Patterns
-    setTimeout(() => setRevealStage(6), 8200);   // Perspective
-    setTimeout(() => setRevealStage(7), 9200);   // Comparison
-    setTimeout(() => setRevealStage(8), 10000);  // Context
-    setTimeout(() => setRevealStage(9), 10800);  // Actions
-    setTimeout(() => setRevealStage(10), 11500); // Complete
+  const handleAnalysisComplete = () => {
+    // After analysis sequence, start progressive reveal
+    setRevealStage(2);
+    setTimeout(() => setRevealStage(3), 2500);   // Hearts
+    setTimeout(() => setRevealStage(4), 4000);   // Diagnosis
+    setTimeout(() => setRevealStage(5), 5200);   // Patterns
+    setTimeout(() => setRevealStage(6), 6200);   // Perception
+    setTimeout(() => setRevealStage(7), 7200);   // Perspective
+    setTimeout(() => setRevealStage(8), 8200);   // Comparison
+    setTimeout(() => setRevealStage(9), 9000);   // Timeline
+    setTimeout(() => setRevealStage(10), 9800);  // Actions
+    setTimeout(() => setRevealStage(11), 10500); // Complete
   };
 
   const handleStartOver = () => {
@@ -200,7 +357,7 @@ const ResultsDashboard = () => {
           <Link to="/">
             <TrustLensLogo size="md" />
           </Link>
-          {revealStage >= 9 && (
+          {revealStage >= 10 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -221,40 +378,9 @@ const ResultsDashboard = () => {
 
       <main className="container mx-auto px-6 py-12 max-w-4xl">
         <AnimatePresence mode="wait">
-          {/* Stage 1: Transition Message */}
+          {/* Stage 1: Dramatic Analysis Sequence */}
           {revealStage === 1 && (
-            <motion.div
-              key="transition"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="min-h-[60vh] flex flex-col items-center justify-center text-center"
-            >
-              <HeartLensIcon size={100} animate />
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="mt-8 text-xl text-muted-foreground"
-              >
-                Your relationship signals have been carefully analyzed.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="mt-6"
-              >
-                <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 1.5, ease: "easeInOut" }}
-                    className="h-full bg-[#3DD9C5]"
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
+            <AnalysisSequence onComplete={handleAnalysisComplete} />
           )}
         </AnimatePresence>
 
@@ -457,8 +583,45 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 6: TrustLens Perspective */}
-            {revealStage >= 6 && (
+            {/* Stage 6: Perception Consistency Check */}
+            {revealStage >= 6 && results.perception_consistency && (
+              <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                data-testid="perception-consistency-section"
+              >
+                <Card className="glass-card rounded-2xl border-[#FCA311]/20">
+                  <CardContent className="p-8">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-[#FCA311]/10 flex items-center justify-center flex-shrink-0 mt-1">
+                        <AlertTriangle className="w-5 h-5 text-[#FCA311]" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-medium text-[#E6EDF3] mb-3">Perception Consistency Check</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                          {results.perception_consistency.insight}
+                        </p>
+                        {results.perception_consistency.has_inconsistencies && results.perception_consistency.inconsistencies.map((item, i) => (
+                          <motion.p
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 + i * 0.15 }}
+                            className="text-sm text-[#FCA311]/80 mb-2 pl-4 border-l-2 border-[#FCA311]/30"
+                          >
+                            {item}
+                          </motion.p>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {/* Stage 7: TrustLens Perspective */}
+            {revealStage >= 7 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -480,109 +643,122 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 7: Pattern Comparison Insight */}
-            {revealStage >= 7 && results.pattern_statistics && (
+            {/* Stage 8: Pattern Comparison */}
+            {revealStage >= 8 && results.pattern_statistics && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
+                data-testid="pattern-comparison-section"
               >
                 <Card className="glass-card rounded-2xl">
                   <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-base text-muted-foreground font-normal">
-                      In similar situations analyzed by TrustLens
+                    <CardTitle className="text-lg text-[#E6EDF3] font-light" style={{ fontFamily: "Fraunces, serif" }}>
+                      Pattern Comparison
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Your answers were compared with thousands of relationship patterns.
+                    </p>
                   </CardHeader>
                   <CardContent className="pt-4">
+                    {/* Key insight */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="text-center mb-6 p-4 rounded-xl bg-white/5"
+                    >
+                      <p className="text-base text-[#E6EDF3]">
+                        Similar behavioral patterns appear in{" "}
+                        <span className="text-[#3DD9C5] font-semibold">{results.pattern_comparison_pct}%</span>{" "}
+                        of cases where trust was later broken.
+                      </p>
+                    </motion.div>
+
                     <div className="grid grid-cols-3 gap-6 text-center">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="p-4"
-                      >
-                        <p className="text-4xl font-light text-[#FF4D6D] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-4">
+                        <p className="text-4xl font-light text-[#FF4D6D] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.confirmed_issues}%
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          later confirmed<br />relationship issues
-                        </p>
+                        <p className="text-sm text-muted-foreground">later confirmed<br />relationship issues</p>
                       </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="p-4"
-                      >
-                        <p className="text-4xl font-light text-[#FCA311] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="p-4">
+                        <p className="text-4xl font-light text-[#FCA311] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.relationship_conflict}%
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          reported severe<br />conflict (no infidelity)
-                        </p>
+                        <p className="text-sm text-muted-foreground">reported severe<br />conflict (no infidelity)</p>
                       </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="p-4"
-                      >
-                        <p className="text-4xl font-light text-[#6EE7B7] mb-2" style={{ fontFamily: 'Fraunces, serif' }}>
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="p-4">
+                        <p className="text-4xl font-light text-[#6EE7B7] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.resolved_positively}%
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          resolved<br />positively
-                        </p>
+                        <p className="text-sm text-muted-foreground">resolved<br />positively</p>
                       </motion.div>
                     </div>
+
+                    {/* Disclaimer */}
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                      className="text-xs text-muted-foreground text-center mt-6 pt-4 border-t border-white/10 leading-relaxed"
+                    >
+                      This analysis highlights behavioral patterns and similarities with known relationship situations.
+                      It does not prove or confirm infidelity.
+                    </motion.p>
                   </CardContent>
                 </Card>
               </motion.section>
             )}
 
-            {/* Stage 8: Context Estimation */}
-            {revealStage >= 8 && results.context_estimation && results.context_estimation.length > 0 && (
+            {/* Stage 9: Relationship Timeline */}
+            {revealStage >= 9 && timelineHistory.length >= 1 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
+                data-testid="relationship-timeline-section"
               >
                 <Card className="glass-card rounded-2xl">
                   <CardHeader className="text-center">
-                    <CardTitle className="text-base text-muted-foreground font-normal">
-                      Likely interaction contexts
+                    <CardTitle className="flex items-center justify-center gap-2 text-lg text-[#E6EDF3]">
+                      <TrendingUp className="w-5 h-5 text-[#3DD9C5]" />
+                      Relationship Timeline
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Track how your suspicion score evolves over time
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-center gap-6 flex-wrap">
-                      {results.context_estimation.map((context, i) => {
-                        const IconComponent = context.includes("work") ? Briefcase :
-                          context.includes("digital") ? Smartphone : Users;
-                        return (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="flex flex-col items-center gap-2 p-4"
-                          >
-                            <div className="w-14 h-14 rounded-xl bg-[#3DD9C5]/10 flex items-center justify-center">
-                              <IconComponent className="w-7 h-7 text-[#3DD9C5]" />
-                            </div>
-                            <p className="text-sm text-[#E6EDF3] capitalize">
-                              {context.replace(/_/g, " ")}
+                    {timelineHistory.length >= 2 ? (
+                      <TimelineChart entries={timelineHistory} />
+                    ) : (
+                      <div className="text-center py-6">
+                        <div className="flex items-center justify-center gap-6 mb-4">
+                          <div className="text-center">
+                            <p className="text-3xl font-light text-[#3DD9C5]" style={{ fontFamily: "Fraunces, serif" }}>
+                              {timelineHistory[0]?.score ?? results.suspicion_score}
                             </p>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
+                            <p className="text-xs text-muted-foreground mt-1">{timelineHistory[0]?.date_display ?? "Today"}</p>
+                          </div>
+                          <div className="flex-1 h-px bg-white/10 max-w-[100px]" />
+                          <div className="text-center opacity-30">
+                            <p className="text-3xl font-light text-white/40" style={{ fontFamily: "Fraunces, serif" }}>?</p>
+                            <p className="text-xs text-muted-foreground mt-1">Next check</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Run another analysis later to see your relationship trend
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.section>
             )}
 
-            {/* Stage 9: Clarity Actions */}
-            {revealStage >= 9 && (
+            {/* Stage 10: Clarity Actions */}
+            {revealStage >= 10 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -647,8 +823,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 10: Closing Support Note */}
-            {revealStage >= 10 && (
+            {/* Stage 11: Closing Support Note */}
+            {revealStage >= 11 && (
               <motion.section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

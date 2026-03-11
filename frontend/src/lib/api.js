@@ -67,3 +67,13 @@ export const getSessionStatus = async (sessionId) => {
   const response = await api.get(`/analysis/${sessionId}/status`);
   return response.data;
 };
+
+export const getTimelineHistory = async () => {
+  const response = await api.get("/timeline-history");
+  return response.data;
+};
+
+export const saveTimelineEntry = async (score, label) => {
+  const response = await api.post("/timeline-history", { score, label });
+  return response.data;
+};

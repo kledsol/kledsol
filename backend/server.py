@@ -674,6 +674,10 @@ async def get_results(session_id: str):
     
     suspicion_score = calculate_suspicion_score(session)
     suspicion_label = get_suspicion_label(suspicion_score)
+    perception_check = detect_perception_inconsistencies(session)
+    
+    # Compute pattern comparison percentage based on score
+    comparison_pct = min(62, max(12, int(suspicion_score * 0.65 + 5)))
     
     return {
         "session_id": session_id,
@@ -687,12 +691,53 @@ async def get_results(session_id: str):
         "hypotheses": hypotheses,
         "signals": signals,
         "pattern_statistics": pattern_stats,
+        "pattern_comparison_pct": comparison_pct,
+        "perception_consistency": perception_check,
         "context_estimation": session.get('context_estimation', []),
         "clarity_actions": clarity_actions,
         "timeline_events": timeline_events,
         "mirror_mode_data": session.get('mirror_mode_data'),
         "questions_answered": len(session.get('qa_history', [])),
         "trustlens_perspective": generate_perspective(session)
+    }
+
+def detect_perception_inconsistencies(session: dict) -> dict:
+    """Detect contradictions in user's answers to add analytical depth."""
+    inconsistencies = []
+    
+    baseline = session.get('baseline_data') or {}
+    changes = session.get('changes_data') or []
+    timeline = session.get('timeline_data') or {}
+    
+    # High satisfaction but many change categories
+    satisfaction = baseline.get('prior_satisfaction', 3)
+    if satisfaction >= 4 and len(changes) >= 4:
+        inconsistencies.append("You described high prior satisfaction but reported changes across multiple categories.")
+    
+    # High transparency but phone secrecy selected
+    transparency = baseline.get('transparency_level', 3)
+    if transparency >= 4 and 'phone_secrecy' in changes:
+        inconsistencies.append("You indicated a high level of transparency, yet noted phone secrecy as a recent change.")
+    
+    # High emotional closeness but emotional distance selected
+    closeness = baseline.get('emotional_closeness', 3)
+    if closeness >= 4 and 'emotional_distance' in changes:
+        inconsistencies.append("You reported strong emotional closeness while also observing emotional distance.")
+    
+    # Gradual changes but multiple simultaneous categories
+    if timeline.get('gradual_or_sudden') == 'gradual' and timeline.get('multiple_at_once'):
+        inconsistencies.append("You described the changes as gradual, yet indicated they appeared simultaneously.")
+    
+    # Good communication but communication changes detected
+    comm_habits = baseline.get('communication_habits', '')
+    if comm_habits in ['daily', 'frequent'] and 'communication' in changes:
+        inconsistencies.append("You described frequent communication habits while noting significant communication changes.")
+    
+    has_inconsistencies = len(inconsistencies) > 0
+    return {
+        "has_inconsistencies": has_inconsistencies,
+        "inconsistencies": inconsistencies[:3],
+        "insight": "We detected inconsistencies in how the situation is described. This often happens when people try to interpret emotionally complex situations." if has_inconsistencies else "Your description of the situation shows internal consistency."
     }
 
 def generate_perspective(session: dict) -> str:
@@ -721,6 +766,24 @@ async def get_session_status(session_id: str):
         "questions_answered": len(session.get('qa_history', [])),
         "trust_disruption_index": session.get('trust_disruption_index', 0)
     }
+
+@api_router.get("/timeline-history")
+async def get_timeline_history():
+    """Get stored suspicion scores over time for the relationship timeline."""
+    entries = await db.score_timeline.find({}, {"_id": 0}).sort("created_at", 1).to_list(50)
+    return {"entries": entries}
+
+@api_router.post("/timeline-history")
+async def save_timeline_entry(data: dict):
+    """Save a suspicion score entry to the timeline."""
+    entry = {
+        "score": data.get("score", 0),
+        "label": data.get("label", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "date_display": datetime.now(timezone.utc).strftime("%b %d"),
+    }
+    await db.score_timeline.insert_one(entry)
+    return {"status": "saved"}
 
 app.include_router(api_router)
 
