@@ -4,24 +4,31 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { TrustLensLogo } from "@/components/custom/Logo";
-import { StabilityHearts, StabilityLabel } from "@/components/custom/StabilityHearts";
 import { useAnalysis } from "@/App";
 import { submitPulse, startAnalysis } from "@/lib/api";
 import { toast } from "sonner";
-import { ArrowLeft, Heart, MessageSquare, Zap, ChevronRight, Activity } from "lucide-react";
+import { ArrowLeft, Heart, MessageSquare, Zap, ChevronRight, Activity, Eye, Shield } from "lucide-react";
+
+const getSignalColor = (score) => {
+  if (score <= 25) return "#6EE7B7";
+  if (score <= 50) return "#FCA311";
+  if (score <= 75) return "#F97316";
+  return "#FF4D6D";
+};
 
 const RelationshipPulse = () => {
   const { sessionId, setSessionId, setAnalysisData } = useAnalysis();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("questions"); // questions | results
+  const [step, setStep] = useState("questions");
   const [results, setResults] = useState(null);
 
   const [formData, setFormData] = useState({
     emotional_connection: 3,
     communication_quality: 3,
     perceived_tension: 3,
+    behavioral_changes: 3,
+    trust_feeling: 3,
   });
 
   const handleSubmit = async () => {
@@ -79,47 +86,67 @@ const RelationshipPulse = () => {
       low: "None",
       high: "Significant",
     },
+    {
+      key: "behavioral_changes",
+      icon: Eye,
+      label: "Behavioral Changes",
+      description: "Have you noticed unexplained changes in your partner's behavior?",
+      low: "None",
+      high: "Many",
+    },
+    {
+      key: "trust_feeling",
+      icon: Shield,
+      label: "Trust Level",
+      description: "How much do you trust your partner right now?",
+      low: "Low Trust",
+      high: "Full Trust",
+    },
   ];
 
   if (step === "results" && results) {
+    const signalColor = getSignalColor(results.pulse_suspicion);
+
     return (
-      <div className="min-h-screen bg-[#0B132B] relative">
+      <div className="min-h-screen bg-[#0B132B] relative" data-testid="pulse-results">
         <header className="glass border-b border-white/10">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-            <TrustLensLogo size="md" />
+          <div className="container mx-auto px-6 py-4">
+            <img src="/trustlens-logo.png" alt="TrustLens" className="h-10 w-auto" />
           </div>
         </header>
 
-        <main className="container mx-auto px-6 py-16 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7 }}
-            className="text-center"
-          >
-            <div className="mb-8">
-              <StabilityHearts count={results.stability_hearts} size="lg" />
+        <main className="container mx-auto px-6 py-12 max-w-2xl">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="text-center">
+            <p className="text-sm uppercase tracking-widest text-muted-foreground mb-6 font-mono">Quick Signal Indicator</p>
+
+            {/* Mini suspicion ring */}
+            <div className="relative w-[160px] h-[160px] mx-auto mb-6">
+              <svg viewBox="0 0 140 140" className="w-full h-full -rotate-90">
+                <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+                <circle
+                  cx="70" cy="70" r="60" fill="none" stroke={signalColor} strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 60}
+                  strokeDashoffset={2 * Math.PI * 60 * (1 - results.pulse_suspicion / 100)}
+                  style={{ transition: "stroke-dashoffset 1s ease-out" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-light" style={{ fontFamily: "Fraunces, serif", color: signalColor }} data-testid="pulse-score">
+                  {results.pulse_suspicion}
+                </span>
+                <span className="text-xs text-muted-foreground">/100</span>
+              </div>
             </div>
 
-            <h1
-              className="text-4xl font-light text-[#E6EDF3] mb-4"
-              style={{ fontFamily: 'Fraunces, serif' }}
-            >
+            <h1 className="text-3xl font-light text-[#E6EDF3] mb-4" style={{ fontFamily: "Fraunces, serif" }}>
               Relationship Pulse
             </h1>
 
-            <div className="text-2xl mb-8">
-              <StabilityLabel hearts={results.stability_hearts} />
-            </div>
-
             <Card className="glass-card rounded-2xl mb-8">
               <CardContent className="p-8">
-                <p className="text-muted-foreground leading-relaxed">
-                  {results.stability_hearts >= 3
-                    ? "Your relationship pulse indicates a generally healthy connection. Continue nurturing your bond through open communication and quality time together."
-                    : results.stability_hearts >= 2
-                    ? "Your relationship is experiencing some strain. This is normal during challenging times. Consider having an open conversation about how you're both feeling."
-                    : "Your relationship appears to be under significant stress. This might be a good time to prioritize communication or consider professional support."}
+                <p className="text-muted-foreground leading-relaxed" data-testid="pulse-recommendation">
+                  {results.recommendation}
                 </p>
               </CardContent>
             </Card>
@@ -163,7 +190,7 @@ const RelationshipPulse = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <TrustLensLogo size="md" />
+            <img src="/trustlens-logo.png" alt="TrustLens" className="h-10 w-auto" />
           </div>
           <span className="text-sm text-muted-foreground font-mono">30-Second Check</span>
         </div>

@@ -85,6 +85,8 @@ class PulseInput(BaseModel):
     emotional_connection: int  # 1-5
     communication_quality: int  # 1-5
     perceived_tension: int  # 1-5
+    behavioral_changes: int = 3  # 1-5 (noticed behavioral changes)
+    trust_feeling: int = 3  # 1-5 (how much you trust partner right now)
 
 class BaselineInput(BaseModel):
     session_id: str
@@ -303,69 +305,67 @@ Only JSON."""
         "observe": ["Body language", "Willingness to engage", "Emotional responses"]
     }
 
-def calculate_suspicion_score(session: dict) -> int:
-    """Calculate suspicion score 0-100 based on analysis answers."""
+def calculate_suspicion_score(session: dict, case_match_count: int = 0) -> int:
+    """Calculate suspicion score 0-100 using signal intensity, pattern matches,
+    micro-contradictions, and timeline consistency."""
     score = 0.0
     
-    # Points from selected change categories
+    # 1. Signal intensity from selected change categories (max ~45 pts)
     change_scores = {
-        "communication": 12,
-        "emotional_distance": 15,
-        "schedule_changes": 10,
-        "phone_secrecy": 15,
-        "intimacy_changes": 12,
-        "financial_changes": 8,
-        "social_behavior": 10,
-        "defensive_behavior": 15,
-        "late_night_messaging": 10,
-        "unexplained_absences": 15,
+        "communication": 8, "emotional_distance": 10, "schedule_changes": 7,
+        "phone_secrecy": 12, "intimacy_changes": 8, "financial_changes": 6,
+        "social_behavior": 7, "defensive_behavior": 10,
+        "late_night_messaging": 8, "unexplained_absences": 10,
     }
     changes = session.get('changes_data') or []
+    signal_pts = 0
     for change in changes:
         for key, pts in change_scores.items():
             if key in change.lower().replace(' ', '_'):
-                score += pts
+                signal_pts += pts
+    # Normalize signal intensity to 0-45 range
+    score += min(45, signal_pts)
     
-    # Points from signal strengths
-    signals = session.get('signals') or {}
-    signal_weights = {
-        "routine_changes": 10,
-        "communication_changes": 15,
-        "emotional_indicators": 15,
-        "digital_behavior": 18,
-        "social_behavior": 12,
-        "financial_signals": 10,
-    }
-    for sig, weight in signal_weights.items():
-        score += signals.get(sig, 0) * weight
+    # 2. Pattern match factor from case database (max 20 pts)
+    if case_match_count > 0:
+        match_factor = min(20, case_match_count * 0.6)
+        score += match_factor
     
-    # Points from hypothesis strengths
-    hypotheses = session.get('hypotheses') or {}
-    hyp_weights = {
-        "trust_erosion": 12,
-        "emotional_distance": 10,
-        "communication_breakdown": 8,
-        "intimacy_decline": 8,
-    }
-    for hyp, weight in hyp_weights.items():
-        score += hypotheses.get(hyp, 0) * weight
-    
-    # Timeline factor: sudden changes score higher
-    timeline = session.get('timeline_data') or {}
-    if timeline.get('gradual_or_sudden') == 'sudden':
-        score += 8
-    if timeline.get('multiple_at_once'):
-        score += 5
-    
-    # Baseline factor: low transparency/closeness boosts score
+    # 3. Micro-contradictions detected (max 10 pts)
     baseline = session.get('baseline_data') or {}
-    if baseline:
-        transparency = baseline.get('transparency_level', 3)
-        closeness = baseline.get('emotional_closeness', 3)
-        if transparency <= 2:
-            score += 8
-        if closeness <= 2:
-            score += 5
+    contradictions = 0
+    satisfaction = baseline.get('prior_satisfaction', 3)
+    transparency = baseline.get('transparency_level', 3)
+    closeness = baseline.get('emotional_closeness', 3)
+    
+    if satisfaction >= 4 and len(changes) >= 4:
+        contradictions += 1
+    if transparency >= 4 and 'phone_secrecy' in changes:
+        contradictions += 1
+    if closeness >= 4 and 'emotional_distance' in changes:
+        contradictions += 1
+    
+    timeline = session.get('timeline_data') or {}
+    if timeline.get('gradual_or_sudden') == 'gradual' and timeline.get('multiple_at_once'):
+        contradictions += 1
+    
+    score += min(10, contradictions * 3)
+    
+    # 4. Timeline consistency factor (max 15 pts)
+    timeline_pts = 0
+    if timeline.get('gradual_or_sudden') == 'sudden':
+        timeline_pts += 8
+    if timeline.get('multiple_at_once'):
+        timeline_pts += 4
+    if len(changes) >= 3 and timeline.get('when_started'):
+        timeline_pts += 3
+    score += min(15, timeline_pts)
+    
+    # 5. Baseline context modifier (max 10 pts)
+    if transparency <= 2:
+        score += 5
+    if closeness <= 2:
+        score += 5
     
     return max(0, min(100, int(round(score))))
 
@@ -574,12 +574,25 @@ async def submit_pulse(data: PulseInput):
     stability_hearts = min(4, max(0, int(avg_score)))
     trust_index = max(0, min(100, (5 - avg_score) * 25))
     
+    # Mini suspicion indicator from all 5 questions
+    strain_score = (
+        (5 - data.emotional_connection) * 6 +
+        (5 - data.communication_quality) * 5 +
+        data.perceived_tension * 5 +
+        data.behavioral_changes * 6 +
+        (5 - data.trust_feeling) * 8
+    )
+    pulse_suspicion = max(0, min(100, int(strain_score * 0.67)))
+    
     pulse_data = {
         "emotional_connection": data.emotional_connection,
         "communication_quality": data.communication_quality,
         "perceived_tension": data.perceived_tension,
+        "behavioral_changes": data.behavioral_changes,
+        "trust_feeling": data.trust_feeling,
         "stability_hearts": stability_hearts,
-        "trust_disruption_index": trust_index
+        "trust_disruption_index": trust_index,
+        "pulse_suspicion": pulse_suspicion,
     }
     
     await db.analysis_sessions.update_one(
@@ -592,9 +605,19 @@ async def submit_pulse(data: PulseInput):
         }}
     )
     
+    # Determine recommendation
+    if pulse_suspicion >= 50:
+        recommendation = "Your pulse suggests notable relationship strain. We recommend running a full Deep Analysis for a detailed pattern assessment."
+    elif pulse_suspicion >= 25:
+        recommendation = "Some signals of tension detected. A Deep Analysis could provide more clarity on what might be happening."
+    else:
+        recommendation = "Your relationship pulse appears healthy. Continue nurturing your bond through open communication."
+    
     return {
         "stability_hearts": stability_hearts,
         "trust_disruption_index": trust_index,
+        "pulse_suspicion": pulse_suspicion,
+        "recommendation": recommendation,
         "interpretation": "Stable" if stability_hearts >= 3 else "Moderate strain" if stability_hearts >= 2 else "Significant stress"
     }
 
@@ -802,12 +825,13 @@ async def get_results(session_id: str):
     for i, change in enumerate(changes[:3]):
         timeline_events.append({"period": f"Phase {i+1}", "event": f"{change.replace('_', ' ').title()}", "type": "development"})
     
-    suspicion_score = calculate_suspicion_score(session)
-    suspicion_label = get_suspicion_label(suspicion_score)
-    perception_check = detect_perception_inconsistencies(session)
-    
     # Compare with relationship case database
     case_comparison = await compare_with_case_database(session)
+    
+    # Calibrated suspicion score using pattern matches
+    suspicion_score = calculate_suspicion_score(session, case_comparison["similar_case_count"])
+    suspicion_label = get_suspicion_label(suspicion_score)
+    perception_check = detect_perception_inconsistencies(session)
     
     # Use DB-driven stats if available, otherwise fallback
     if case_comparison["similar_case_count"] > 0:
@@ -937,6 +961,135 @@ async def get_case_stats():
     outcome_agg = await db.relationship_cases.aggregate(pipeline).to_list(10)
     outcomes = {r["_id"]: r["count"] for r in outcome_agg}
     return {"total_cases": total, "outcome_distribution": outcomes}
+
+@api_router.post("/cases/contribute")
+async def contribute_anonymized_case(data: dict):
+    """Accept an anonymized user story to enrich the case database."""
+    required = ["primary_signals", "outcome"]
+    if not all(k in data for k in required):
+        raise HTTPException(status_code=400, detail="primary_signals and outcome are required")
+    
+    valid_outcomes = ["confirmed_infidelity", "emotional_disengagement", "misunderstanding", "personal_crisis", "unresolved_conflict"]
+    if data["outcome"] not in valid_outcomes:
+        raise HTTPException(status_code=400, detail=f"outcome must be one of: {', '.join(valid_outcomes)}")
+    
+    count = await db.relationship_cases.count_documents({})
+    case = {
+        "case_id": f"TL-U{count + 1:04d}",
+        "relationship_type": data.get("relationship_type", "unknown"),
+        "relationship_duration": data.get("relationship_duration", "unknown"),
+        "age_range": data.get("age_range", "unknown"),
+        "cohabitation": data.get("cohabitation", False),
+        "primary_signals": data["primary_signals"],
+        "secondary_signals": data.get("secondary_signals", []),
+        "timeline": data.get("timeline", "unknown"),
+        "micro_contradictions_present": data.get("micro_contradictions_present", False),
+        "outcome": data["outcome"],
+        "confidence_level": data.get("confidence_level", "moderate"),
+        "source": "user_contributed",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.relationship_cases.insert_one(case)
+    return {"status": "accepted", "case_id": case["case_id"]}
+
+@api_router.get("/reports/{report_id}/pdf")
+async def export_report_pdf(report_id: str):
+    """Generate a PDF export of a shared report."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.lib.colors import HexColor
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    import io
+    
+    report = await db.shared_reports.find_one({"report_id": report_id}, {"_id": 0})
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=25*mm, rightMargin=25*mm, topMargin=20*mm, bottomMargin=20*mm)
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle("TLTitle", parent=styles["Title"], fontSize=22, textColor=HexColor("#14213D"), spaceAfter=6*mm)
+    heading_style = ParagraphStyle("TLHeading", parent=styles["Heading2"], fontSize=14, textColor=HexColor("#14213D"), spaceAfter=3*mm, spaceBefore=6*mm)
+    body_style = ParagraphStyle("TLBody", parent=styles["Normal"], fontSize=11, textColor=HexColor("#333"), leading=16, spaceAfter=3*mm)
+    small_style = ParagraphStyle("TLSmall", parent=styles["Normal"], fontSize=9, textColor=HexColor("#666"), leading=13, spaceAfter=2*mm)
+    
+    elements = []
+    
+    elements.append(Paragraph("TrustLens Analysis Report", title_style))
+    elements.append(Paragraph("Anonymized Relationship Pattern Analysis", small_style))
+    elements.append(Spacer(1, 8*mm))
+    
+    # Suspicion Score
+    elements.append(Paragraph("Suspicion Score", heading_style))
+    score = report.get("suspicion_score", 0)
+    label = report.get("suspicion_label", "")
+    elements.append(Paragraph(f"<b>{score}/100</b> — {label}", body_style))
+    
+    # Dominant Pattern
+    pattern = report.get("dominant_pattern", "")
+    if pattern and pattern != "Insufficient data":
+        elements.append(Paragraph(f"Dominant pattern: {pattern}", body_style))
+    
+    # Pattern Comparison
+    stats = report.get("pattern_statistics")
+    pct = report.get("pattern_comparison_pct", 0)
+    if stats:
+        elements.append(Paragraph("Pattern Comparison", heading_style))
+        elements.append(Paragraph(f"Your answers were compared with documented relationship cases. Similar patterns found in {pct}% of cases.", body_style))
+        table_data = [
+            ["Confirmed Issues", "Unresolved Conflict", "Resolved Positively"],
+            [f"{stats.get('confirmed_issues', 0)}%", f"{stats.get('relationship_conflict', 0)}%", f"{stats.get('resolved_positively', 0)}%"],
+        ]
+        t = Table(table_data, colWidths=[55*mm, 55*mm, 55*mm])
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), HexColor("#0B132B")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), HexColor("#FFFFFF")),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.5, HexColor("#CCCCCC")),
+            ("TOPPADDING", (0, 0), (-1, -1), 4*mm),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4*mm),
+        ]))
+        elements.append(t)
+        elements.append(Spacer(1, 3*mm))
+    
+    # Perception Consistency
+    pc = report.get("perception_consistency")
+    if pc:
+        elements.append(Paragraph("Perception Consistency", heading_style))
+        elements.append(Paragraph(pc.get("insight", ""), body_style))
+        if pc.get("has_inconsistencies"):
+            for inc in pc.get("inconsistencies", []):
+                elements.append(Paragraph(f"• {inc}", small_style))
+    
+    # Clarity Actions
+    actions = report.get("clarity_actions", [])
+    if actions:
+        elements.append(Paragraph("Recommended Actions", heading_style))
+        for i, action in enumerate(actions, 1):
+            elements.append(Paragraph(f"{i}. {action}", body_style))
+    
+    # Perspective
+    perspective = report.get("trustlens_perspective", "")
+    if perspective:
+        elements.append(Paragraph("TrustLens Perspective", heading_style))
+        elements.append(Paragraph(f"<i>{perspective}</i>", body_style))
+    
+    # Disclaimer
+    elements.append(Spacer(1, 10*mm))
+    elements.append(Paragraph("This report was generated using TrustLens relationship pattern analysis. It highlights behavioral patterns and similarities with known relationship situations. It does not prove or confirm infidelity.", small_style))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    from starlette.responses import StreamingResponse
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=trustlens-report-{report_id}.pdf"}
+    )
 
 @api_router.post("/reports/share")
 async def create_shared_report(data: dict):

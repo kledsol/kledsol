@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { getSharedReport } from "@/lib/api";
-import { Shield, AlertTriangle, Lightbulb, Activity } from "lucide-react";
+import { Shield, AlertTriangle, Lightbulb, Activity, Download } from "lucide-react";
 
 const getScoreColor = (score) => {
   if (score <= 30) return "#6EE7B7";
@@ -206,9 +207,20 @@ const SharedReport = () => {
               It highlights behavioral patterns and similarities with known relationship situations.
               It does not prove or confirm anything.
             </p>
-            <Link to="/" className="text-sm text-[#3DD9C5] hover:underline" data-testid="shared-report-cta">
-              Try TrustLens
-            </Link>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={() => window.open(`${process.env.REACT_APP_BACKEND_URL}/api/reports/${reportId}/pdf`, "_blank")}
+                variant="outline"
+                className="border-[#3DD9C5]/40 text-[#3DD9C5] hover:bg-[#3DD9C5]/10 rounded-full px-6"
+                data-testid="download-pdf-btn"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
+              <Link to="/" className="text-sm text-[#3DD9C5] hover:underline" data-testid="shared-report-cta">
+                Try TrustLens
+              </Link>
+            </div>
           </motion.footer>
         </div>
       </div>
