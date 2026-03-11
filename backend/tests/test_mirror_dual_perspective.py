@@ -506,8 +506,8 @@ class TestPreExistingMirrorSession:
     def test_pre_existing_mirror_report(self):
         """Use pre-existing mirror session to verify report endpoint"""
         # Pre-existing session from agent context:
-        # mirror_id=0350920e-571, session_a=74389d33-3604-422f-af6f-9240b5df74fe, 
-        # session_b=ee9f97c6-962a-4608-bbb3-18f1a2503e1b (both consented, report ready)
+        # mirror_id=0350920e-571, session_a=behavioral-intel-2, 
+        # session_b=behavioral-intel-2 (both consented, report ready)
         pre_existing_mirror_id = "0350920e-571"
         
         session = requests.Session()

@@ -249,34 +249,85 @@ const LandingPage = () => {
           id="why"
         >
           <h2
-            className="text-3xl sm:text-4xl font-light text-[#E6EDF3] mb-4"
+            className="text-3xl sm:text-4xl font-light text-[#E6EDF3] mb-6"
             style={{ fontFamily: "Fraunces, serif" }}
           >
-            Why TrustLens
+            Why TrustLens Exists
           </h2>
-          <p className="text-base text-[#8899A6] max-w-xl mb-14 leading-relaxed">
-            Understanding your relationship shouldn't require guesswork.
-          </p>
+          <div className="max-w-xl mb-16 space-y-3">
+            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+              Millions of people suspect something in their relationship but struggle to interpret the signs.
+            </p>
+            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+              Small changes in behavior — late nights, secrecy, emotional distance — can create doubt.
+              But doubt alone doesn't give clarity.
+            </p>
+            <p className="text-sm sm:text-base text-[#E6EDF3]/80 leading-relaxed font-medium">
+              TrustLens helps analyze these signals objectively.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-8">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                className="glass-card rounded-2xl p-6 sm:p-8 hover:border-[#3DD9C5]/30 transition-all duration-500 group"
+                transition={{ duration: 0.6, delay: 0.6 + index * 0.15 }}
+                className="glass-card rounded-2xl overflow-hidden"
                 data-testid={`why-block-${index}`}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: `${block.accent}15` }}>
-                  <block.icon className="w-5 h-5" style={{ color: block.accent }} />
+                {/* Image */}
+                <div className="relative h-48 sm:h-56 overflow-hidden">
+                  <img
+                    src={block.image}
+                    alt={block.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B132B] via-[#0B132B]/40 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-6">
+                    <div className="w-1 h-8 rounded-full mb-3" style={{ backgroundColor: block.accent }} />
+                    <h3 className="text-lg sm:text-xl font-medium text-white" style={{ fontFamily: "Fraunces, serif" }}>
+                      {block.title}
+                    </h3>
+                  </div>
                 </div>
-                <h3 className="text-base font-medium text-[#E6EDF3] mb-2">
-                  {block.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {block.description}
-                </p>
+
+                {/* Content */}
+                <div className="p-6 sm:p-8 space-y-3">
+                  {block.paragraphs?.map((p, i) => (
+                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+                      {p}
+                    </p>
+                  ))}
+
+                  {block.bullets && (
+                    <ul className="space-y-2 pl-1">
+                      {block.bullets.map((b, i) => (
+                        <li key={i} className="flex items-start gap-2.5 text-sm text-[#E6EDF3]/80">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: block.accent }} />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {block.closing && (
+                    <p className="text-sm text-[#E6EDF3]/70 leading-relaxed pt-1">
+                      {block.closing}
+                    </p>
+                  )}
+
+                  {block.quote && (
+                    <p
+                      className="text-base sm:text-lg italic pt-2 leading-relaxed"
+                      style={{ fontFamily: "Fraunces, serif", color: block.accent }}
+                    >
+                      {block.quote}
+                    </p>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
