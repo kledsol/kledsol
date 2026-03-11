@@ -175,47 +175,169 @@ async def get_ai_response(session_id: str, prompt: str, system_override: str = N
         logger.error(f"AI Error: {e}")
         raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
 
+CORE_QUESTIONS = [
+    {
+        "question_id": "core_1",
+        "question_text": "How would you describe the emotional atmosphere at home recently?",
+        "category": "emotional_indicators",
+        "options": ["Warm and connected", "Slightly distant", "Noticeably tense", "Cold or uncomfortable"],
+        "type": "core",
+    },
+    {
+        "question_id": "core_2",
+        "question_text": "Has your partner's daily routine changed in a way that feels unexplained?",
+        "category": "routine_changes",
+        "options": ["No noticeable changes", "Minor shifts", "Significant unexplained changes", "Completely different routine"],
+        "type": "core",
+    },
+    {
+        "question_id": "core_3",
+        "question_text": "How does your partner react when you ask about their day or plans?",
+        "category": "communication_changes",
+        "options": ["Open and detailed", "Brief but normal", "Vague or deflecting", "Defensive or irritated"],
+        "type": "core",
+    },
+    {
+        "question_id": "core_4",
+        "question_text": "Have you noticed any changes in how your partner uses their phone or devices?",
+        "category": "digital_behavior",
+        "options": ["No changes", "Slightly more private", "Noticeably guarded", "Very secretive"],
+        "type": "core",
+    },
+    {
+        "question_id": "core_5",
+        "question_text": "How has the quality of your intimate connection changed?",
+        "category": "emotional_indicators",
+        "options": ["Same or improved", "Slightly less frequent", "Noticeably reduced", "Almost nonexistent"],
+        "type": "core",
+    },
+]
+
+# Signal-specific follow-up question prompts
+SIGNAL_FOLLOWUP_PROMPTS = {
+    "phone_secrecy": "The user reported phone/device secrecy. Generate a question that explores this deeper — device usage patterns, new privacy behaviors, reactions when phone is visible.",
+    "emotional_distance": "The user reported emotional distance. Generate a question exploring communication quality, emotional availability, affection changes, or withdrawal patterns.",
+    "schedule_changes": "The user reported schedule inconsistencies. Generate a question about timing patterns, explanations given, new regular absences, or changes in availability.",
+    "defensive_behavior": "The user reported defensive reactions. Generate a question about what triggers defensiveness, how conversations escalate, or avoidance of certain topics.",
+    "communication": "The user reported communication changes. Generate a question about conversation depth, topic avoidance, tone shifts, or reduced sharing.",
+    "intimacy_changes": "The user reported intimacy changes. Generate a question about physical and emotional intimacy patterns, initiation changes, or new boundaries.",
+    "financial_changes": "The user reported financial changes. Generate a question about spending patterns, new expenses, hidden transactions, or financial secrecy.",
+    "social_behavior": "The user reported social behavior changes. Generate a question about new friendships, social media activity, changed social patterns, or time spent away.",
+}
+
+
 async def generate_adaptive_question(session: dict) -> dict:
-    changes = session.get('changes_data', [])
-    qa_history = session.get('qa_history', [])
-    hypotheses = session.get('hypotheses', {})
+    """Hybrid question engine: core deterministic questions first, then AI follow-ups."""
+    changes = session.get('changes_data') or []
+    qa_history = session.get('qa_history') or []
+    answered_ids = {qa.get('question_id') for qa in qa_history}
     
-    context = f"""
-Session context:
-- Changed areas: {', '.join(changes) if changes else 'Not specified'}
-- Questions asked: {len(qa_history)}
-- Current hypothesis weights: {hypotheses}
+    # Phase 1: Serve core structured questions first (deterministic)
+    for q in CORE_QUESTIONS:
+        if q["question_id"] not in answered_ids:
+            return q
+    
+    # Phase 2: AI-generated contextual follow-ups based on detected signals
+    if len(qa_history) < 10:
+        return await generate_signal_followup(session, changes, qa_history)
+    
+    # Investigation complete
+    return {
+        "question_id": "complete",
+        "question_text": "Investigation complete. Your analysis is ready.",
+        "category": "complete",
+        "options": None,
+        "type": "complete",
+    }
 
-Recent Q&A:
-"""
+
+async def generate_signal_followup(session: dict, changes: list, qa_history: list) -> dict:
+    """Generate a contextual follow-up question using Claude based on detected signals."""
+    
+    # Find which signals haven't been explored by follow-ups yet
+    followup_categories = {qa.get('category') for qa in qa_history if qa.get('question_id', '').startswith('followup_')}
+    unexplored = [c for c in changes if c not in followup_categories]
+    target_signal = unexplored[0] if unexplored else (changes[0] if changes else "emotional_distance")
+    
+    signal_context = SIGNAL_FOLLOWUP_PROMPTS.get(target_signal, f"The user reported {target_signal.replace('_', ' ')}. Generate a deeper question about this pattern.")
+    
+    # Build context from previous answers
+    recent_qa = ""
     for qa in qa_history[-3:]:
-        context += f"\nQ: {qa.get('question_text', 'N/A')}\nA: {qa.get('answer', 'N/A')}\n"
+        recent_qa += f"Q: {qa.get('question_text', '')}\nA: {qa.get('answer', '')}\n"
+    
+    prompt = f"""You are TrustLens, a relationship analysis system. Generate ONE follow-up investigation question.
 
-    prompt = f"""{context}
+Context:
+- Detected signals: {', '.join(changes)}
+- Questions already asked: {len(qa_history)}
+- Target signal to explore: {target_signal}
 
-Generate ONE targeted, empathetic question that would provide the most insight into the relationship dynamics.
-Focus on the area with highest uncertainty.
+{signal_context}
 
-Respond in JSON format:
-{{"question_id": "q_{len(qa_history)+1}", "question_text": "Your empathetic question?", "category": "emotional_indicators|communication_changes|routine_changes|digital_behavior|social_behavior|financial_signals", "options": ["Option 1", "Option 2", "Option 3", "Option 4"] or null}}
+Recent conversation:
+{recent_qa}
 
-Only output JSON."""
+Rules:
+- Be empathetic and non-accusatory
+- Ask about specific observable behaviors, not feelings about cheating
+- Provide 4 answer options from least to most concerning
+- Keep the question under 25 words
+
+Respond ONLY in JSON:
+{{"question_text": "Your question?", "options": ["Option 1", "Option 2", "Option 3", "Option 4"]}}"""
 
     try:
-        response = await get_ai_response(session['id'], prompt)
-        import json
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise ValueError("No key")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"trustlens-q-{uuid.uuid4().hex[:8]}",
+            system_message="You are TrustLens. Generate empathetic, non-accusatory investigation questions. Output ONLY valid JSON."
+        )
+        chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        
         start = response.find('{')
         end = response.rfind('}') + 1
         if start >= 0 and end > start:
-            return json.loads(response[start:end])
+            parsed = json.loads(response[start:end])
+            return {
+                "question_id": f"followup_{len(qa_history)+1}",
+                "question_text": parsed["question_text"],
+                "category": target_signal,
+                "options": parsed.get("options"),
+                "type": "ai_followup",
+            }
     except Exception as e:
-        logger.error(f"Question generation error: {e}")
+        logger.warning(f"AI follow-up generation failed: {e}")
+    
+    # Fallback: deterministic follow-up
+    fallback_questions = {
+        "phone_secrecy": ("Has your partner started keeping their phone face-down or taking calls in another room?", ["No", "Occasionally", "Frequently", "Almost always"]),
+        "emotional_distance": ("When you try to have a meaningful conversation, how does your partner respond?", ["Engages fully", "Somewhat present", "Distracted or brief", "Shuts down or avoids"]),
+        "schedule_changes": ("How often does your partner have unexplained gaps in their schedule?", ["Never", "Rarely", "A few times a week", "Almost daily"]),
+        "defensive_behavior": ("When you ask casual questions about their day, does your partner seem on edge?", ["Not at all", "Slightly", "Noticeably", "Very much so"]),
+        "communication": ("Has the depth of your conversations changed recently?", ["Same as before", "Slightly shallower", "Much less meaningful", "We barely talk"]),
+        "intimacy_changes": ("Has physical affection (not just intimacy) changed between you?", ["Same or more", "Slightly less", "Noticeably less", "Almost none"]),
+        "financial_changes": ("Have you noticed unexplained expenses or financial secrecy?", ["None", "Minor things", "Noticeable amounts", "Significant secrecy"]),
+        "social_behavior": ("Has your partner developed new social connections you know little about?", ["No", "Maybe one or two", "Several new contacts", "A whole new social circle"]),
+    }
+    
+    q_text, opts = fallback_questions.get(target_signal, (
+        "Have you noticed any other behavioral changes that concern you?",
+        ["None", "Minor changes", "Several changes", "Many concerning changes"]
+    ))
     
     return {
-        "question_id": f"q_{len(qa_history)+1}",
-        "question_text": "How would you describe the emotional atmosphere at home recently?",
-        "category": "emotional_indicators",
-        "options": ["Warm and connected", "Slightly distant", "Noticeably tense", "Cold or uncomfortable"]
+        "question_id": f"followup_{len(qa_history)+1}",
+        "question_text": q_text,
+        "category": target_signal,
+        "options": opts,
+        "type": "ai_followup",
     }
 
 async def analyze_and_update(session: dict, answer_data: dict) -> dict:
