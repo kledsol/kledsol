@@ -94,6 +94,25 @@ const DualReport = () => {
     fetchData();
   }, [mirrorId]);
 
+  // Auto-poll status every 15s while waiting
+  useEffect(() => {
+    if (report || status?.report_ready) return; // Already have report, stop polling
+
+    const poll = setInterval(async () => {
+      try {
+        const statusData = await getMirrorStatus(mirrorId);
+        setStatus(statusData);
+        if (statusData.report_ready) {
+          const reportData = await getMirrorReport(mirrorId);
+          setReport(reportData);
+          clearInterval(poll);
+        }
+      } catch { /* silent */ }
+    }, 15000);
+
+    return () => clearInterval(poll);
+  }, [mirrorId, report, status?.report_ready]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -173,15 +192,15 @@ const DualReport = () => {
                   {status?.partner_b_joined ? (
                     <CheckCircle className="w-6 h-6 text-[#3DD9C5] flex-shrink-0" />
                   ) : (
-                    <Clock className="w-6 h-6 text-[#FCA311] flex-shrink-0" />
+                    <Clock className="w-6 h-6 text-[#FCA311] flex-shrink-0 animate-pulse" />
                   )}
                   <div>
                     <p className="text-sm text-[#E6EDF3]">
-                      {status?.partner_b_joined ? "Your partner has joined" : "Waiting for your partner to join"}
+                      {status?.partner_b_joined ? "Your partner has joined" : "Waiting for your partner to join..."}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {status?.partner_b_joined
-                        ? status?.partner_b_complete ? "Their analysis is complete" : "They are still completing their analysis"
+                        ? status?.partner_b_complete ? "Their analysis is complete" : "They are completing their analysis..."
                         : "Share the invite link so they can begin"}
                     </p>
                   </div>
@@ -240,6 +259,11 @@ const DualReport = () => {
               </p>
             )}
 
+            <div className="flex items-center justify-center gap-2 mb-6 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <p className="text-xs">This page updates automatically every 15 seconds.</p>
+            </div>
+
             <Button
               variant="ghost"
               onClick={() => navigate("/")}
@@ -248,10 +272,6 @@ const DualReport = () => {
               <Home className="w-4 h-4 mr-2" />
               Return Home
             </Button>
-
-            <p className="text-xs text-muted-foreground mt-6">
-              Refresh this page to check for updates.
-            </p>
           </motion.div>
         </main>
       </div>
