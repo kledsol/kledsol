@@ -75,6 +75,9 @@ const DeepAnalysis = () => {
   const [trustIndex, setTrustIndex] = useState(0);
   const [stabilityHearts, setStabilityHearts] = useState(4);
   const [fetchingQuestion, setFetchingQuestion] = useState(false);
+  const [questionStage, setQuestionStage] = useState("core"); // core | adaptive | complete
+  const [transitionMessage, setTransitionMessage] = useState("");
+  const [showTransition, setShowTransition] = useState(false);
 
   const MIN_QUESTIONS = 5;
 
@@ -156,6 +159,24 @@ const DeepAnalysis = () => {
     setFetchingQuestion(true);
     try {
       const q = await getNextQuestion(sessionId);
+      
+      // Handle stage transition
+      if (q.stage === "complete") {
+        setQuestionStage("complete");
+        setCurrentQuestion(null);
+        navigate("/results");
+        return;
+      }
+      
+      // Show transition message when switching from core to adaptive
+      if (q.stage === "adaptive" && questionStage === "core" && q.transition_message) {
+        setTransitionMessage(q.transition_message);
+        setShowTransition(true);
+        // Auto-dismiss after a moment, but keep showing the question
+        setTimeout(() => setShowTransition(false), 6000);
+      }
+      
+      setQuestionStage(q.stage || "core");
       setCurrentQuestion(q);
       setSelectedAnswer("");
       setCustomAnswer("");
@@ -192,11 +213,8 @@ const DeepAnalysis = () => {
         stabilityHearts: response.stability_hearts,
       }));
 
-      if (response.questions_answered >= MIN_QUESTIONS && response.confidence_level !== "low") {
-        navigate("/results");
-      } else {
-        fetchNextQuestion();
-      }
+      // Fetch next question — the backend decides when to transition or complete
+      fetchNextQuestion();
     } catch (e) {
       toast.error("Failed to submit answer");
     } finally {
@@ -540,12 +558,12 @@ const DeepAnalysis = () => {
       exit={{ opacity: 0, x: -20 }}
     >
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <Card className="glass-card rounded-xl">
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground mb-1">Questions</p>
             <p className="text-xl font-mono text-[#E6EDF3]">
-              {questionsAnswered}<span className="text-muted-foreground">/{MIN_QUESTIONS}</span>
+              {questionsAnswered}
             </p>
           </CardContent>
         </Card>
@@ -563,23 +581,69 @@ const DeepAnalysis = () => {
         </Card>
       </div>
 
+      {/* Stage Label */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <div className={`h-1.5 w-1.5 rounded-full ${questionStage === "core" ? "bg-[#3DD9C5]" : "bg-[#3DD9C5]/30"}`} />
+        <span className={`text-xs font-mono tracking-wider ${questionStage === "core" ? "text-[#3DD9C5]" : "text-[#3DD9C5]/40"}`}>
+          CORE ANALYSIS
+        </span>
+        <div className="h-px w-6 bg-white/10" />
+        <div className={`h-1.5 w-1.5 rounded-full ${questionStage === "adaptive" ? "bg-amber-400" : "bg-white/10"}`} />
+        <span className={`text-xs font-mono tracking-wider ${questionStage === "adaptive" ? "text-amber-400" : "text-white/20"}`}>
+          ADAPTIVE INVESTIGATION
+        </span>
+      </div>
+
+      {/* Transition Banner */}
+      <AnimatePresence>
+        {showTransition && transitionMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="mb-6"
+          >
+            <div className="rounded-xl border border-amber-400/30 bg-amber-400/5 px-5 py-4 flex items-start gap-3" data-testid="stage-transition-banner">
+              <Brain className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-amber-400 font-medium mb-0.5">Adaptive Investigation</p>
+                <p className="text-sm text-[#E6EDF3]/70">{transitionMessage}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {fetchingQuestion ? (
         <div className="flex flex-col items-center justify-center py-16">
           <HeartLensIcon size={60} animate />
-          <p className="mt-4 text-muted-foreground">Analyzing patterns...</p>
+          <p className="mt-4 text-muted-foreground">
+            {questionStage === "adaptive" ? "Generating investigation question..." : "Analyzing patterns..."}
+          </p>
         </div>
       ) : currentQuestion ? (
         <>
           <Card className="glass-card rounded-xl mb-6">
             <CardContent className="p-8">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0">
-                  <Brain className="w-5 h-5 text-[#3DD9C5]" />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  currentQuestion.stage === "adaptive" ? "bg-amber-400/10" : "bg-[#3DD9C5]/10"
+                }`}>
+                  <Brain className={`w-5 h-5 ${currentQuestion.stage === "adaptive" ? "text-amber-400" : "text-[#3DD9C5]"}`} />
                 </div>
                 <div>
-                  <span className="text-xs font-mono text-[#3DD9C5] mb-2 block">
-                    {currentQuestion.category?.replace("_", " ").toUpperCase()}
-                  </span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-xs font-mono block ${
+                      currentQuestion.stage === "adaptive" ? "text-amber-400" : "text-[#3DD9C5]"
+                    }`}>
+                      {currentQuestion.category?.replace(/_/g, " ").toUpperCase()}
+                    </span>
+                    {currentQuestion.stage === "adaptive" && (
+                      <span className="text-[10px] font-mono bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded-full" data-testid="ai-followup-badge">
+                        AI FOLLOW-UP {currentQuestion.followup_number}/{currentQuestion.max_followups}
+                      </span>
+                    )}
+                  </div>
                   <h2 className="text-xl text-[#E6EDF3] leading-relaxed" data-testid="question-text">
                     {currentQuestion.question_text}
                   </h2>
@@ -600,19 +664,29 @@ const DeepAnalysis = () => {
                     }}
                     className={`w-full p-4 rounded-xl text-left transition-all flex items-center gap-3 ${
                       selectedAnswer === opt
-                        ? "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
+                        ? currentQuestion.stage === "adaptive"
+                          ? "bg-amber-400/10 border-2 border-amber-400"
+                          : "bg-[#3DD9C5]/10 border-2 border-[#3DD9C5]"
                         : "glass-card hover:border-[#3DD9C5]/30"
                     }`}
                     data-testid={`answer-${i}`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedAnswer === opt ? "border-[#3DD9C5] bg-[#3DD9C5]" : "border-white/30"
+                        selectedAnswer === opt
+                          ? currentQuestion.stage === "adaptive"
+                            ? "border-amber-400 bg-amber-400"
+                            : "border-[#3DD9C5] bg-[#3DD9C5]"
+                          : "border-white/30"
                       }`}
                     >
                       {selectedAnswer === opt && <Check className="w-3 h-3 text-black" />}
                     </div>
-                    <span className={selectedAnswer === opt ? "text-[#3DD9C5]" : "text-[#E6EDF3]"}>
+                    <span className={
+                      selectedAnswer === opt
+                        ? currentQuestion.stage === "adaptive" ? "text-amber-400" : "text-[#3DD9C5]"
+                        : "text-[#E6EDF3]"
+                    }>
                       {opt}
                     </span>
                   </button>
@@ -675,11 +749,22 @@ const DeepAnalysis = () => {
           </div>
 
           <div className="mt-8">
-            <Progress value={(questionsAnswered / MIN_QUESTIONS) * 100} className="h-1" />
+            <Progress
+              value={
+                questionStage === "core" && currentQuestion.total_core
+                  ? (questionsAnswered / currentQuestion.total_core) * 100
+                  : questionStage === "adaptive" && currentQuestion.max_followups
+                  ? 100 // core done
+                  : (questionsAnswered / MIN_QUESTIONS) * 100
+              }
+              className="h-1"
+            />
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              {questionsAnswered < MIN_QUESTIONS
-                ? `${MIN_QUESTIONS - questionsAnswered} more questions for initial analysis`
-                : "Continue for more accurate results or view current analysis"}
+              {questionStage === "core"
+                ? `Core analysis: question ${questionsAnswered + 1} of ${currentQuestion.total_core || MIN_QUESTIONS}`
+                : questionStage === "adaptive"
+                ? `Adaptive follow-up ${currentQuestion.followup_number || 1} of ${currentQuestion.max_followups || MAX_FOLLOWUP_QUESTIONS}`
+                : "Analysis in progress..."}
             </p>
           </div>
         </>

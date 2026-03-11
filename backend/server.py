@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
+import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from seed_cases import generate_all_cases
 
@@ -220,58 +221,110 @@ SIGNAL_FOLLOWUP_PROMPTS = {
     "schedule_changes": "The user reported schedule inconsistencies. Generate a question about timing patterns, explanations given, new regular absences, or changes in availability.",
     "defensive_behavior": "The user reported defensive reactions. Generate a question about what triggers defensiveness, how conversations escalate, or avoidance of certain topics.",
     "communication": "The user reported communication changes. Generate a question about conversation depth, topic avoidance, tone shifts, or reduced sharing.",
+    "communication_changes": "The user reported communication changes. Generate a question about conversation depth, topic avoidance, tone shifts, or reduced sharing.",
     "intimacy_changes": "The user reported intimacy changes. Generate a question about physical and emotional intimacy patterns, initiation changes, or new boundaries.",
     "financial_changes": "The user reported financial changes. Generate a question about spending patterns, new expenses, hidden transactions, or financial secrecy.",
     "social_behavior": "The user reported social behavior changes. Generate a question about new friendships, social media activity, changed social patterns, or time spent away.",
+    "digital_behavior": "The user reported digital behavior changes. Generate a question about device usage patterns, app habits, social media activity, or online secrecy.",
+    "routine_changes": "The user reported routine changes. Generate a question about schedule shifts, unexplained absences, or new regular activities.",
+    "emotional_indicators": "The user reported emotional shifts. Generate a question about mood changes, emotional availability, or affection patterns.",
 }
+
+# Map core question answers to signal triggers
+CORE_SIGNAL_MAP = {
+    "core_1": {"category": "emotional_distance", "trigger_options": ["Noticeably tense", "Cold or uncomfortable"]},
+    "core_2": {"category": "schedule_changes", "trigger_options": ["Significant unexplained changes", "Completely different routine"]},
+    "core_3": {"category": "defensive_behavior", "trigger_options": ["Vague or deflecting", "Defensive or irritated"]},
+    "core_4": {"category": "phone_secrecy", "trigger_options": ["Noticeably guarded", "Very secretive"]},
+    "core_5": {"category": "intimacy_changes", "trigger_options": ["Noticeably reduced", "Almost nonexistent"]},
+}
+
+MAX_FOLLOWUP_QUESTIONS = 3
+
+
+def detect_strong_signals(qa_history: list) -> list:
+    """Detect strong signals from core question answers (options 3 or 4 = concerning)."""
+    strong_signals = []
+    for qa in qa_history:
+        qid = qa.get("question_id", "")
+        answer = qa.get("answer", "")
+        if qid in CORE_SIGNAL_MAP:
+            mapping = CORE_SIGNAL_MAP[qid]
+            if answer in mapping["trigger_options"]:
+                strong_signals.append(mapping["category"])
+    return strong_signals
 
 
 async def generate_adaptive_question(session: dict) -> dict:
-    """Hybrid question engine: core deterministic questions first, then AI follow-ups."""
-    changes = session.get('changes_data') or []
+    """Hybrid question engine: core deterministic questions first, then AI follow-ups only when strong signals detected."""
     qa_history = session.get('qa_history') or []
     answered_ids = {qa.get('question_id') for qa in qa_history}
     
     # Phase 1: Serve core structured questions first (deterministic)
     for q in CORE_QUESTIONS:
         if q["question_id"] not in answered_ids:
-            return q
+            return {**q, "stage": "core", "total_core": len(CORE_QUESTIONS)}
     
-    # Phase 2: AI-generated contextual follow-ups based on detected signals
-    if len(qa_history) < 10:
-        return await generate_signal_followup(session, changes, qa_history)
+    # Phase 2: Check if strong signals warrant follow-ups
+    strong_signals = detect_strong_signals(qa_history)
+    followup_count = sum(1 for qa in qa_history if qa.get('question_id', '').startswith('followup_'))
     
-    # Investigation complete
-    return {
-        "question_id": "complete",
-        "question_text": "Investigation complete. Your analysis is ready.",
-        "category": "complete",
-        "options": None,
-        "type": "complete",
-    }
+    if len(strong_signals) == 0 or followup_count >= MAX_FOLLOWUP_QUESTIONS:
+        return {
+            "question_id": "complete",
+            "question_text": "Investigation complete. Your analysis is ready.",
+            "category": "complete",
+            "options": None,
+            "type": "complete",
+            "stage": "complete",
+        }
+    
+    # Generate AI follow-up based on detected strong signals
+    changes = session.get('changes_data') or []
+    all_signals = list(set(strong_signals + changes))
+    
+    question = await generate_signal_followup(session, all_signals, qa_history, strong_signals)
+    question["stage"] = "adaptive"
+    question["followup_number"] = followup_count + 1
+    question["max_followups"] = MAX_FOLLOWUP_QUESTIONS
+    if followup_count == 0:
+        question["transition_message"] = "Based on your answers, TrustLens would like to explore a few additional signals."
+    return question
 
 
-async def generate_signal_followup(session: dict, changes: list, qa_history: list) -> dict:
-    """Generate a contextual follow-up question using Claude based on detected signals."""
+async def generate_signal_followup(session: dict, changes: list, qa_history: list, strong_signals: list = None) -> dict:
+    """Generate a contextual follow-up question using Claude based on detected strong signals."""
     
-    # Find which signals haven't been explored by follow-ups yet
+    # Prioritize strong signals that haven't been explored yet
     followup_categories = {qa.get('category') for qa in qa_history if qa.get('question_id', '').startswith('followup_')}
-    unexplored = [c for c in changes if c not in followup_categories]
-    target_signal = unexplored[0] if unexplored else (changes[0] if changes else "emotional_distance")
+    
+    # Strong signals get priority
+    priority_signals = strong_signals or []
+    unexplored_strong = [s for s in priority_signals if s not in followup_categories]
+    unexplored_changes = [c for c in changes if c not in followup_categories and c not in unexplored_strong]
+    
+    target_signal = (
+        unexplored_strong[0] if unexplored_strong
+        else unexplored_changes[0] if unexplored_changes
+        else (priority_signals[0] if priority_signals else "emotional_distance")
+    )
     
     signal_context = SIGNAL_FOLLOWUP_PROMPTS.get(target_signal, f"The user reported {target_signal.replace('_', ' ')}. Generate a deeper question about this pattern.")
     
-    # Build context from previous answers
+    # Build context from previous answers — include core answers for signal context
     recent_qa = ""
-    for qa in qa_history[-3:]:
+    for qa in qa_history[-5:]:
         recent_qa += f"Q: {qa.get('question_text', '')}\nA: {qa.get('answer', '')}\n"
+    
+    # Build detected signals summary for LLM context
+    signal_summary = ", ".join(strong_signals) if strong_signals else ", ".join(changes)
     
     prompt = f"""You are TrustLens, a relationship analysis system. Generate ONE follow-up investigation question.
 
 Context:
-- Detected signals: {', '.join(changes)}
-- Questions already asked: {len(qa_history)}
-- Target signal to explore: {target_signal}
+- Detected strong signals: {signal_summary}
+- Target signal to explore deeper: {target_signal}
+- Follow-up question number: {sum(1 for qa in qa_history if qa.get('question_id', '').startswith('followup_')) + 1} of {MAX_FOLLOWUP_QUESTIONS} max
 
 {signal_context}
 
@@ -369,7 +422,6 @@ Only JSON."""
 
     try:
         response = await get_ai_response(session['id'], prompt)
-        import json
         start = response.find('{')
         end = response.rfind('}') + 1
         if start >= 0 and end > start:
