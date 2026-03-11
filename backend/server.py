@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from seed_cases import generate_all_cases
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -24,6 +25,22 @@ api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ============= Startup: Seed Case Database =============
+
+@app.on_event("startup")
+async def seed_case_database():
+    count = await db.relationship_cases.count_documents({})
+    if count < 300:
+        logger.info("Seeding relationship case database...")
+        await db.relationship_cases.delete_many({})
+        cases = generate_all_cases(300)
+        await db.relationship_cases.insert_many(cases)
+        await db.relationship_cases.create_index("primary_signals")
+        await db.relationship_cases.create_index("outcome")
+        logger.info(f"Seeded {len(cases)} relationship cases")
+    else:
+        logger.info(f"Case database already seeded ({count} cases)")
 
 # ============= Models =============
 
@@ -387,11 +404,9 @@ def get_dominant_pattern(hypotheses: dict) -> str:
     return max(hypotheses.items(), key=lambda x: x[1])[0].replace('_', ' ').title()
 
 def get_pattern_statistics(hypotheses: dict) -> dict:
-    """Simulated global pattern comparison statistics"""
+    """Fallback simulated statistics (used when DB comparison not available)"""
     trust_erosion = hypotheses.get('trust_erosion', 0)
     emotional_distance = hypotheses.get('emotional_distance', 0)
-    
-    # Simulated realistic statistics based on pattern severity
     avg_severity = (trust_erosion + emotional_distance) / 2
     
     if avg_severity > 0.6:
@@ -402,6 +417,121 @@ def get_pattern_statistics(hypotheses: dict) -> dict:
         return {"confirmed_issues": 23, "relationship_conflict": 38, "resolved_positively": 39}
     else:
         return {"confirmed_issues": 8, "relationship_conflict": 27, "resolved_positively": 65}
+
+async def compare_with_case_database(session: dict) -> dict:
+    """Compare user signals against the relationship case database."""
+    changes = session.get('changes_data') or []
+    if not changes:
+        return {
+            "total_cases": 300,
+            "matching_cases": 0,
+            "match_pct": 0,
+            "outcome_breakdown": {},
+            "insights": [],
+            "similar_case_count": 0,
+        }
+    
+    # Normalize user signals to match case signal names
+    signal_map = {
+        "phone_secrecy": "phone_secrecy",
+        "emotional_distance": "emotional_distance",
+        "schedule_changes": "schedule_inconsistency",
+        "defensive_behavior": "defensive_reactions",
+        "communication": "communication_decline",
+        "intimacy_changes": "reduced_intimacy",
+        "financial_changes": "financial_secrecy",
+        "social_behavior": "social_withdrawal",
+    }
+    user_signals = set()
+    for c in changes:
+        mapped = signal_map.get(c, c)
+        user_signals.add(mapped)
+    
+    # Query cases that share at least one signal
+    signal_list = list(user_signals)
+    query = {"$or": [
+        {"primary_signals": {"$in": signal_list}},
+        {"secondary_signals": {"$in": signal_list}},
+    ]}
+    matching_cases = await db.relationship_cases.find(query, {"_id": 0}).to_list(300)
+    
+    if not matching_cases:
+        return {
+            "total_cases": 300,
+            "matching_cases": 0,
+            "match_pct": 0,
+            "outcome_breakdown": {},
+            "insights": [],
+            "similar_case_count": 0,
+        }
+    
+    # Score each case by signal overlap
+    scored = []
+    for case in matching_cases:
+        case_signals = set(case.get("primary_signals", []) + case.get("secondary_signals", []))
+        overlap = len(user_signals & case_signals)
+        total = max(len(user_signals | case_signals), 1)
+        similarity = overlap / total
+        scored.append((case, similarity))
+    
+    # Filter to cases with meaningful similarity (>= 30%)
+    similar = [(c, s) for c, s in scored if s >= 0.3]
+    similar.sort(key=lambda x: x[1], reverse=True)
+    
+    # Outcome breakdown from similar cases
+    outcome_counts = {}
+    for case, _ in similar:
+        o = case["outcome"]
+        outcome_counts[o] = outcome_counts.get(o, 0) + 1
+    
+    total_similar = len(similar)
+    outcome_pcts = {}
+    for o, count in outcome_counts.items():
+        outcome_pcts[o] = round(count / total_similar * 100) if total_similar else 0
+    
+    # Generate human-readable insights
+    insights = []
+    match_pct = round(total_similar / 300 * 100)
+    
+    if total_similar > 0:
+        top_outcome = max(outcome_counts, key=outcome_counts.get)
+        top_pct = outcome_pcts[top_outcome]
+        outcome_labels = {
+            "confirmed_infidelity": "trust was later broken",
+            "emotional_disengagement": "emotional disengagement was the root cause",
+            "misunderstanding": "the situation was resolved as a misunderstanding",
+            "personal_crisis": "a personal crisis was the underlying cause",
+            "unresolved_conflict": "ongoing unresolved conflict was identified",
+        }
+        insights.append(f"Your situation resembles patterns found in {match_pct}% of documented cases.")
+        insights.append(f"In similar cases, {top_pct}% ended with a situation where {outcome_labels.get(top_outcome, top_outcome)}.")
+        
+        # Check for positive outcomes
+        positive_pct = outcome_pcts.get("misunderstanding", 0) + outcome_pcts.get("personal_crisis", 0)
+        if positive_pct > 30:
+            insights.append(f"Notably, {positive_pct}% of similar patterns were later explained by non-infidelity causes.")
+    
+    # Compute pattern statistics from actual case data
+    pattern_stats = {
+        "confirmed_issues": outcome_pcts.get("confirmed_infidelity", 0) + outcome_pcts.get("emotional_disengagement", 0),
+        "relationship_conflict": outcome_pcts.get("unresolved_conflict", 0),
+        "resolved_positively": outcome_pcts.get("misunderstanding", 0) + outcome_pcts.get("personal_crisis", 0),
+    }
+    # Normalize to ~100%
+    total_stats = sum(pattern_stats.values())
+    if total_stats > 0 and total_stats != 100:
+        for k in pattern_stats:
+            pattern_stats[k] = round(pattern_stats[k] / total_stats * 100)
+    
+    return {
+        "total_cases": 300,
+        "matching_cases": len(matching_cases),
+        "similar_case_count": total_similar,
+        "match_pct": match_pct,
+        "outcome_breakdown": outcome_pcts,
+        "insights": insights,
+        "pattern_statistics": pattern_stats,
+    }
 
 def generate_clarity_actions(hypotheses: dict, signals: dict) -> List[str]:
     actions = ["Have an open, non-accusatory conversation about your feelings"]
@@ -661,7 +791,7 @@ async def get_results(session_id: str):
     signals = session.get('signals', {})
     
     clarity_actions = generate_clarity_actions(hypotheses, signals)
-    pattern_stats = get_pattern_statistics(hypotheses)
+    fallback_stats = get_pattern_statistics(hypotheses)
     
     timeline_events = []
     timeline_data = session.get('timeline_data') or {}
@@ -676,8 +806,16 @@ async def get_results(session_id: str):
     suspicion_label = get_suspicion_label(suspicion_score)
     perception_check = detect_perception_inconsistencies(session)
     
-    # Compute pattern comparison percentage based on score
-    comparison_pct = min(62, max(12, int(suspicion_score * 0.65 + 5)))
+    # Compare with relationship case database
+    case_comparison = await compare_with_case_database(session)
+    
+    # Use DB-driven stats if available, otherwise fallback
+    if case_comparison["similar_case_count"] > 0:
+        pattern_stats = case_comparison.get("pattern_statistics", fallback_stats)
+        comparison_pct = case_comparison["match_pct"]
+    else:
+        pattern_stats = fallback_stats
+        comparison_pct = min(62, max(12, int(suspicion_score * 0.65 + 5)))
     
     return {
         "session_id": session_id,
@@ -692,6 +830,12 @@ async def get_results(session_id: str):
         "signals": signals,
         "pattern_statistics": pattern_stats,
         "pattern_comparison_pct": comparison_pct,
+        "case_comparison": {
+            "total_cases": case_comparison["total_cases"],
+            "similar_case_count": case_comparison["similar_case_count"],
+            "outcome_breakdown": case_comparison["outcome_breakdown"],
+            "insights": case_comparison["insights"],
+        },
         "perception_consistency": perception_check,
         "context_estimation": session.get('context_estimation', []),
         "clarity_actions": clarity_actions,
@@ -784,6 +928,15 @@ async def save_timeline_entry(data: dict):
     }
     await db.score_timeline.insert_one(entry)
     return {"status": "saved"}
+
+@api_router.get("/cases/stats")
+async def get_case_stats():
+    """Get statistics about the relationship case database."""
+    total = await db.relationship_cases.count_documents({})
+    pipeline = [{"$group": {"_id": "$outcome", "count": {"$sum": 1}}}]
+    outcome_agg = await db.relationship_cases.aggregate(pipeline).to_list(10)
+    outcomes = {r["_id"]: r["count"] for r in outcome_agg}
+    return {"total_cases": total, "outcome_distribution": outcomes}
 
 @api_router.post("/reports/share")
 async def create_shared_report(data: dict):

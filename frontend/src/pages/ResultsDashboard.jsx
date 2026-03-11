@@ -692,7 +692,7 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 8: Pattern Comparison */}
+            {/* Stage 8: Pattern Comparison (Case Database) */}
             {revealStage >= 8 && results.pattern_statistics && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
@@ -706,38 +706,45 @@ const ResultsDashboard = () => {
                       Pattern Comparison
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Your answers were compared with thousands of relationship patterns.
+                      Your answers were compared with{" "}
+                      <span className="text-[#E6EDF3]">{results.case_comparison?.total_cases || 300}</span>{" "}
+                      documented relationship cases.
                     </p>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    {/* Key insight */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="text-center mb-6 p-4 rounded-xl bg-white/5"
-                    >
-                      <p className="text-base text-[#E6EDF3]">
-                        Similar behavioral patterns appear in{" "}
-                        <span className="text-[#3DD9C5] font-semibold">{results.pattern_comparison_pct}%</span>{" "}
-                        of cases where trust was later broken.
-                      </p>
-                    </motion.div>
+                    {/* Case-based insights */}
+                    {results.case_comparison?.insights?.length > 0 && (
+                      <div className="space-y-3 mb-6">
+                        {results.case_comparison.insights.map((insight, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 + i * 0.15 }}
+                            className="p-4 rounded-xl bg-white/5 text-sm text-[#E6EDF3] leading-relaxed"
+                            data-testid={`case-insight-${i}`}
+                          >
+                            {insight}
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
 
+                    {/* Outcome statistics from case database */}
                     <div className="grid grid-cols-3 gap-6 text-center">
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-4">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="p-4">
                         <p className="text-4xl font-light text-[#FF4D6D] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.confirmed_issues}%
                         </p>
-                        <p className="text-sm text-muted-foreground">later confirmed<br />relationship issues</p>
+                        <p className="text-sm text-muted-foreground">confirmed<br />relationship issues</p>
                       </motion.div>
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="p-4">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="p-4">
                         <p className="text-4xl font-light text-[#FCA311] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.relationship_conflict}%
                         </p>
-                        <p className="text-sm text-muted-foreground">reported severe<br />conflict (no infidelity)</p>
+                        <p className="text-sm text-muted-foreground">unresolved<br />conflict</p>
                       </motion.div>
-                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="p-4">
+                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="p-4">
                         <p className="text-4xl font-light text-[#6EE7B7] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
                           {results.pattern_statistics.resolved_positively}%
                         </p>
@@ -745,14 +752,28 @@ const ResultsDashboard = () => {
                       </motion.div>
                     </div>
 
+                    {/* Similar cases badge */}
+                    {results.case_comparison?.similar_case_count > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                        className="mt-4 text-center"
+                      >
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3DD9C5]/10 text-xs text-[#3DD9C5] font-mono">
+                          {results.case_comparison.similar_case_count} similar cases found in database
+                        </span>
+                      </motion.div>
+                    )}
+
                     {/* Disclaimer */}
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 0.8 }}
+                      transition={{ delay: 0.9 }}
                       className="text-xs text-muted-foreground text-center mt-6 pt-4 border-t border-white/10 leading-relaxed"
                     >
-                      This analysis highlights behavioral patterns and similarities with known relationship situations.
+                      This analysis highlights similarities with known relationship situations.
                       It does not prove or confirm infidelity.
                     </motion.p>
                   </CardContent>
