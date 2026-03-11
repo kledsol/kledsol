@@ -11,6 +11,14 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 
 ## Implemented Features
 
+### AI-Powered Narrative Analysis
+- Real-time LLM generation via Claude Sonnet 4.5 (Emergent LLM Key)
+- LLM receives: suspicion score, signals, pattern stats, contradictions, timeline, case insights
+- Generates contextual 4-6 sentence analysis with empathetic, non-accusatory tone
+- Template fallback if LLM unavailable (generate_perspective_fallback)
+- Suspicion Score and Pattern Comparison remain fully deterministic
+- Response time: ~5-7 seconds for narrative generation
+
 ### Pattern Comparison with Demographic Filtering
 - Compares user signals against 300+ cases with >=30% similarity threshold
 - **Phase 1 (current, ~300 cases)**: Filters by relationship duration when sample >= 8
