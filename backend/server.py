@@ -286,6 +286,81 @@ Only JSON."""
         "observe": ["Body language", "Willingness to engage", "Emotional responses"]
     }
 
+def calculate_suspicion_score(session: dict) -> int:
+    """Calculate suspicion score 0-100 based on analysis answers."""
+    score = 0.0
+    
+    # Points from selected change categories
+    change_scores = {
+        "communication": 12,
+        "emotional_distance": 15,
+        "schedule_changes": 10,
+        "phone_secrecy": 15,
+        "intimacy_changes": 12,
+        "financial_changes": 8,
+        "social_behavior": 10,
+        "defensive_behavior": 15,
+        "late_night_messaging": 10,
+        "unexplained_absences": 15,
+    }
+    changes = session.get('changes_data') or []
+    for change in changes:
+        for key, pts in change_scores.items():
+            if key in change.lower().replace(' ', '_'):
+                score += pts
+    
+    # Points from signal strengths
+    signals = session.get('signals') or {}
+    signal_weights = {
+        "routine_changes": 10,
+        "communication_changes": 15,
+        "emotional_indicators": 15,
+        "digital_behavior": 18,
+        "social_behavior": 12,
+        "financial_signals": 10,
+    }
+    for sig, weight in signal_weights.items():
+        score += signals.get(sig, 0) * weight
+    
+    # Points from hypothesis strengths
+    hypotheses = session.get('hypotheses') or {}
+    hyp_weights = {
+        "trust_erosion": 12,
+        "emotional_distance": 10,
+        "communication_breakdown": 8,
+        "intimacy_decline": 8,
+    }
+    for hyp, weight in hyp_weights.items():
+        score += hypotheses.get(hyp, 0) * weight
+    
+    # Timeline factor: sudden changes score higher
+    timeline = session.get('timeline_data') or {}
+    if timeline.get('gradual_or_sudden') == 'sudden':
+        score += 8
+    if timeline.get('multiple_at_once'):
+        score += 5
+    
+    # Baseline factor: low transparency/closeness boosts score
+    baseline = session.get('baseline_data') or {}
+    if baseline:
+        transparency = baseline.get('transparency_level', 3)
+        closeness = baseline.get('emotional_closeness', 3)
+        if transparency <= 2:
+            score += 8
+        if closeness <= 2:
+            score += 5
+    
+    return max(0, min(100, int(round(score))))
+
+def get_suspicion_label(score: int) -> str:
+    if score <= 30:
+        return "Low Signal"
+    if score <= 60:
+        return "Moderate Signal"
+    if score <= 80:
+        return "Elevated Pattern Risk"
+    return "High Pattern Risk"
+
 def calculate_trust_index(hypotheses: dict, signals: dict) -> float:
     h_weights = {"emotional_distance": 0.18, "communication_breakdown": 0.16, "external_stress": 0.08, "trust_erosion": 0.22, "lifestyle_divergence": 0.12, "unresolved_conflict": 0.14, "intimacy_decline": 0.10}
     s_weights = {"routine_changes": 0.12, "communication_changes": 0.20, "emotional_indicators": 0.22, "digital_behavior": 0.18, "social_behavior": 0.15, "financial_signals": 0.13}
@@ -589,16 +664,21 @@ async def get_results(session_id: str):
     pattern_stats = get_pattern_statistics(hypotheses)
     
     timeline_events = []
-    timeline_data = session.get('timeline_data', {})
+    timeline_data = session.get('timeline_data') or {}
     if timeline_data.get('when_started'):
         timeline_events.append({"period": timeline_data['when_started'], "event": "Changes began", "type": "start"})
     
-    changes = session.get('changes_data', [])
+    changes = session.get('changes_data') or []
     for i, change in enumerate(changes[:3]):
         timeline_events.append({"period": f"Phase {i+1}", "event": f"{change.replace('_', ' ').title()}", "type": "development"})
     
+    suspicion_score = calculate_suspicion_score(session)
+    suspicion_label = get_suspicion_label(suspicion_score)
+    
     return {
         "session_id": session_id,
+        "suspicion_score": suspicion_score,
+        "suspicion_label": suspicion_label,
         "trust_disruption_index": session.get('trust_disruption_index', 0),
         "stability_hearts": session.get('stability_hearts', 4),
         "dominant_pattern": session.get('dominant_pattern', 'Insufficient data'),

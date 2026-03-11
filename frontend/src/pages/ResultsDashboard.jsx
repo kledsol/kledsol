@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,85 @@ import {
   Home,
   RefreshCw,
   ChevronRight,
-  Download,
 } from "lucide-react";
+
+// Animated counter hook
+const useAnimatedCounter = (target, duration = 1200, start = false) => {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    if (!start) return;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setValue(Math.round(eased * target));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target, duration, start]);
+
+  return value;
+};
+
+// Suspicion Score color based on value
+const getScoreColor = (score) => {
+  if (score <= 30) return "#6EE7B7";
+  if (score <= 60) return "#FCA311";
+  if (score <= 80) return "#F97316";
+  return "#FF4D6D";
+};
+
+// Circular progress indicator
+const SuspicionScoreRing = ({ score, animatedScore, revealed }) => {
+  const color = getScoreColor(score);
+  const radius = 90;
+  const circumference = 2 * Math.PI * radius;
+  const progress = revealed ? (animatedScore / 100) * circumference : 0;
+
+  return (
+    <div className="relative w-[240px] h-[240px] mx-auto" data-testid="suspicion-score-ring">
+      <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
+        {/* Background ring */}
+        <circle
+          cx="100" cy="100" r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="8"
+        />
+        {/* Progress ring */}
+        <circle
+          cx="100" cy="100" r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.3s" }}
+        />
+      </svg>
+      {/* Score number in center */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="text-7xl font-light"
+          style={{ fontFamily: "Fraunces, serif", color }}
+          data-testid="suspicion-score-value"
+        >
+          {animatedScore}
+        </span>
+        <span className="text-sm text-muted-foreground mt-1">/100</span>
+      </div>
+    </div>
+  );
+};
 
 const ResultsDashboard = () => {
   const { sessionId, resetAnalysis } = useAnalysis();
@@ -32,7 +109,7 @@ const ResultsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState(null);
   const [revealStage, setRevealStage] = useState(0);
-  // Stages: 0=loading, 1=transition, 2=hearts, 3=diagnosis, 4=patterns, 5=perspective, 6=comparison, 7=context, 8=actions, 9=complete
+  // Stages: 0=loading, 1=transition, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perspective, 7=comparison, 8=context, 9=actions, 10=complete
 
   useEffect(() => {
     if (!sessionId) {
@@ -57,24 +134,16 @@ const ResultsDashboard = () => {
   };
 
   const startRevealSequence = () => {
-    // Stage 1: Transition message
     setTimeout(() => setRevealStage(1), 100);
-    // Stage 2: Hearts reveal
-    setTimeout(() => setRevealStage(2), 2000);
-    // Stage 3: Main diagnosis
-    setTimeout(() => setRevealStage(3), 3500);
-    // Stage 4: Patterns
-    setTimeout(() => setRevealStage(4), 5000);
-    // Stage 5: TrustLens Perspective
-    setTimeout(() => setRevealStage(5), 6000);
-    // Stage 6: Pattern comparison
-    setTimeout(() => setRevealStage(6), 7000);
-    // Stage 7: Context
-    setTimeout(() => setRevealStage(7), 7800);
-    // Stage 8: Actions
-    setTimeout(() => setRevealStage(8), 8500);
-    // Stage 9: Complete
-    setTimeout(() => setRevealStage(9), 9200);
+    setTimeout(() => setRevealStage(2), 2000);   // Suspicion Score
+    setTimeout(() => setRevealStage(3), 4500);   // Hearts
+    setTimeout(() => setRevealStage(4), 6000);   // Diagnosis
+    setTimeout(() => setRevealStage(5), 7200);   // Patterns
+    setTimeout(() => setRevealStage(6), 8200);   // Perspective
+    setTimeout(() => setRevealStage(7), 9200);   // Comparison
+    setTimeout(() => setRevealStage(8), 10000);  // Context
+    setTimeout(() => setRevealStage(9), 10800);  // Actions
+    setTimeout(() => setRevealStage(10), 11500); // Complete
   };
 
   const handleStartOver = () => {
@@ -104,6 +173,10 @@ const ResultsDashboard = () => {
     social: Users,
   };
 
+  // Suspicion score animated counter — hook must be at component level
+  const suspicionTarget = results?.suspicion_score ?? 0;
+  const animatedSuspicionScore = useAnimatedCounter(suspicionTarget, 1200, revealStage >= 2);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B132B] flex items-center justify-center">
@@ -127,7 +200,7 @@ const ResultsDashboard = () => {
           <Link to="/">
             <TrustLensLogo size="md" />
           </Link>
-          {revealStage >= 8 && (
+          {revealStage >= 9 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -188,7 +261,56 @@ const ResultsDashboard = () => {
         {/* Progressive Reveal Content */}
         {revealStage >= 2 && (
           <div className="space-y-12">
-            {/* Stage 2: Emotional Stability Reveal */}
+            {/* Stage 2: Suspicion Score Reveal */}
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center py-8"
+              data-testid="suspicion-score-section"
+            >
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm uppercase tracking-widest text-muted-foreground mb-8 font-mono"
+              >
+                TrustLens Suspicion Score
+              </motion.p>
+
+              <SuspicionScoreRing
+                score={results.suspicion_score ?? 0}
+                animatedScore={animatedSuspicionScore}
+                revealed={revealStage >= 2}
+              />
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.4 }}
+                className="mt-6 text-2xl font-light"
+                style={{
+                  fontFamily: "Fraunces, serif",
+                  color: getScoreColor(results.suspicion_score ?? 0),
+                }}
+                data-testid="suspicion-score-label"
+              >
+                {results.suspicion_label ?? "Low Signal"}
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                className="mt-6 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed"
+              >
+                This score reflects patterns detected in your answers.
+                It does not prove anything, but it highlights signals that may deserve attention.
+              </motion.p>
+            </motion.section>
+
+            {/* Stage 3: Emotional Stability Reveal */}
+            {revealStage >= 3 && (
             <motion.section
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -243,9 +365,10 @@ const ResultsDashboard = () => {
                 {getStabilityLabel(results.stability_hearts)}
               </motion.p>
             </motion.section>
+            )}
 
-            {/* Stage 3: Main Diagnosis Block */}
-            {revealStage >= 3 && (
+            {/* Stage 4: Main Diagnosis Block */}
+            {revealStage >= 4 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -295,8 +418,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 4: Dominant Pattern Reveal */}
-            {revealStage >= 4 && (
+            {/* Stage 5: Dominant Pattern Reveal */}
+            {revealStage >= 5 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -334,8 +457,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 5: TrustLens Perspective */}
-            {revealStage >= 5 && (
+            {/* Stage 6: TrustLens Perspective */}
+            {revealStage >= 6 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -357,8 +480,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 6: Pattern Comparison Insight */}
-            {revealStage >= 6 && results.pattern_statistics && (
+            {/* Stage 7: Pattern Comparison Insight */}
+            {revealStage >= 7 && results.pattern_statistics && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -417,8 +540,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 7: Context Estimation */}
-            {revealStage >= 7 && results.context_estimation && results.context_estimation.length > 0 && (
+            {/* Stage 8: Context Estimation */}
+            {revealStage >= 8 && results.context_estimation && results.context_estimation.length > 0 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -458,8 +581,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 8: Clarity Actions */}
-            {revealStage >= 8 && (
+            {/* Stage 9: Clarity Actions */}
+            {revealStage >= 9 && (
               <motion.section
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -524,8 +647,8 @@ const ResultsDashboard = () => {
               </motion.section>
             )}
 
-            {/* Stage 9: Closing Support Note */}
-            {revealStage >= 9 && (
+            {/* Stage 10: Closing Support Note */}
+            {revealStage >= 10 && (
               <motion.section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
