@@ -210,7 +210,7 @@ const RelationshipPulse = () => {
               Quick Relationship Pulse
             </h1>
             <p className="text-muted-foreground">
-              Answer three quick questions to get an instant read on your relationship health.
+              Answer five quick questions to get an instant read on your relationship health.
             </p>
           </div>
 

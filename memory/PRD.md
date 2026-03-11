@@ -1,55 +1,70 @@
 # TrustLens - Product Requirements Document
 
 ## Original Problem Statement
-TrustLens is an AI-powered relationship intelligence platform designed to help users understand behavioral changes and trust dynamics through behavioral pattern analysis, psychological insight, and structured questioning.
+TrustLens is an AI-powered relationship intelligence platform providing clarity through behavioral pattern analysis, psychological insight, and structured questioning.
 
-## Architecture Overview
+## Architecture
 - **Frontend**: React 19, Tailwind CSS, Framer Motion, Fraunces/Manrope fonts
-- **Backend**: FastAPI (Python)
+- **Backend**: FastAPI (Python), reportlab for PDF generation
 - **Database**: MongoDB (analysis_sessions, score_timeline, shared_reports, relationship_cases)
-- **AI Integration**: Claude Sonnet 4.5 via emergentintegrations (with hardcoded fallbacks)
+- **AI**: Claude Sonnet 4.5 via emergentintegrations (with hardcoded fallbacks)
 
-## What's Been Implemented
+## Implemented Features
 
-### Feb 2026 - Relationship Case Database
-- 300 generated cases in `relationship_cases` collection (seeded on startup)
-- Each case: case_id, relationship_type, duration, age_range, cohabitation, primary/secondary signals, timeline, contradictions, outcome, confidence
-- 5 outcomes: confirmed_infidelity, emotional_disengagement, misunderstanding, personal_crisis, unresolved_conflict
-- `compare_with_case_database()` matches user signals against cases with >=30% similarity
-- Pattern statistics now computed from real case data (not hardcoded)
-- Frontend shows dynamic insights: "Your situation resembles patterns found in X% of documented cases"
-- GET /api/cases/stats endpoint for database statistics
+### Relationship Case Database
+- 300 synthetic cases seeded on startup (seed=42, reproducible)
+- Fields: case_id, relationship_type, duration, age_range, cohabitation, primary/secondary signals, timeline, contradictions, outcome, confidence
+- 5 outcomes weighted by severity: confirmed_infidelity, emotional_disengagement, misunderstanding, personal_crisis, unresolved_conflict
+- compare_with_case_database() matches user signals with >=30% similarity threshold
+- Pattern statistics now computed from real case data
+- POST /api/cases/contribute for anonymized user story submission (dataset evolution)
 
-### Feb 2026 - Share Anonymized Report
-- POST /api/reports/share stores anonymized snapshot, GET /api/reports/{id} retrieves it
-- SharedReport.jsx page with score ring, pattern comparison, perception, actions, disclaimer
+### Suspicion Score (Calibrated)
+- 5-factor weighted calculation (max 100): signal intensity (45), pattern matches (20), contradictions (10), timeline (15), baseline (10)
+- Circular gauge with animated counter, color-coded labels (green/yellow/orange/red)
 
-### Feb 2026 - Core Analytical Experience
-- 4-step dramatic analysis sequence, perception consistency check, relationship timeline
-- Suspicion Score (0-100) with circular gauge, animated counter, color-coded labels
-- Cinematic hero slideshow, custom logo, responsive typography, "Why TrustLens" section
+### Analysis Experience
+- 4-step dramatic analysis sequence before results reveal
+- 11-stage progressive reveal on ResultsDashboard
+- Perception Consistency Check (micro-contradiction detection)
+- Pattern Comparison with case database insights and disclaimer
+- Relationship Timeline (score history + line chart)
 
-### Jan 2026 - Full MVP
-- All API endpoints, frontend pages, AI adaptive questioning with fallbacks
-- Results Dashboard with progressive 11-stage reveal
-- Mirror Mode, Conversation Coach, Relationship Pulse
+### Relationship Pulse (Enhanced)
+- 5 quick questions: emotional connection, communication, tension, behavioral changes, trust
+- Mini suspicion indicator (0-100) with recommendation
+- CTA to start Deep Analysis
+
+### Share & Export
+- POST /api/reports/share creates anonymized snapshot
+- SharedReport.jsx page with score ring, patterns, perception, actions
+- GET /api/reports/{id}/pdf generates downloadable PDF via reportlab
+
+### Cinematic Hero
+- Rotating slideshow (2 custom images, 6s crossfade, gradient overlay)
+- Custom TrustLens logo, responsive clamp() typography
+- "Why TrustLens" section with 4 clarity blocks
+
+### Core
+- Deep Analysis 6-step wizard, Mirror Mode, Conversation Coach
+- AI adaptive questioning (Claude Sonnet 4.5 with hardcoded fallbacks)
 
 ## Prioritized Backlog
 
 ### P1 - Upcoming
-- [ ] Relationship Pulse quick flow refinement
-- [ ] Export report as PDF
 - [ ] Evidence signals module expansion
+- [ ] Post-conversation feedback analysis
 
 ### P2 - Future
 - [ ] User accounts (optional auth)
 - [ ] Replace AI fallbacks with real-time Claude Sonnet 4.5
 - [ ] Add real anonymized user stories to case database
 - [ ] Global Pattern Engine
+- [ ] Mobile app version
 
 ## Key API Endpoints
-- POST /api/analysis/start, /baseline, /changes, /timeline, /answer, /mirror, /conversation-coach
-- GET /api/analysis/{session_id}/results (includes case_comparison), /question, /status
-- GET /api/cases/stats - Case database statistics
-- POST /api/reports/share, GET /api/reports/{id}
+- POST /api/analysis/start, /baseline, /changes, /timeline, /evidence, /answer, /pulse, /mirror, /conversation-coach
+- GET /api/analysis/{id}/results, /question, /status
+- GET /api/cases/stats, POST /api/cases/contribute
+- POST /api/reports/share, GET /api/reports/{id}, GET /api/reports/{id}/pdf
 - GET/POST /api/timeline-history
