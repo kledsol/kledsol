@@ -900,7 +900,16 @@ async def get_results(session_id: str):
         "timeline_events": timeline_events,
         "mirror_mode_data": session.get('mirror_mode_data'),
         "questions_answered": len(session.get('qa_history', [])),
-        "trustlens_perspective": generate_perspective(session)
+        "trustlens_perspective": await generate_narrative_analysis(
+            suspicion_score=suspicion_score,
+            suspicion_label=suspicion_label,
+            signals=session.get('changes_data') or [],
+            pattern_stats=pattern_stats,
+            perception=perception_check,
+            timeline_data=session.get('timeline_data') or {},
+            case_insights=case_comparison.get("insights", []),
+            dominant_pattern=session.get('dominant_pattern', 'Behavioral Changes'),
+        )
     }
 
 def detect_perception_inconsistencies(session: dict) -> dict:
@@ -942,18 +951,70 @@ def detect_perception_inconsistencies(session: dict) -> dict:
         "insight": "We detected inconsistencies in how the situation is described. This often happens when people try to interpret emotionally complex situations." if has_inconsistencies else "Your description of the situation shows internal consistency."
     }
 
-def generate_perspective(session: dict) -> str:
-    trust_index = session.get('trust_disruption_index', 0)
-    dominant = session.get('dominant_pattern', '')
+async def generate_narrative_analysis(
+    suspicion_score: int,
+    suspicion_label: str,
+    signals: list,
+    pattern_stats: dict,
+    perception: dict,
+    timeline_data: dict,
+    case_insights: list,
+    dominant_pattern: str,
+) -> str:
+    """Generate an AI-powered narrative explanation using the LLM.
+    Falls back to a template if the LLM call fails."""
     
-    if trust_index < 25:
-        return "Based on the signals you described, your relationship appears to be in a relatively stable state. The changes you've noticed may be normal variations in relationship dynamics."
-    elif trust_index < 50:
-        return f"Your relationship shows some signs of {dominant.lower()}. While this doesn't indicate a crisis, addressing these patterns through open communication could strengthen your bond."
-    elif trust_index < 75:
-        return f"Based on the signals you described, your relationship shows significant changes in trust dynamics, particularly around {dominant.lower()}. Your concerns appear understandable. Consider having an open conversation or seeking professional guidance."
+    prompt = f"""You are TrustLens, a relationship intelligence system. Write a short narrative analysis (4-6 sentences) based on the following data.
+
+Suspicion Score: {suspicion_score}/100 ({suspicion_label})
+Behavioral signals detected: {', '.join(signals) if signals else 'none'}
+Dominant pattern: {dominant_pattern}
+Pattern comparison: {', '.join(case_insights) if case_insights else 'no case data'}
+Micro-contradictions: {'detected — ' + perception.get('insight', '') if perception.get('has_inconsistencies') else 'none detected'}
+Timeline: changes described as {timeline_data.get('gradual_or_sudden', 'unknown')}, started {timeline_data.get('when_started', 'unknown timeframe')}
+
+Rules:
+- NEVER state certainty about infidelity or any conclusion
+- Use careful, analytical language: "may suggest", "patterns indicate", "could reflect"
+- Explain what signals were detected and how they relate to known patterns
+- Indicate what level of concern may be appropriate given the score
+- Suggest 1-2 next steps (open conversation, professional guidance, continued observation)
+- Tone: empathetic, intelligent, measured — like a thoughtful counselor
+- Keep it under 100 words"""
+
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise ValueError("EMERGENT_LLM_KEY not found")
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"trustlens-narrative-{uuid.uuid4().hex[:8]}",
+            system_message="You are TrustLens, an empathetic relationship analysis system. You provide careful, non-accusatory behavioral pattern analysis. Never claim certainty. Always use measured language."
+        )
+        chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
+        
+        response = await chat.send_message(UserMessage(text=prompt))
+        if response and len(response.strip()) > 20:
+            return response.strip()
+        raise ValueError("Empty LLM response")
+    except Exception as e:
+        logger.warning(f"LLM narrative failed, using fallback: {e}")
+        return generate_perspective_fallback(suspicion_score, suspicion_label, signals, dominant_pattern)
+
+
+def generate_perspective_fallback(score: int, label: str, signals: list, dominant: str) -> str:
+    """Template fallback when LLM is unavailable."""
+    signal_text = ", ".join(s.replace("_", " ") for s in signals[:3]) if signals else "relationship dynamics"
+    
+    if score <= 30:
+        return f"Based on the signals you described, your relationship appears to be in a relatively stable state. The changes you've noticed around {signal_text} may be normal variations in relationship dynamics. Continue nurturing open communication."
+    elif score <= 60:
+        return f"Your situation shows some patterns that may warrant attention, particularly around {signal_text}. While these signals don't indicate a crisis, they suggest shifts in your relationship dynamics. An open, non-confrontational conversation could help clarify what's happening."
+    elif score <= 80:
+        return f"The behavioral patterns detected — particularly {signal_text} — show similarities with situations involving significant relationship strain. Your concerns appear understandable given the {label.lower()} assessment. Consider having an honest conversation with your partner or seeking professional guidance."
     else:
-        return f"The patterns you've described suggest substantial changes in your relationship, centered around {dominant.lower()}. This doesn't confirm any specific conclusion, but your feelings of concern are validated by the signals present. Professional support may be beneficial."
+        return f"The signals you described, including {signal_text}, form a pattern that suggests substantial changes in your relationship trust dynamics. This analysis doesn't confirm any specific conclusion, but the {label.lower()} assessment validates your concerns. Professional support may be beneficial at this stage."
 
 @api_router.get("/analysis/{session_id}/status")
 async def get_session_status(session_id: str):
