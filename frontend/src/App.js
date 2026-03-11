@@ -12,6 +12,7 @@ import MirrorMode from "@/pages/MirrorMode";
 import ConversationCoach from "@/pages/ConversationCoach";
 import MirrorInvite from "@/pages/MirrorInvite";
 import DualReport from "@/pages/DualReport";
+import MyAnalyses from "@/pages/MyAnalyses";
 
 // Analysis Context
 const AnalysisContext = createContext();
@@ -84,6 +85,7 @@ function App() {
             <Route path="/coach" element={<ConversationCoach />} />
             <Route path="/mirror-invite/:mirrorId" element={<MirrorInvite />} />
             <Route path="/dual-report/:mirrorId" element={<DualReport />} />
+            <Route path="/my-analyses" element={<MyAnalyses />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" />

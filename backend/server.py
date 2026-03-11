@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -10,6 +11,8 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 import json
+from passlib.context import CryptContext
+from jose import jwt, JWTError
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from seed_cases import generate_all_cases
 
@@ -23,6 +26,39 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# Auth configuration
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+JWT_SECRET = os.environ.get("JWT_SECRET", uuid.uuid4().hex)
+JWT_ALGORITHM = "HS256"
+security = HTTPBearer(auto_error=False)
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
+
+
+def create_token(user_id: str) -> str:
+    return jwt.encode({"sub": user_id}, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Optional auth dependency — returns user dict or None."""
+    if not credentials:
+        return None
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+        return user
+    except JWTError:
+        return None
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -1600,6 +1636,184 @@ async def get_shared_report(report_id: str):
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return report
+
+# ============= Authentication (Optional) =============
+
+class AuthRegister(BaseModel):
+    email: str
+    password: str
+
+class AuthLogin(BaseModel):
+    email: str
+    password: str
+
+class LinkAnalysis(BaseModel):
+    session_id: str
+
+
+@api_router.post("/auth/register")
+async def register(data: AuthRegister):
+    """Create an optional account."""
+    email = data.email.strip().lower()
+    if not email or not data.password or len(data.password) < 6:
+        raise HTTPException(status_code=400, detail="Email and password (min 6 chars) required")
+
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    user_id = str(uuid.uuid4())
+    await db.users.insert_one({
+        "user_id": user_id,
+        "email": email,
+        "password_hash": hash_password(data.password),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    return {"user_id": user_id, "email": email, "token": create_token(user_id)}
+
+
+@api_router.post("/auth/login")
+async def login(data: AuthLogin):
+    """Log in to an existing account."""
+    email = data.email.strip().lower()
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user or not verify_password(data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "token": create_token(user["user_id"]),
+    }
+
+
+@api_router.get("/auth/me")
+async def get_me(user=Depends(get_current_user)):
+    """Get current user profile."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+
+@api_router.post("/auth/link-analysis")
+async def link_analysis(data: LinkAnalysis, user=Depends(get_current_user)):
+    """Link a completed analysis session to the logged-in user. Also saves signal snapshot for trend tracking."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    session = await db.analysis_sessions.find_one({"id": data.session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Tag the session with user_id
+    await db.analysis_sessions.update_one(
+        {"id": data.session_id},
+        {"$set": {"user_id": user["user_id"]}}
+    )
+
+    # Save signal snapshot for trend tracking
+    signals = session.get("signals", {})
+    changes = session.get("changes_data", [])
+    summary = generate_signal_strength_summary(session)
+
+    await db.signal_snapshots.insert_one({
+        "user_id": user["user_id"],
+        "session_id": data.session_id,
+        "signals": signals,
+        "changes": changes,
+        "signal_summary": {s["key"]: s["intensity"] for tier in ["strong", "moderate", "weak"] for s in summary.get(tier, [])},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    return {"status": "linked", "session_id": data.session_id}
+
+
+@api_router.get("/auth/my-analyses")
+async def get_my_analyses(user=Depends(get_current_user)):
+    """Get the logged-in user's analysis history."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    sessions = await db.analysis_sessions.find(
+        {"user_id": user["user_id"]},
+        {"_id": 0, "id": 1, "analysis_type": 1, "created_at": 1, "changes_data": 1}
+    ).sort("created_at", -1).to_list(50)
+
+    # Get signal snapshots for each session
+    snapshots = await db.signal_snapshots.find(
+        {"user_id": user["user_id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+
+    snapshot_map = {s["session_id"]: s for s in snapshots}
+
+    analyses = []
+    for s in sessions:
+        snap = snapshot_map.get(s["id"])
+        analyses.append({
+            "session_id": s["id"],
+            "analysis_type": s.get("analysis_type", "deep"),
+            "created_at": s.get("created_at", ""),
+            "changes_detected": s.get("changes_data", []),
+            "signal_count": len(snap.get("signal_summary", {})) if snap else 0,
+        })
+
+    return {"analyses": analyses, "total": len(analyses)}
+
+
+@api_router.get("/auth/signal-trends/{session_id}")
+async def get_signal_trends(session_id: str, user=Depends(get_current_user)):
+    """Get signal trends comparing current analysis to the user's previous one."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Get all snapshots for this user, sorted by date
+    snapshots = await db.signal_snapshots.find(
+        {"user_id": user["user_id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+
+    if len(snapshots) < 2:
+        return {"has_previous": False, "trends": {}}
+
+    # Find the current snapshot and the one before it
+    current_snap = None
+    previous_snap = None
+    for i, snap in enumerate(snapshots):
+        if snap["session_id"] == session_id:
+            current_snap = snap
+            if i + 1 < len(snapshots):
+                previous_snap = snapshots[i + 1]
+            break
+
+    if not current_snap or not previous_snap:
+        return {"has_previous": False, "trends": {}}
+
+    # Compute deltas
+    current_signals = current_snap.get("signal_summary", {})
+    previous_signals = previous_snap.get("signal_summary", {})
+
+    trends = {}
+    all_keys = set(list(current_signals.keys()) + list(previous_signals.keys()))
+    for key in all_keys:
+        curr_val = current_signals.get(key, 0)
+        prev_val = previous_signals.get(key, 0)
+        delta = round((curr_val - prev_val) * 100)
+        if delta != 0 or curr_val > 0:
+            trends[key] = {
+                "current": round(curr_val * 100),
+                "previous": round(prev_val * 100),
+                "delta": delta,
+                "direction": "up" if delta > 0 else "down" if delta < 0 else "neutral",
+            }
+
+    return {
+        "has_previous": True,
+        "previous_date": previous_snap.get("created_at", ""),
+        "trends": trends,
+    }
+
 
 # ============= Dual Perspective / Mirror Mode =============
 

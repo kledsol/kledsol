@@ -7,8 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { TrustGauge, TrustIndexLabel } from "@/components/custom/TrustGauge";
 import { useAnalysis } from "@/App";
-import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport, createMirrorSession, getMirrorStatus, consentMirror } from "@/lib/api";
+import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport, createMirrorSession, getMirrorStatus, consentMirror, linkAnalysis, getSignalTrends } from "@/lib/api";
 import { toast } from "sonner";
+import AuthModal from "@/components/custom/AuthModal";
 import {
   Heart,
   Shield,
@@ -31,6 +32,8 @@ import {
   Link2,
   Lock,
   BarChart3,
+  TrendingDown,
+  Save,
 } from "lucide-react";
 
 // Animated counter hook
@@ -277,6 +280,11 @@ const ResultsDashboard = () => {
   // For Partner B returning from analysis
   const [isMirrorPartner, setIsMirrorPartner] = useState(false);
   const [mirrorContext, setMirrorContext] = useState(null);
+  // Auth & trend tracking
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("trustlens_user"));
+  const [analysisSaved, setAnalysisSaved] = useState(false);
+  const [signalTrends, setSignalTrends] = useState(null);
   // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=signal-strength, 7=perception, 8=perspective, 9=comparison, 10=timeline, 11=actions, 12=complete
 
   useEffect(() => {
@@ -329,6 +337,16 @@ const ResultsDashboard = () => {
         const history = await getTimelineHistory();
         setTimelineHistory(history.entries || []);
       } catch (_) { /* timeline is optional */ }
+
+      // Load signal trends for logged-in users
+      if (localStorage.getItem("trustlens_token")) {
+        try {
+          const trends = await getSignalTrends(sessionId);
+          if (trends.has_previous) {
+            setSignalTrends(trends);
+          }
+        } catch { /* not logged in or no previous */ }
+      }
     } catch (e) {
       toast.error("Failed to load results");
       navigate("/");
@@ -442,6 +460,40 @@ const ResultsDashboard = () => {
     setMirrorCopied(true);
     toast.success("Invite link copied");
     setTimeout(() => setMirrorCopied(false), 2000);
+  };
+
+  const handleSaveAnalysis = async () => {
+    if (!isLoggedIn) {
+      setShowAuthModal(true);
+      return;
+    }
+    try {
+      await linkAnalysis(sessionId);
+      setAnalysisSaved(true);
+      toast.success("Analysis saved to your history");
+      // Load trends now
+      try {
+        const trends = await getSignalTrends(sessionId);
+        if (trends.has_previous) setSignalTrends(trends);
+      } catch { /* first analysis */ }
+    } catch {
+      toast.error("Failed to save analysis");
+    }
+  };
+
+  const handleAuthSuccess = async () => {
+    setShowAuthModal(false);
+    setIsLoggedIn(true);
+    // Automatically save the current analysis
+    try {
+      await linkAnalysis(sessionId);
+      setAnalysisSaved(true);
+      toast.success("Account created and analysis saved");
+      try {
+        const trends = await getSignalTrends(sessionId);
+        if (trends.has_previous) setSignalTrends(trends);
+      } catch { /* first analysis */ }
+    } catch { /* already linked */ }
   };
 
   const getStabilityLabel = (hearts) => {
@@ -746,29 +798,40 @@ const ResultsDashboard = () => {
                           <span className="text-xs font-mono tracking-wider text-[#FF4D6D]">STRONG SIGNALS</span>
                         </div>
                         <div className="space-y-2">
-                          {results.signal_strength_summary.strong.map((s, i) => (
-                            <motion.div
-                              key={s.key}
-                              initial={{ opacity: 0, x: -15 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.1 * i }}
-                              className="p-4 rounded-xl bg-[#FF4D6D]/5 border border-[#FF4D6D]/15"
-                            >
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
-                                <span className="text-xs font-mono text-[#FF4D6D]">{Math.round(s.intensity * 100)}%</span>
-                              </div>
-                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${s.intensity * 100}%` }}
-                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
-                                  className="h-full rounded-full bg-[#FF4D6D]"
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground">{s.desc}</p>
-                            </motion.div>
-                          ))}
+                          {results.signal_strength_summary.strong.map((s, i) => {
+                            const trend = signalTrends?.trends?.[s.key];
+                            return (
+                              <motion.div
+                                key={s.key}
+                                initial={{ opacity: 0, x: -15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 * i }}
+                                className="p-4 rounded-xl bg-[#FF4D6D]/5 border border-[#FF4D6D]/15"
+                              >
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-[#FF4D6D]">{Math.round(s.intensity * 100)}%</span>
+                                    {trend && trend.delta !== 0 && (
+                                      <span className={`text-[10px] font-mono flex items-center gap-0.5 ${trend.delta > 0 ? "text-[#FF4D6D]" : "text-[#6EE7B7]"}`} data-testid={`trend-${s.key}`}>
+                                        {trend.delta > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                        {trend.delta > 0 ? "+" : ""}{trend.delta}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${s.intensity * 100}%` }}
+                                    transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                    className="h-full rounded-full bg-[#FF4D6D]"
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground">{s.desc}</p>
+                              </motion.div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -781,29 +844,40 @@ const ResultsDashboard = () => {
                           <span className="text-xs font-mono tracking-wider text-[#FCA311]">MODERATE SIGNALS</span>
                         </div>
                         <div className="space-y-2">
-                          {results.signal_strength_summary.moderate.map((s, i) => (
-                            <motion.div
-                              key={s.key}
-                              initial={{ opacity: 0, x: -15 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.1 * i }}
-                              className="p-4 rounded-xl bg-[#FCA311]/5 border border-[#FCA311]/15"
-                            >
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
-                                <span className="text-xs font-mono text-[#FCA311]">{Math.round(s.intensity * 100)}%</span>
-                              </div>
-                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${s.intensity * 100}%` }}
-                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
-                                  className="h-full rounded-full bg-[#FCA311]"
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground">{s.desc}</p>
-                            </motion.div>
-                          ))}
+                          {results.signal_strength_summary.moderate.map((s, i) => {
+                            const trend = signalTrends?.trends?.[s.key];
+                            return (
+                              <motion.div
+                                key={s.key}
+                                initial={{ opacity: 0, x: -15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 * i }}
+                                className="p-4 rounded-xl bg-[#FCA311]/5 border border-[#FCA311]/15"
+                              >
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="text-sm font-medium text-[#E6EDF3]">{s.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-[#FCA311]">{Math.round(s.intensity * 100)}%</span>
+                                    {trend && trend.delta !== 0 && (
+                                      <span className={`text-[10px] font-mono flex items-center gap-0.5 ${trend.delta > 0 ? "text-[#FF4D6D]" : "text-[#6EE7B7]"}`} data-testid={`trend-${s.key}`}>
+                                        {trend.delta > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                        {trend.delta > 0 ? "+" : ""}{trend.delta}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${s.intensity * 100}%` }}
+                                    transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                    className="h-full rounded-full bg-[#FCA311]"
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground">{s.desc}</p>
+                              </motion.div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -816,29 +890,40 @@ const ResultsDashboard = () => {
                           <span className="text-xs font-mono tracking-wider text-[#6EE7B7]">WEAK SIGNALS</span>
                         </div>
                         <div className="space-y-2">
-                          {results.signal_strength_summary.weak.map((s, i) => (
-                            <motion.div
-                              key={s.key}
-                              initial={{ opacity: 0, x: -15 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.1 * i }}
-                              className="p-3 rounded-xl bg-white/5 border border-white/10"
-                            >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-[#E6EDF3]">{s.name}</span>
-                                <span className="text-xs font-mono text-[#6EE7B7]">{Math.round(s.intensity * 100)}%</span>
-                              </div>
-                              <div className="h-1 bg-white/5 rounded-full overflow-hidden mb-1.5">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${s.intensity * 100}%` }}
-                                  transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
-                                  className="h-full rounded-full bg-[#6EE7B7]"
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground">{s.desc}</p>
-                            </motion.div>
-                          ))}
+                          {results.signal_strength_summary.weak.map((s, i) => {
+                            const trend = signalTrends?.trends?.[s.key];
+                            return (
+                              <motion.div
+                                key={s.key}
+                                initial={{ opacity: 0, x: -15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 * i }}
+                                className="p-3 rounded-xl bg-white/5 border border-white/10"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm text-[#E6EDF3]">{s.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono text-[#6EE7B7]">{Math.round(s.intensity * 100)}%</span>
+                                    {trend && trend.delta !== 0 && (
+                                      <span className={`text-[10px] font-mono flex items-center gap-0.5 ${trend.delta > 0 ? "text-[#FF4D6D]" : "text-[#6EE7B7]"}`} data-testid={`trend-${s.key}`}>
+                                        {trend.delta > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                        {trend.delta > 0 ? "+" : ""}{trend.delta}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="h-1 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${s.intensity * 100}%` }}
+                                    transition={{ duration: 0.8, delay: 0.2 + 0.1 * i }}
+                                    className="h-full rounded-full bg-[#6EE7B7]"
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground">{s.desc}</p>
+                              </motion.div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -1332,9 +1417,72 @@ const ResultsDashboard = () => {
                 )}
               </motion.section>
             )}
+
+            {/* Soft Save Prompt — appears after all results are shown */}
+            {revealStage >= 12 && !analysisSaved && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                data-testid="save-analysis-prompt"
+              >
+                <Card className="glass-card rounded-2xl border-[#3DD9C5]/15">
+                  <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0">
+                        <Save className="w-5 h-5 text-[#3DD9C5]" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-[#E6EDF3]">
+                          Save this analysis to track your relationship signals over time.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Optional. Your analysis can still be used anonymously.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSaveAnalysis}
+                      className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 py-4 btn-glow whitespace-nowrap"
+                      data-testid="save-analysis-btn"
+                    >
+                      {isLoggedIn ? "Save Analysis" : "Create Account & Save"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {analysisSaved && revealStage >= 12 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center"
+              >
+                <p className="text-sm text-[#3DD9C5] flex items-center justify-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Analysis saved to your history.
+                  <button
+                    onClick={() => navigate("/my-analyses")}
+                    className="underline hover:no-underline"
+                    data-testid="view-history-link"
+                  >
+                    View all analyses
+                  </button>
+                </p>
+              </motion.div>
+            )}
           </div>
         )}
       </main>
+
+      {/* Auth Modal */}
+      <AuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        mode="register"
+      />
     </div>
   );
 };

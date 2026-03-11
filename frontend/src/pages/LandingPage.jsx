@@ -36,11 +36,14 @@ const LandingPage = () => {
     }
   };
 
+  const isLoggedIn = !!localStorage.getItem("trustlens_user");
+
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Why TrustLens", href: "#why" },
     { label: "How It Works", href: "#how" },
     { label: "Privacy", href: "#privacy" },
+    ...(isLoggedIn ? [{ label: "My Analyses", href: "/my-analyses" }] : []),
   ];
 
   const whyBlocks = [

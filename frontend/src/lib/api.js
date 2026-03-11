@@ -114,3 +114,58 @@ export const getMirrorReport = async (mirrorId) => {
   const response = await api.get(`/mirror/${mirrorId}/report`);
   return response.data;
 };
+
+// ============= Authentication (Optional) =============
+
+const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    localStorage.setItem("trustlens_token", token);
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+    localStorage.removeItem("trustlens_token");
+  }
+};
+
+// Restore token on load
+const savedToken = localStorage.getItem("trustlens_token");
+if (savedToken) {
+  api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+}
+
+export const authRegister = async (email, password) => {
+  const response = await api.post("/auth/register", { email, password });
+  setAuthToken(response.data.token);
+  return response.data;
+};
+
+export const authLogin = async (email, password) => {
+  const response = await api.post("/auth/login", { email, password });
+  setAuthToken(response.data.token);
+  return response.data;
+};
+
+export const authLogout = () => {
+  setAuthToken(null);
+  localStorage.removeItem("trustlens_user");
+};
+
+export const getMe = async () => {
+  const response = await api.get("/auth/me");
+  return response.data;
+};
+
+export const linkAnalysis = async (sessionId) => {
+  const response = await api.post("/auth/link-analysis", { session_id: sessionId });
+  return response.data;
+};
+
+export const getMyAnalyses = async () => {
+  const response = await api.get("/auth/my-analyses");
+  return response.data;
+};
+
+export const getSignalTrends = async (sessionId) => {
+  const response = await api.get(`/auth/signal-trends/${sessionId}`);
+  return response.data;
+};
