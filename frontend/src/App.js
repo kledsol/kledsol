@@ -7,6 +7,7 @@ import ClarityMoment from "@/pages/ClarityMoment";
 import RelationshipPulse from "@/pages/RelationshipPulse";
 import DeepAnalysis from "@/pages/DeepAnalysis";
 import ResultsDashboard from "@/pages/ResultsDashboard";
+import SharedReport from "@/pages/SharedReport";
 import MirrorMode from "@/pages/MirrorMode";
 import ConversationCoach from "@/pages/ConversationCoach";
 
@@ -76,6 +77,7 @@ function App() {
             <Route path="/pulse" element={<RelationshipPulse />} />
             <Route path="/analysis" element={<DeepAnalysis />} />
             <Route path="/results" element={<ResultsDashboard />} />
+            <Route path="/report/:reportId" element={<SharedReport />} />
             <Route path="/mirror" element={<MirrorMode />} />
             <Route path="/coach" element={<ConversationCoach />} />
           </Routes>

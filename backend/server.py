@@ -785,6 +785,33 @@ async def save_timeline_entry(data: dict):
     await db.score_timeline.insert_one(entry)
     return {"status": "saved"}
 
+@api_router.post("/reports/share")
+async def create_shared_report(data: dict):
+    """Create an anonymized shareable report snapshot."""
+    report_id = str(uuid.uuid4())[:12]
+    report = {
+        "report_id": report_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "suspicion_score": data.get("suspicion_score", 0),
+        "suspicion_label": data.get("suspicion_label", ""),
+        "pattern_comparison_pct": data.get("pattern_comparison_pct", 0),
+        "pattern_statistics": data.get("pattern_statistics"),
+        "perception_consistency": data.get("perception_consistency"),
+        "clarity_actions": data.get("clarity_actions", [])[:4],
+        "dominant_pattern": data.get("dominant_pattern", ""),
+        "trustlens_perspective": data.get("trustlens_perspective", ""),
+    }
+    await db.shared_reports.insert_one(report)
+    return {"report_id": report_id}
+
+@api_router.get("/reports/{report_id}")
+async def get_shared_report(report_id: str):
+    """Fetch a shared anonymized report."""
+    report = await db.shared_reports.find_one({"report_id": report_id}, {"_id": 0})
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return report
+
 app.include_router(api_router)
 
 app.add_middleware(

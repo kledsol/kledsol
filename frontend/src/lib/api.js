@@ -77,3 +77,13 @@ export const saveTimelineEntry = async (score, label) => {
   const response = await api.post("/timeline-history", { score, label });
   return response.data;
 };
+
+export const createSharedReport = async (reportData) => {
+  const response = await api.post("/reports/share", reportData);
+  return response.data;
+};
+
+export const getSharedReport = async (reportId) => {
+  const response = await api.get(`/reports/${reportId}`);
+  return response.data;
+};

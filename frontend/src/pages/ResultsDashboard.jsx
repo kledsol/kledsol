@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { TrustGauge, TrustIndexLabel } from "@/components/custom/TrustGauge";
 import { useAnalysis } from "@/App";
-import { getResults, getTimelineHistory, saveTimelineEntry } from "@/lib/api";
+import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Heart,
@@ -25,6 +25,9 @@ import {
   ChevronRight,
   AlertTriangle,
   TrendingUp,
+  Share2,
+  Copy,
+  Check,
 } from "lucide-react";
 
 // Animated counter hook
@@ -259,6 +262,9 @@ const ResultsDashboard = () => {
   const [results, setResults] = useState(null);
   const [revealStage, setRevealStage] = useState(0);
   const [timelineHistory, setTimelineHistory] = useState([]);
+  const [shareUrl, setShareUrl] = useState(null);
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
   // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=perception, 7=perspective, 8=comparison, 9=timeline, 10=actions, 11=complete
 
   useEffect(() => {
@@ -306,6 +312,49 @@ const ResultsDashboard = () => {
   const handleStartOver = () => {
     resetAnalysis();
     navigate("/");
+  };
+
+  const handleShare = async () => {
+    if (shareUrl) {
+      await copyToClipboard(shareUrl);
+      return;
+    }
+    setSharing(true);
+    try {
+      const { report_id } = await createSharedReport({
+        suspicion_score: results.suspicion_score,
+        suspicion_label: results.suspicion_label,
+        pattern_comparison_pct: results.pattern_comparison_pct,
+        pattern_statistics: results.pattern_statistics,
+        perception_consistency: results.perception_consistency,
+        clarity_actions: results.clarity_actions,
+        dominant_pattern: results.dominant_pattern,
+        trustlens_perspective: results.trustlens_perspective,
+      });
+      const url = `${window.location.origin}/report/${report_id}`;
+      setShareUrl(url);
+      await copyToClipboard(url);
+    } catch {
+      toast.error("Failed to generate share link");
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    toast.success("Link copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const getStabilityLabel = (hearts) => {
@@ -845,8 +894,18 @@ const ResultsDashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="mt-10"
+                  className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                 >
+                  <Button
+                    onClick={handleShare}
+                    disabled={sharing}
+                    variant="outline"
+                    className="border-[#3DD9C5]/40 text-[#3DD9C5] hover:bg-[#3DD9C5]/10 rounded-full px-6 py-5"
+                    data-testid="share-report-btn"
+                  >
+                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
+                    {sharing ? "Generating..." : copied ? "Link Copied" : "Share Anonymized Report"}
+                  </Button>
                   <Button
                     onClick={() => navigate("/")}
                     variant="ghost"
@@ -856,6 +915,23 @@ const ResultsDashboard = () => {
                     Return Home
                   </Button>
                 </motion.div>
+
+                {shareUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4"
+                  >
+                    <button
+                      onClick={() => copyToClipboard(shareUrl)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-xs text-muted-foreground font-mono max-w-full"
+                      data-testid="share-url-display"
+                    >
+                      <Copy className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{shareUrl}</span>
+                    </button>
+                  </motion.div>
+                )}
               </motion.section>
             )}
           </div>
