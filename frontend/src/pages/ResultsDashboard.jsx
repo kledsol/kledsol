@@ -758,11 +758,16 @@ const ResultsDashboard = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="mt-4 text-center"
+                        className="mt-4 flex flex-wrap items-center justify-center gap-2"
                       >
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3DD9C5]/10 text-xs text-[#3DD9C5] font-mono">
-                          {results.case_comparison.similar_case_count} similar cases found in database
+                          {results.case_comparison.similar_case_count} similar cases found
                         </span>
+                        {results.case_comparison.demographic_filtered && results.case_comparison.demographic_label && (
+                          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FCA311]/10 text-xs text-[#FCA311] font-mono" data-testid="demographic-badge">
+                            Filtered: {results.case_comparison.demographic_label}
+                          </span>
+                        )}
                       </motion.div>
                     )}
 

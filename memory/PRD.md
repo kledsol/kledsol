@@ -5,66 +5,55 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 
 ## Architecture
 - **Frontend**: React 19, Tailwind CSS, Framer Motion, Fraunces/Manrope fonts
-- **Backend**: FastAPI (Python), reportlab for PDF generation
+- **Backend**: FastAPI (Python), reportlab (PDF)
 - **Database**: MongoDB (analysis_sessions, score_timeline, shared_reports, relationship_cases)
 - **AI**: Claude Sonnet 4.5 via emergentintegrations (with hardcoded fallbacks)
 
 ## Implemented Features
 
+### Pattern Comparison with Demographic Filtering
+- Compares user signals against 300+ cases with >=30% similarity threshold
+- Filters by relationship duration when demographic sample >= 8 cases
+- Falls back to full dataset when sample too small (safety rule)
+- Generates contextual insights: "Among couples together for 1-3 years, 42% experienced..."
+- Frontend shows "Filtered: couples together for X years" badge when active
+
 ### Relationship Case Database
-- 300 synthetic cases seeded on startup (seed=42, reproducible)
-- Fields: case_id, relationship_type, duration, age_range, cohabitation, primary/secondary signals, timeline, contradictions, outcome, confidence
-- 5 outcomes weighted by severity: confirmed_infidelity, emotional_disengagement, misunderstanding, personal_crisis, unresolved_conflict
-- compare_with_case_database() matches user signals with >=30% similarity threshold
-- Pattern statistics now computed from real case data
-- POST /api/cases/contribute for anonymized user story submission (dataset evolution)
+- 300 synthetic cases seeded on startup (seed=42)
+- POST /api/cases/contribute for dataset evolution (user-contributed cases)
+- 5 outcomes weighted by severity profile
 
 ### Suspicion Score (Calibrated)
-- 5-factor weighted calculation (max 100): signal intensity (45), pattern matches (20), contradictions (10), timeline (15), baseline (10)
-- Circular gauge with animated counter, color-coded labels (green/yellow/orange/red)
+- 5-factor calculation: signal intensity (45), pattern matches (20), contradictions (10), timeline (15), baseline (10)
+- Circular gauge with animated counter, color-coded labels
 
 ### Analysis Experience
-- 4-step dramatic analysis sequence before results reveal
-- 11-stage progressive reveal on ResultsDashboard
-- Perception Consistency Check (micro-contradiction detection)
-- Pattern Comparison with case database insights and disclaimer
+- 4-step dramatic analysis sequence, 11-stage progressive reveal
+- Perception Consistency Check, Pattern Comparison with case insights + disclaimer
 - Relationship Timeline (score history + line chart)
 
-### Relationship Pulse (Enhanced)
-- 5 quick questions: emotional connection, communication, tension, behavioral changes, trust
-- Mini suspicion indicator (0-100) with recommendation
-- CTA to start Deep Analysis
+### Relationship Pulse
+- 5 questions with mini suspicion indicator (0-100)
+- Dynamic recommendation encouraging Deep Analysis
 
 ### Share & Export
-- POST /api/reports/share creates anonymized snapshot
-- SharedReport.jsx page with score ring, patterns, perception, actions
-- GET /api/reports/{id}/pdf generates downloadable PDF via reportlab
+- Anonymized shareable reports with unique URL
+- PDF export via reportlab (GET /api/reports/{id}/pdf)
 
-### Cinematic Hero
-- Rotating slideshow (2 custom images, 6s crossfade, gradient overlay)
-- Custom TrustLens logo, responsive clamp() typography
-- "Why TrustLens" section with 4 clarity blocks
-
-### Core
-- Deep Analysis 6-step wizard, Mirror Mode, Conversation Coach
-- AI adaptive questioning (Claude Sonnet 4.5 with hardcoded fallbacks)
+### UI
+- Cinematic hero slideshow, custom logo, responsive typography
+- "Why TrustLens" section, dark theme, glass morphism cards
 
 ## Prioritized Backlog
-
 ### P1 - Upcoming
 - [ ] Evidence signals module expansion
 - [ ] Post-conversation feedback analysis
-
 ### P2 - Future
-- [ ] User accounts (optional auth)
-- [ ] Replace AI fallbacks with real-time Claude Sonnet 4.5
-- [ ] Add real anonymized user stories to case database
-- [ ] Global Pattern Engine
-- [ ] Mobile app version
+- [ ] User accounts, real-time LLM, Global Pattern Engine
 
 ## Key API Endpoints
 - POST /api/analysis/start, /baseline, /changes, /timeline, /evidence, /answer, /pulse, /mirror, /conversation-coach
-- GET /api/analysis/{id}/results, /question, /status
+- GET /api/analysis/{id}/results (includes case_comparison with demographic_filtered, demographic_label)
 - GET /api/cases/stats, POST /api/cases/contribute
 - POST /api/reports/share, GET /api/reports/{id}, GET /api/reports/{id}/pdf
 - GET/POST /api/timeline-history

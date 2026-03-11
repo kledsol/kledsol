@@ -419,7 +419,7 @@ def get_pattern_statistics(hypotheses: dict) -> dict:
         return {"confirmed_issues": 8, "relationship_conflict": 27, "resolved_positively": 65}
 
 async def compare_with_case_database(session: dict) -> dict:
-    """Compare user signals against the relationship case database."""
+    """Compare user signals against the relationship case database with demographic filtering."""
     changes = session.get('changes_data') or []
     if not changes:
         return {
@@ -429,6 +429,7 @@ async def compare_with_case_database(session: dict) -> dict:
             "outcome_breakdown": {},
             "insights": [],
             "similar_case_count": 0,
+            "demographic_filtered": False,
         }
     
     # Normalize user signals to match case signal names
@@ -463,6 +464,7 @@ async def compare_with_case_database(session: dict) -> dict:
             "outcome_breakdown": {},
             "insights": [],
             "similar_case_count": 0,
+            "demographic_filtered": False,
         }
     
     # Score each case by signal overlap
@@ -478,55 +480,84 @@ async def compare_with_case_database(session: dict) -> dict:
     similar = [(c, s) for c, s in scored if s >= 0.3]
     similar.sort(key=lambda x: x[1], reverse=True)
     
-    # Outcome breakdown from similar cases
+    # --- Demographic filtering ---
+    baseline = session.get('baseline_data') or {}
+    duration_map = {
+        "0-1 years": "0-1 years", "1-3 years": "1-3 years",
+        "2-5 years": "3-5 years", "3-5 years": "3-5 years",
+        "5-10 years": "5-10 years", "10+ years": "10+ years",
+    }
+    user_duration = duration_map.get(baseline.get('relationship_duration', ''), '')
+    MIN_DEMOGRAPHIC_SAMPLE = 8
+    
+    demographic_filtered = []
+    if user_duration:
+        demographic_filtered = [
+            (c, s) for c, s in similar
+            if c.get("relationship_duration") == user_duration
+        ]
+    
+    used_demographic = len(demographic_filtered) >= MIN_DEMOGRAPHIC_SAMPLE
+    analysis_set = demographic_filtered if used_demographic else similar
+    demographic_label = f"couples together for {user_duration}" if used_demographic and user_duration else None
+    
+    # --- Compute outcomes from chosen set ---
+    total_similar = len(analysis_set)
     outcome_counts = {}
-    for case, _ in similar:
+    for case, _ in analysis_set:
         o = case["outcome"]
         outcome_counts[o] = outcome_counts.get(o, 0) + 1
     
-    total_similar = len(similar)
     outcome_pcts = {}
     for o, count in outcome_counts.items():
         outcome_pcts[o] = round(count / total_similar * 100) if total_similar else 0
     
-    # Generate human-readable insights
+    total_cases_count = await db.relationship_cases.count_documents({})
+    
+    # --- Generate insights ---
     insights = []
-    match_pct = round(total_similar / 300 * 100)
+    match_pct = round(len(similar) / max(total_cases_count, 1) * 100)
+    outcome_labels = {
+        "confirmed_infidelity": "trust was later broken",
+        "emotional_disengagement": "emotional disengagement was the root cause",
+        "misunderstanding": "the situation was resolved as a misunderstanding",
+        "personal_crisis": "a personal crisis was the underlying cause",
+        "unresolved_conflict": "ongoing unresolved conflict was identified",
+    }
     
     if total_similar > 0:
         top_outcome = max(outcome_counts, key=outcome_counts.get)
         top_pct = outcome_pcts[top_outcome]
-        outcome_labels = {
-            "confirmed_infidelity": "trust was later broken",
-            "emotional_disengagement": "emotional disengagement was the root cause",
-            "misunderstanding": "the situation was resolved as a misunderstanding",
-            "personal_crisis": "a personal crisis was the underlying cause",
-            "unresolved_conflict": "ongoing unresolved conflict was identified",
-        }
-        insights.append(f"Your situation resembles patterns found in {match_pct}% of documented cases.")
-        insights.append(f"In similar cases, {top_pct}% ended with a situation where {outcome_labels.get(top_outcome, top_outcome)}.")
         
-        # Check for positive outcomes
+        if used_demographic and demographic_label:
+            insights.append(f"Among {demographic_label}, {top_pct}% of similar cases ended where {outcome_labels.get(top_outcome, top_outcome)}.")
+        else:
+            insights.append(f"Your situation resembles patterns found in {match_pct}% of documented cases.")
+            insights.append(f"In similar cases, {top_pct}% ended with a situation where {outcome_labels.get(top_outcome, top_outcome)}.")
+        
         positive_pct = outcome_pcts.get("misunderstanding", 0) + outcome_pcts.get("personal_crisis", 0)
         if positive_pct > 30:
-            insights.append(f"Notably, {positive_pct}% of similar patterns were later explained by non-infidelity causes.")
+            prefix = f"Among {demographic_label}" if used_demographic and demographic_label else "Notably"
+            insights.append(f"{prefix}, {positive_pct}% of similar patterns were later explained by non-infidelity causes.")
     
-    # Compute pattern statistics from actual case data
+    # --- Pattern statistics ---
     pattern_stats = {
         "confirmed_issues": outcome_pcts.get("confirmed_infidelity", 0) + outcome_pcts.get("emotional_disengagement", 0),
         "relationship_conflict": outcome_pcts.get("unresolved_conflict", 0),
         "resolved_positively": outcome_pcts.get("misunderstanding", 0) + outcome_pcts.get("personal_crisis", 0),
     }
-    # Normalize to ~100%
     total_stats = sum(pattern_stats.values())
     if total_stats > 0 and total_stats != 100:
         for k in pattern_stats:
             pattern_stats[k] = round(pattern_stats[k] / total_stats * 100)
     
     return {
-        "total_cases": 300,
+        "total_cases": total_cases_count,
         "matching_cases": len(matching_cases),
-        "similar_case_count": total_similar,
+        "similar_case_count": len(similar),
+        "demographic_sample_size": len(demographic_filtered) if user_duration else 0,
+        "demographic_filtered": used_demographic,
+        "demographic_label": demographic_label,
         "match_pct": match_pct,
         "outcome_breakdown": outcome_pcts,
         "insights": insights,
@@ -857,6 +888,9 @@ async def get_results(session_id: str):
         "case_comparison": {
             "total_cases": case_comparison["total_cases"],
             "similar_case_count": case_comparison["similar_case_count"],
+            "demographic_filtered": case_comparison["demographic_filtered"],
+            "demographic_label": case_comparison.get("demographic_label"),
+            "demographic_sample_size": case_comparison.get("demographic_sample_size", 0),
             "outcome_breakdown": case_comparison["outcome_breakdown"],
             "insights": case_comparison["insights"],
         },
