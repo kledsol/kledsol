@@ -99,6 +99,8 @@ code, .mono {
 .hero-slide {
     position: absolute;
     inset: 0;
+    background-size: cover;
+    background-position: 65% center;
     animation: hero-crossfade 12s ease-in-out infinite;
 }
 
@@ -106,24 +108,10 @@ code, .mono {
     animation-delay: -6s;
 }
 
-/* Blurred background fill layer */
-.hero-slide-bg {
-    position: absolute;
-    inset: -20px;
-    background-size: cover;
-    background-position: center;
-    filter: blur(30px) brightness(0.7);
-    transform: scale(1.1);
-}
-
-/* Sharp full-image layer */
-.hero-slide-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
+@media (max-width: 767px) {
+    .hero-slide {
+        background-position: 62% center;
+    }
 }
 
 @keyframes hero-crossfade {

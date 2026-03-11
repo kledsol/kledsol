@@ -70,14 +70,14 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#0B132B] relative overflow-hidden">
       {/* Cinematic Background Slideshow */}
       <div className="hero-slideshow">
-        <div className="hero-slide">
-          <div className="hero-slide-bg" style={{ backgroundImage: "url(/hero_scene_1.jpg)" }} />
-          <img src="/hero_scene_1.jpg" alt="" className="hero-slide-img" />
-        </div>
-        <div className="hero-slide">
-          <div className="hero-slide-bg" style={{ backgroundImage: "url(/hero_scene_2.jpg)" }} />
-          <img src="/hero_scene_2.jpg" alt="" className="hero-slide-img" />
-        </div>
+        <div
+          className="hero-slide"
+          style={{ backgroundImage: "url(/hero_scene_1.jpg)" }}
+        />
+        <div
+          className="hero-slide"
+          style={{ backgroundImage: "url(/hero_scene_2.jpg)" }}
+        />
       </div>
       <div className="hero-overlay" />
       <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
