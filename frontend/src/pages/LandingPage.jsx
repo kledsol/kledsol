@@ -153,14 +153,15 @@ const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <main className="relative z-10 container mx-auto px-6 pt-16 md:pt-24 pb-32">
-        <div className="max-w-3xl flex flex-col justify-center">
+      <main className="relative z-10">
+        <section className="min-h-[72vh] md:min-h-[88vh] flex flex-col justify-center px-5 sm:px-10 md:px-16">
+          <div className="max-w-[90vw] md:max-w-[560px]">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="font-light text-white tracking-tight mb-8 leading-[1.15]"
-            style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(38px, 6vw, 64px)' }}
+            className="font-light text-white tracking-tight mb-8 leading-[1.18]"
+            style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(34px, 7vw, 64px)' }}
             data-testid="hero-headline"
           >
             Millions of people question what is really happening in their relationship.
@@ -170,8 +171,8 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[#C8D3DC] max-w-2xl mb-4 leading-relaxed"
-            style={{ fontSize: 'clamp(18px, 2.5vw, 22px)' }}
+            className="text-[#C8D3DC] mb-4 leading-[1.6]"
+            style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
             data-testid="hero-subheadline"
           >
             Sometimes it's distance.
@@ -185,8 +186,8 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[#3DD9C5] font-medium max-w-2xl mb-12"
-            style={{ fontSize: 'clamp(18px, 2.5vw, 22px)' }}
+            className="text-[#3DD9C5] font-medium mb-12 leading-[1.6]"
+            style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
             data-testid="hero-tagline"
           >
             TrustLens helps you interpret the signals.
@@ -227,12 +228,15 @@ const LandingPage = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, delay: 0.45 }}
             className="mt-8 text-[#8899A6]"
-            style={{ fontSize: 'clamp(16px, 2vw, 18px)' }}
+            style={{ fontSize: 'clamp(15px, 2vw, 18px)' }}
             data-testid="privacy-reassurance"
           >
             Private. Anonymous. No account required.
           </motion.p>
-        </div>
+          </div>
+        </section>
+
+        <div className="container mx-auto px-5 sm:px-10 md:px-16 pb-32">
 
         {/* Why TrustLens Section */}
         <motion.section
@@ -350,6 +354,7 @@ const LandingPage = () => {
             </div>
           </div>
         </motion.section>
+        </div>
       </main>
 
       {/* Footer */}

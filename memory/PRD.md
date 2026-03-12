@@ -43,7 +43,12 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 - Relationship Pulse, Share Report, PDF Export
 
 ## Recent Changes
-### "Why TrustLens" Section Restored & Redesigned (Feb 2026)
+### Hero Section Sizing & Mobile Readability Fix (Feb 2026)
+- Controlled hero height: 72vh mobile, 88vh desktop with flex centering
+- Text container: max-w 560px desktop, 90vw mobile, responsive padding (20/40/64px)
+- Typography: headline clamp(34px,7vw,64px), sub clamp(18px,4.2vw,24px), reassurance min 15px
+- Background-position: 72% desktop, 68% mobile for better subject framing
+- Lighter overlay (0.42→0.25) for emotional, not clinical, feel
 - Redesigned as narrative layout: 4 illustrated horizontal blocks (image + title + paragraph)
 - Desktop: image left / text right. Mobile: image on top / text below
 - Stock images from Unsplash for each block
