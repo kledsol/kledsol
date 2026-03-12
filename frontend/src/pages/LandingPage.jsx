@@ -68,184 +68,180 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B132B] relative overflow-hidden">
-      {/* Cinematic Background Slideshow */}
-      <div className="hero-slideshow">
-        <div
-          className="hero-slide"
-          style={{ backgroundImage: "url(/hero_scene_1.jpg)" }}
-        />
-        <div
-          className="hero-slide"
-          style={{ backgroundImage: "url(/hero_scene_2.jpg)" }}
-        />
-      </div>
-      <div className="hero-overlay" />
-      <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
+    <div className="bg-[#0B132B]">
+      {/* ===== HERO (self-contained with its own background) ===== */}
+      <div className="relative overflow-hidden">
+        {/* Cinematic Background Slideshow */}
+        <div className="hero-slideshow">
+          <div
+            className="hero-slide"
+            style={{ backgroundImage: "url(/hero_scene_1.jpg)" }}
+          />
+          <div
+            className="hero-slide"
+            style={{ backgroundImage: "url(/hero_scene_2.jpg)" }}
+          />
+        </div>
+        <div className="hero-overlay" />
+        <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
 
-      {/* Navigation */}
-      <header className="relative z-50">
-        <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
-          <Link to="/" data-testid="logo-link">
-            <img
-              src="/trustlens-logo.png"
-              alt="TrustLens"
-              className="h-10 md:h-12 w-auto"
-              data-testid="trustlens-logo"
-            />
-          </Link>
+        {/* Navigation */}
+        <header className="relative z-50">
+          <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
+            <Link to="/" data-testid="logo-link">
+              <img
+                src="/trustlens-logo.png"
+                alt="TrustLens"
+                className="h-10 md:h-12 w-auto"
+                data-testid="trustlens-logo"
+              />
+            </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-sm text-muted-foreground hover:text-[#3DD9C5] transition-colors"
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="text-sm text-muted-foreground hover:text-[#3DD9C5] transition-colors"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <Button
+                onClick={() => handleStartAnalysis("deep")}
+                disabled={loading}
+                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 btn-glow"
+                data-testid="nav-start-btn"
               >
-                {item.label}
-              </a>
-            ))}
-            <Button
-              onClick={() => handleStartAnalysis("deep")}
-              disabled={loading}
-              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 btn-glow"
-              data-testid="nav-start-btn"
+                Start Analysis
+              </Button>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="md:hidden p-2 text-white"
+              onClick={() => setMenuOpen(!menuOpen)}
+              data-testid="mobile-menu-toggle"
             >
-              Start Analysis
-            </Button>
-          </div>
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </nav>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden p-2 text-white"
-            onClick={() => setMenuOpen(!menuOpen)}
-            data-testid="mobile-menu-toggle"
-          >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </nav>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden absolute top-full left-0 right-0 bg-[#0A1120] border-b border-white/10 p-6"
-          >
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="block py-3 text-muted-foreground hover:text-[#3DD9C5]"
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="md:hidden absolute top-full left-0 right-0 bg-[#0A1120] border-b border-white/10 p-6"
+            >
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="block py-3 text-muted-foreground hover:text-[#3DD9C5]"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <Button
+                onClick={() => handleStartAnalysis("deep")}
+                className="mt-4 w-full bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full"
               >
-                {item.label}
-              </a>
-            ))}
-            <Button
-              onClick={() => handleStartAnalysis("deep")}
-              className="mt-4 w-full bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full"
-            >
-              Start Analysis
-            </Button>
-          </motion.div>
-        )}
-      </header>
+                Start Analysis
+              </Button>
+            </motion.div>
+          )}
+        </header>
 
-      {/* Hero Section */}
-      <main className="relative z-10">
-        <section className="min-h-[72vh] md:min-h-[88vh] flex flex-col justify-center px-5 sm:px-10 md:px-16">
+        {/* Hero Content */}
+        <section className="relative z-10 min-h-[72vh] md:min-h-[88vh] flex flex-col justify-center px-5 sm:px-10 md:px-16">
           <div className="max-w-[90vw] md:max-w-[560px]">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="font-light text-white tracking-tight mb-8 leading-[1.18]"
-            style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(34px, 7vw, 64px)' }}
-            data-testid="hero-headline"
-          >
-            Millions of people question what is really happening in their relationship.
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[#C8D3DC] mb-4 leading-[1.6]"
-            style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
-            data-testid="hero-subheadline"
-          >
-            Sometimes it's distance.
-            <br />
-            Sometimes it's misunderstanding.
-            <br />
-            Sometimes it's something deeper.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[#3DD9C5] font-medium mb-12 leading-[1.6]"
-            style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
-            data-testid="hero-tagline"
-          >
-            TrustLens helps you interpret the signals.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <Button
-              onClick={() => handleStartAnalysis("deep")}
-              disabled={loading}
-              size="lg"
-              className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-lg sm:text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
-              data-testid="start-analysis-btn"
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="font-light text-white tracking-tight mb-8 leading-[1.18]"
+              style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(34px, 7vw, 64px)' }}
+              data-testid="hero-headline"
             >
-              {loading ? "Starting..." : "Start Relationship Analysis"}
-              <ChevronRight className="w-6 h-6 ml-2" />
-            </Button>
-            <Button
-              onClick={() => handleStartAnalysis("pulse")}
-              disabled={loading}
-              variant="outline"
-              size="lg"
-              className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-base sm:text-lg"
-              data-testid="pulse-btn"
-            >
-              <HeartLensIcon size={22} />
-              <span className="ml-2">Check Relationship Pulse</span>
-            </Button>
-          </motion.div>
+              Millions of people question what is really happening in their relationship.
+            </motion.h1>
 
-          {/* Reassurance Line */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.45 }}
-            className="mt-8 text-[#8899A6]"
-            style={{ fontSize: 'clamp(15px, 2vw, 18px)' }}
-            data-testid="privacy-reassurance"
-          >
-            Private. Anonymous. No account required.
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[#C8D3DC] mb-4 leading-[1.6]"
+              style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
+              data-testid="hero-subheadline"
+            >
+              Sometimes it's distance.
+              <br />
+              Sometimes it's misunderstanding.
+              <br />
+              Sometimes it's something deeper.
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[#3DD9C5] font-medium mb-12 leading-[1.6]"
+              style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
+              data-testid="hero-tagline"
+            >
+              TrustLens helps you interpret the signals.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <Button
+                onClick={() => handleStartAnalysis("deep")}
+                disabled={loading}
+                size="lg"
+                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-lg sm:text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
+                data-testid="start-analysis-btn"
+              >
+                {loading ? "Starting..." : "Start Relationship Analysis"}
+                <ChevronRight className="w-6 h-6 ml-2" />
+              </Button>
+              <Button
+                onClick={() => handleStartAnalysis("pulse")}
+                disabled={loading}
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-base sm:text-lg"
+                data-testid="pulse-btn"
+              >
+                <HeartLensIcon size={22} />
+                <span className="ml-2">Check Relationship Pulse</span>
+              </Button>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.45 }}
+              className="mt-8 text-[#8899A6]"
+              style={{ fontSize: 'clamp(15px, 2vw, 18px)' }}
+              data-testid="privacy-reassurance"
+            >
+              Private. Anonymous. No account required.
+            </motion.p>
           </div>
         </section>
+      </div>
 
-        <div className="container mx-auto px-5 sm:px-10 md:px-16 pb-32">
+      {/* ===== CONTENT SECTIONS (solid background, no hero image) ===== */}
+      <main className="bg-[#0B132B] px-5 sm:px-10 md:px-16 pb-32">
 
         {/* Why TrustLens Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-32"
-          id="why"
-        >
+        <section className="pt-24 md:pt-32" id="why">
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
             style={{ fontFamily: "Fraunces, serif" }}
@@ -270,8 +266,9 @@ const LandingPage = () => {
               <motion.div
                 key={block.title}
                 initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="flex flex-col md:flex-row gap-6 md:gap-10 items-start"
                 data-testid={`why-block-${index}`}
               >
@@ -299,16 +296,10 @@ const LandingPage = () => {
               </motion.div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
         {/* How It Works Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.8 }}
-          className="mt-32"
-          id="how"
-        >
+        <section className="mt-32" id="how">
           <h2 className="text-4xl md:text-5xl font-light text-[#E6EDF3] mb-16" style={{ fontFamily: 'Fraunces, serif' }}>
             How TrustLens Works
           </h2>
@@ -329,16 +320,10 @@ const LandingPage = () => {
               </div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
         {/* Privacy Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 1 }}
-          className="mt-32 glass-card rounded-3xl p-12"
-          id="privacy"
-        >
+        <section className="mt-32 glass-card rounded-3xl p-12" id="privacy">
           <div className="flex items-start gap-6">
             <Shield className="w-12 h-12 text-[#3DD9C5] flex-shrink-0" />
             <div>
@@ -353,12 +338,11 @@ const LandingPage = () => {
               </p>
             </div>
           </div>
-        </motion.section>
-        </div>
+        </section>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 py-12">
+      <footer className="border-t border-white/10 py-12">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <img src="/trustlens-logo.png" alt="TrustLens" className="h-8 w-auto" />
           <p className="text-sm text-muted-foreground">
