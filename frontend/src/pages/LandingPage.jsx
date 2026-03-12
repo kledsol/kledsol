@@ -78,26 +78,30 @@ const LandingPage = () => {
 
         {/* Navigation */}
         <header className="relative z-50">
-          <nav className="px-6 md:px-8 py-6 md:py-8 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
+          <nav className="container mx-auto px-6 md:px-10 py-6 md:py-8 flex items-center justify-between">
+            <Link to="/" className="flex items-center" data-testid="logo-link">
               <span
-                className="text-white text-xl md:text-2xl font-light tracking-tight drop-shadow-[0_1px_6px_rgba(255,255,255,0.2)]"
+                className="text-white text-2xl md:text-[1.7rem] font-light tracking-tight drop-shadow-[0_1px_8px_rgba(255,255,255,0.15)] flex items-center"
                 style={{ fontFamily: 'Fraunces, serif' }}
                 data-testid="trustlens-logo"
               >
-                Trust<span className="text-[#3DD9C5]">Lens</span>
+                Trust
+                <span className="inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 mx-[2px] rounded-full border-2 border-[#3DD9C5] relative">
+                  <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#3DD9C5]/60" />
+                </span>
+                <span className="text-[#3DD9C5]">Lens</span>
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
               {navItems.map((item) => (
-                <a key={item.label} href={item.href} className="text-sm text-white/60 hover:text-[#3DD9C5] transition-colors">
+                <a key={item.label} href={item.href} className="text-[15px] text-white/65 hover:text-[#3DD9C5] transition-colors">
                   {item.label}
                 </a>
               ))}
               <Button
                 onClick={() => handleStartAnalysis("deep")}
                 disabled={loading}
-                className="bg-[#ff2e8b] text-white hover:bg-[#e0267a] rounded-full px-6"
+                className="bg-[#ff2e8b] text-white hover:bg-[#e0267a] rounded-full px-6 text-[15px]"
                 data-testid="nav-start-btn"
               >
                 Start Analysis
@@ -302,8 +306,12 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 py-12">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="text-white text-lg font-light tracking-tight" style={{ fontFamily: 'Fraunces, serif' }}>
-            Trust<span className="text-[#3DD9C5]">Lens</span>
+          <span className="text-white text-lg font-light tracking-tight flex items-center" style={{ fontFamily: 'Fraunces, serif' }}>
+            Trust
+            <span className="inline-flex items-center justify-center w-4 h-4 mx-[1px] rounded-full border-[1.5px] border-[#3DD9C5]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3DD9C5]/60" />
+            </span>
+            <span className="text-[#3DD9C5]">Lens</span>
           </span>
           <p className="text-sm text-muted-foreground">Empathetic relationship analysis powered by AI</p>
         </div>
