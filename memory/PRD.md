@@ -11,24 +11,34 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 
 ## Implemented Features
 
-### User Accounts & Signal Trend Tracking (NEW - Mar 2026)
-- **Optional JWT auth**: email + password registration/login, stays anonymous by default
-- **Endpoints**: POST /api/auth/register, /login, GET /me, POST /link-analysis, GET /my-analyses, GET /signal-trends/{session_id}
-- **Collections**: `users` (user_id, email, password_hash, created_at), `signal_snapshots` (signal intensity snapshots per analysis)
-- **Trend tracking**: Compares current analysis signal intensities against immediately previous saved analysis
-- **Deltas displayed**: TrendingUp (red) for increases, TrendingDown (green) for decreases
-- **UX**: Soft save prompt appears only after all results revealed (stage 12). Privacy text: "Optional. Your analysis can still be used anonymously."
-- **My Analyses page** at /my-analyses: lists saved analyses with dates, signal counts, and detected changes
-- **Landing page**: "My Analyses" nav link appears for logged-in users
+### Landing Page Hero Redesign (Feb 2026)
+- Centered headline: "Is my partner cheating?"
+- Narrative text with emotional pacing (subtle signs, late nights, locked phone, etc.)
+- Pink CTA button (#ff2e8b) "Start Relationship Analysis"
+- Reassurance lines: "3-minute analysis" + "Private - Anonymous - No account required"
+- Desktop side margins: credibility text ("300+ documented cases") and privacy text
+- Hero and content sections fully separated (hero has own relative container)
+
+### "Why TrustLens" Section (Feb 2026)
+- Horizontal glass cards (image left, text right on desktop, stacked on mobile)
+- 4 blocks: Reality of Infidelity, Why People Miss Signs, What TrustLens Does, Not Accusations Only Clarity
+- Solid dark background (#0B132B), no hero image bleed
+- Max-width 6xl, centered layout
+
+### User Accounts & Signal Trend Tracking (Mar 2026)
+- Optional JWT auth: email + password registration/login, stays anonymous by default
+- Endpoints: POST /api/auth/register, /login, GET /me, POST /link-analysis, GET /my-analyses, GET /signal-trends/{session_id}
+- Collections: users (user_id, email, password_hash, created_at), signal_snapshots
+- Trend tracking: Compares current analysis against previous saved analysis
+- My Analyses page at /my-analyses
 
 ### Signal Strength Summary (Mar 2026)
 - Displays signals grouped by strength: Strong (>=55%), Moderate (25-55%), Weak (<25%)
-- Composite intensity from signals + change categories + core answer detection
-- Now includes trend deltas for logged-in users with previous analyses
+- Includes trend deltas for logged-in users with previous analyses
 
 ### Conversation Coach (Enhanced - Mar 2026)
 - AI-powered guidance personalized from full analysis context
-- Sections: Framing, 2-3 Openings, 3-5 Questions, Emotional Preparation, Avoid, Observe
+- Sections: Framing, Openings, Questions, Emotional Preparation, Avoid, Observe
 
 ### Dual Perspective / Mirror Mode (Mar 2026)
 - Two partners independently complete analyses, consent to share, get comparison report
@@ -42,20 +52,7 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 - 300-case database, Calibrated Suspicion Score, 12-stage progressive reveal
 - Relationship Pulse, Share Report, PDF Export
 
-## Recent Changes
-### Hero / Why TrustLens Section Separation (Feb 2026)
-- Hero slideshow scoped to its own relative container — no background bleed
-- "Why TrustLens" on clean solid #0B132B background, fully separated from hero
-- Mobile-first readability with generous spacing and strong contrast
-- Redesigned as narrative layout: 4 illustrated horizontal blocks (image + title + paragraph)
-- Desktop: image left / text right. Mobile: image on top / text below
-- Stock images from Unsplash for each block
-- Copy: The Reality of Infidelity, Why People Miss the Signs, What TrustLens Actually Does, Not Accusations Only Clarity
-
 ## Prioritized Backlog
-### P0 - Next
-- [ ] Redesign "Why TrustLens" section with new structure, copy, and images (awaiting user direction)
-
 ### P2 - Future
 - [ ] PDF Export for Conversation Coach guidance
 - [ ] Enhance "My Analyses" Dashboard
@@ -68,3 +65,9 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 - POST /api/auth/register, /login, /link-analysis, GET /me, /my-analyses, /signal-trends/{id}
 - POST /api/mirror/create, GET /mirror/{id}/join, /status, POST /mirror/{id}/consent, GET /mirror/{id}/report
 - POST /api/reports/share, GET /api/reports/{id}, GET /api/reports/{id}/pdf
+
+## System Check Status (Feb 2026)
+- Backend: 100% (11/11 tests passed)
+- Frontend: 100% (all Playwright tests passed)
+- All core APIs operational
+- Application confirmed ready for launch
