@@ -44,22 +44,22 @@ const LandingPage = () => {
 
   const whyBlocks = [
     {
-      image: "https://images.unsplash.com/photo-1717381539587-efe2070e4b92?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1654541697091-2a68715c6a4f?w=800&q=80",
       title: "The Reality of Infidelity",
       text: "1 in 5 people admits having cheated at least once in a long-term relationship. Yet most partners discover it months or even years later. Why? Because the signs usually appear gradually and are easy to misinterpret.",
     },
     {
-      image: "https://images.unsplash.com/photo-1710503701213-6b79941f5660?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1554283490-201f0abd4493?w=800&q=80",
       title: "Why People Miss the Signs",
       text: "When emotions are involved, it becomes difficult to evaluate situations objectively. People often ignore warning signs, rationalize unusual behavior, or doubt their own perception. TrustLens helps structure these signals into a clearer analysis.",
     },
     {
-      image: "https://images.unsplash.com/photo-1654764450273-59862da1a259?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1586287011589-1477d062ab16?w=800&q=80",
       title: "What TrustLens Actually Does",
       text: "TrustLens analyzes patterns such as behavioral changes, secrecy around phone or schedule, emotional distancing, and inconsistencies in explanations. Your responses are compared with documented relationship patterns to provide an objective clarity score.",
     },
     {
-      image: "https://images.unsplash.com/photo-1663361963652-e7c0a08c06d3?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1727001503444-6ea51e6105f2?w=800&q=80",
       title: "Not Accusations, Only Clarity",
       text: "TrustLens does not accuse anyone. Instead, it helps answer a question many people quietly ask themselves: \"Is something really going on, or am I imagining things?\"",
     },
@@ -208,20 +208,20 @@ const LandingPage = () => {
           >
             Why TrustLens Exists
           </h2>
-          <div className="max-w-2xl mb-20 space-y-4">
-            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+          <div className="max-w-2xl mb-16 space-y-4">
+            <p className="text-sm sm:text-base text-[#A0AEC0] leading-relaxed">
               Millions of people suspect something in their relationship but struggle to interpret the signs.
             </p>
-            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+            <p className="text-sm sm:text-base text-[#A0AEC0] leading-relaxed">
               Small changes in behavior — late nights, secrecy, emotional distance — can create doubt.
               But doubt alone does not provide clarity.
             </p>
-            <p className="text-sm sm:text-base text-[#E6EDF3]/80 leading-relaxed font-medium">
+            <p className="text-sm sm:text-base text-white/80 leading-relaxed font-medium">
               TrustLens helps analyze these signals objectively.
             </p>
           </div>
 
-          <div className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
@@ -229,25 +229,23 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: index * 0.08 }}
-                className="glass-card rounded-2xl overflow-hidden flex flex-col md:flex-row"
+                className="rounded-2xl overflow-hidden flex flex-col bg-[#111B33] border border-white/[0.07] shadow-lg shadow-black/20"
                 data-testid={`why-block-${index}`}
               >
-                <div className="md:w-[320px] flex-shrink-0">
-                  <img
-                    src={block.image}
-                    alt={block.title}
-                    className="w-full h-48 sm:h-52 md:h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
+                <img
+                  src={block.image}
+                  alt={block.title}
+                  className="w-full h-48 sm:h-52 object-cover"
+                  loading="lazy"
+                />
+                <div className="p-6 sm:p-8 flex-1">
                   <h3
-                    className="text-lg sm:text-xl font-medium text-[#E6EDF3] mb-3"
+                    className="text-lg sm:text-xl font-semibold text-white mb-3"
                     style={{ fontFamily: "Fraunces, serif" }}
                   >
                     {block.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+                  <p className="text-sm sm:text-base text-[#A0AEC0] leading-relaxed">
                     {block.text}
                   </p>
                 </div>
