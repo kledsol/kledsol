@@ -7,8 +7,6 @@ import { useAnalysis } from "@/App";
 import { startAnalysis } from "@/lib/api";
 import { toast } from "sonner";
 import {
-  Activity,
-  Brain,
   Shield,
   ChevronRight,
   Menu,
@@ -48,24 +46,24 @@ const LandingPage = () => {
 
   const whyBlocks = [
     {
-      icon: Activity,
+      image: "https://images.unsplash.com/photo-1717381539587-efe2070e4b92?w=800&q=80",
       title: "The Reality of Infidelity",
-      description: "Studies suggest that 20-40% of relationships experience some form of infidelity. If you're questioning your partner's behavior, you're not alone — and your instincts deserve to be explored.",
+      text: "1 in 5 people admits having cheated at least once in a long-term relationship.\n\nYet most partners discover it months or even years later.\n\nWhy? Because the signs usually appear gradually and are easy to misinterpret.",
     },
     {
-      icon: Brain,
+      image: "https://images.unsplash.com/photo-1710503701213-6b79941f5660?w=800&q=80",
       title: "Why People Miss the Signs",
-      description: "Emotions cloud judgment. Love creates blind spots. When you're emotionally invested, it's nearly impossible to analyze behavioral changes objectively. Small shifts get rationalized away.",
+      text: "When emotions are involved, it becomes difficult to evaluate situations objectively.\n\nPeople often ignore warning signs, rationalize unusual behavior, or doubt their own perception.\n\nTrustLens helps structure these signals into a clearer analysis.",
     },
     {
-      icon: Activity,
-      title: "What TrustLens Does",
-      description: "TrustLens uses behavioral psychology and AI to help you map relationship patterns — communication shifts, emotional distance, routine changes — and identify what they may actually mean.",
+      image: "https://images.unsplash.com/photo-1657495183151-0a0d86fb130c?w=800&q=80",
+      title: "What TrustLens Actually Does",
+      text: "TrustLens analyzes patterns such as behavioral changes, secrecy around phone or schedule, emotional distancing, and inconsistencies in explanations.\n\nYour responses are compared with documented relationship patterns to provide an objective clarity score.",
     },
     {
-      icon: Shield,
+      image: "https://images.unsplash.com/photo-1679059184936-64fdd4d4700e?w=800&q=80",
       title: "Not Accusations, Only Clarity",
-      description: "We don't tell you what to think. We help you see clearly. TrustLens provides structured analysis so you can make informed decisions about your own relationship — with empathy, not paranoia.",
+      text: "TrustLens does not accuse anyone.\n\nInstead, it helps answer a question many people quietly ask themselves:\n\n\"Is something really going on, or am I imagining things?\"",
     },
   ];
 
@@ -248,34 +246,51 @@ const LandingPage = () => {
             className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
             style={{ fontFamily: "Fraunces, serif" }}
           >
-            Why TrustLens
+            Why TrustLens Exists
           </h2>
-          <p className="text-base sm:text-lg text-[#8899A6] max-w-2xl mb-16 leading-relaxed">
-            Understanding what's really happening in your relationship shouldn't require guesswork.
-          </p>
+          <div className="max-w-2xl mb-20 space-y-4">
+            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+              Millions of people suspect something in their relationship but struggle to interpret the signs.
+            </p>
+            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+              Small changes in behavior — late nights, secrecy, emotional distance — can create doubt.
+              But doubt alone does not provide clarity.
+            </p>
+            <p className="text-sm sm:text-base text-[#E6EDF3]/80 leading-relaxed font-medium">
+              TrustLens helps analyze these signals objectively.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-12">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.12 }}
+                className="flex flex-col md:flex-row gap-6 md:gap-10 items-start"
                 data-testid={`why-block-${index}`}
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <block.icon className="w-5 h-5 text-[#3DD9C5]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
-                      {block.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      {block.description}
+                <div className="w-full md:w-[340px] flex-shrink-0 rounded-xl overflow-hidden">
+                  <img
+                    src={block.image}
+                    alt={block.title}
+                    className="w-full h-48 sm:h-56 md:h-52 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="flex-1 pt-1">
+                  <h3
+                    className="text-lg sm:text-xl font-medium text-[#E6EDF3] mb-3"
+                    style={{ fontFamily: "Fraunces, serif" }}
+                  >
+                    {block.title}
+                  </h3>
+                  {block.text.split("\n\n").map((para, i) => (
+                    <p key={i} className="text-sm sm:text-base text-[#8899A6] leading-relaxed mb-2 last:mb-0">
+                      {para}
                     </p>
-                  </div>
+                  ))}
                 </div>
               </motion.div>
             ))}

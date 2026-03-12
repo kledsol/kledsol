@@ -43,9 +43,11 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 - Relationship Pulse, Share Report, PDF Export
 
 ## Recent Changes
-### "Why TrustLens" Section Restored (Feb 2026)
-- Reverted broken image-based template back to stable 2-column icon+text grid
-- Fixed data/template mismatch (rendering expected fields that didn't exist)
+### "Why TrustLens" Section Restored & Redesigned (Feb 2026)
+- Redesigned as narrative layout: 4 illustrated horizontal blocks (image + title + paragraph)
+- Desktop: image left / text right. Mobile: image on top / text below
+- Stock images from Unsplash for each block
+- Copy: The Reality of Infidelity, Why People Miss the Signs, What TrustLens Actually Does, Not Accusations Only Clarity
 
 ## Prioritized Backlog
 ### P0 - Next
