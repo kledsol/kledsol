@@ -2,13 +2,11 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { HeartLensIcon } from "@/components/custom/Logo";
 import { useAnalysis } from "@/App";
 import { startAnalysis } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Shield,
-  ChevronRight,
   Menu,
   X,
 } from "lucide-react";
@@ -69,18 +67,11 @@ const LandingPage = () => {
 
   return (
     <div className="bg-[#0B132B]">
-      {/* ===== HERO (self-contained with its own background) ===== */}
+      {/* ===== HERO ===== */}
       <div className="relative overflow-hidden">
-        {/* Cinematic Background Slideshow */}
         <div className="hero-slideshow">
-          <div
-            className="hero-slide"
-            style={{ backgroundImage: "url(/hero_scene_1.jpg)" }}
-          />
-          <div
-            className="hero-slide"
-            style={{ backgroundImage: "url(/hero_scene_2.jpg)" }}
-          />
+          <div className="hero-slide" style={{ backgroundImage: "url(/hero_scene_1.jpg)" }} />
+          <div className="hero-slide" style={{ backgroundImage: "url(/hero_scene_2.jpg)" }} />
         </div>
         <div className="hero-overlay" />
         <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
@@ -89,65 +80,37 @@ const LandingPage = () => {
         <header className="relative z-50">
           <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
             <Link to="/" data-testid="logo-link">
-              <img
-                src="/trustlens-logo.png"
-                alt="TrustLens"
-                className="h-10 md:h-12 w-auto"
-                data-testid="trustlens-logo"
-              />
+              <img src="/trustlens-logo.png" alt="TrustLens" className="h-10 md:h-12 w-auto" data-testid="trustlens-logo" />
             </Link>
-
-            {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
               {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-sm text-muted-foreground hover:text-[#3DD9C5] transition-colors"
-                >
+                <a key={item.label} href={item.href} className="text-sm text-white/60 hover:text-[#3DD9C5] transition-colors">
                   {item.label}
                 </a>
               ))}
               <Button
                 onClick={() => handleStartAnalysis("deep")}
                 disabled={loading}
-                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6 btn-glow"
+                className="bg-[#ff2e8b] text-white hover:bg-[#e0267a] rounded-full px-6"
                 data-testid="nav-start-btn"
               >
                 Start Analysis
               </Button>
             </div>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              className="md:hidden p-2 text-white"
-              onClick={() => setMenuOpen(!menuOpen)}
-              data-testid="mobile-menu-toggle"
-            >
+            <button className="md:hidden p-2 text-white" onClick={() => setMenuOpen(!menuOpen)} data-testid="mobile-menu-toggle">
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </nav>
-
-          {/* Mobile Menu */}
           {menuOpen && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="md:hidden absolute top-full left-0 right-0 bg-[#0A1120] border-b border-white/10 p-6"
+              className="md:hidden absolute top-full left-0 right-0 bg-[#0A1120] border-b border-white/10 p-6 z-50"
             >
               {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="block py-3 text-muted-foreground hover:text-[#3DD9C5]"
-                >
-                  {item.label}
-                </a>
+                <a key={item.label} href={item.href} className="block py-3 text-white/60 hover:text-[#3DD9C5]">{item.label}</a>
               ))}
-              <Button
-                onClick={() => handleStartAnalysis("deep")}
-                className="mt-4 w-full bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full"
-              >
+              <Button onClick={() => handleStartAnalysis("deep")} className="mt-4 w-full bg-[#ff2e8b] text-white hover:bg-[#e0267a] rounded-full">
                 Start Analysis
               </Button>
             </motion.div>
@@ -155,93 +118,90 @@ const LandingPage = () => {
         </header>
 
         {/* Hero Content */}
-        <section className="relative z-10 min-h-[72vh] md:min-h-[88vh] flex flex-col justify-center px-5 sm:px-10 md:px-16">
-          <div className="max-w-[90vw] md:max-w-[560px]">
+        <section className="relative z-10 min-h-[72vh] md:min-h-[88vh] flex items-center">
+          {/* Side margin — left (desktop only) */}
+          <div className="hidden lg:flex absolute left-6 top-1/2 -translate-y-1/2 z-20">
+            <p className="text-[11px] text-white/30 tracking-wide [writing-mode:vertical-lr] rotate-180">
+              Based on 300+ documented relationship cases
+            </p>
+          </div>
+
+          {/* Side margin — right (desktop only) */}
+          <div className="hidden lg:flex absolute right-6 top-1/2 -translate-y-1/2 z-20">
+            <p className="text-[11px] text-white/30 tracking-wide [writing-mode:vertical-lr]">
+              Private &bull; Anonymous &bull; No account required
+            </p>
+          </div>
+
+          {/* Centered hero text */}
+          <div className="w-full max-w-[620px] mx-auto px-6 sm:px-10 text-center">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="font-light text-white tracking-tight mb-8 leading-[1.18]"
-              style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(34px, 7vw, 64px)' }}
+              className="text-white font-light tracking-tight mb-10 leading-[1.1]"
+              style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(36px, 8vw, 68px)' }}
               data-testid="hero-headline"
             >
-              Millions of people question what is really happening in their relationship.
+              Is my partner cheating?
             </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[#C8D3DC] mb-4 leading-[1.6]"
-              style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
-              data-testid="hero-subheadline"
-            >
-              Sometimes it's distance.
-              <br />
-              Sometimes it's misunderstanding.
-              <br />
-              Sometimes it's something deeper.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[#3DD9C5] font-medium mb-12 leading-[1.6]"
-              style={{ fontSize: 'clamp(18px, 4.2vw, 24px)' }}
-              data-testid="hero-tagline"
-            >
-              TrustLens helps you interpret the signals.
-            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col sm:flex-row gap-4"
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-10 space-y-5"
+              data-testid="hero-narrative"
+            >
+              <p className="text-white/70 leading-[1.7]" style={{ fontSize: 'clamp(16px, 3.8vw, 20px)' }}>
+                Sometimes the signs are subtle.
+              </p>
+              <p className="text-white/50 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
+                Late nights.<br />
+                A locked phone.<br />
+                Emotional distance.
+              </p>
+              <p className="text-white/60 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
+                Small changes that slowly start to feel like signals.
+              </p>
+              <p className="text-white/80 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
+                TrustLens analyzes relationship behaviors,<br className="hidden sm:block" />
+                compares them with real relationship patterns,<br className="hidden sm:block" />
+                and helps you understand what those signals might actually mean.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col items-center gap-4"
             >
               <Button
                 onClick={() => handleStartAnalysis("deep")}
                 disabled={loading}
                 size="lg"
-                className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-10 py-7 text-lg sm:text-xl font-semibold btn-glow transition-all hover:scale-105 shadow-lg shadow-[#3DD9C5]/25"
+                className="bg-[#ff2e8b] text-white hover:bg-[#ff3c8f] rounded-full px-12 py-7 text-lg sm:text-xl font-semibold transition-all hover:scale-105 shadow-lg shadow-[#ff2e8b]/30"
                 data-testid="start-analysis-btn"
               >
                 {loading ? "Starting..." : "Start Relationship Analysis"}
-                <ChevronRight className="w-6 h-6 ml-2" />
               </Button>
-              <Button
-                onClick={() => handleStartAnalysis("pulse")}
-                disabled={loading}
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10 rounded-full px-8 py-7 text-base sm:text-lg"
-                data-testid="pulse-btn"
-              >
-                <HeartLensIcon size={22} />
-                <span className="ml-2">Check Relationship Pulse</span>
-              </Button>
+              <p className="text-white/50 text-sm" data-testid="hero-duration">
+                3-minute relationship analysis
+              </p>
+              <p className="text-white/35 text-xs tracking-wide" data-testid="privacy-reassurance">
+                Private &bull; Anonymous &bull; No account required
+              </p>
             </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.45 }}
-              className="mt-8 text-[#8899A6]"
-              style={{ fontSize: 'clamp(15px, 2vw, 18px)' }}
-              data-testid="privacy-reassurance"
-            >
-              Private. Anonymous. No account required.
-            </motion.p>
           </div>
         </section>
       </div>
 
-      {/* ===== CONTENT SECTIONS (solid background, no hero image) ===== */}
+      {/* ===== CONTENT SECTIONS ===== */}
       <main className="bg-[#0B132B] px-5 sm:px-10 md:px-16 pb-32">
 
         {/* Why TrustLens Section */}
-        <section className="pt-24 md:pt-32" id="why">
+        <section className="pt-24 md:pt-32 max-w-6xl mx-auto" id="why">
           <h2
             className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
             style={{ fontFamily: "Fraunces, serif" }}
@@ -261,24 +221,26 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-10">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card rounded-2xl overflow-hidden flex flex-col"
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="glass-card rounded-2xl overflow-hidden flex flex-col md:flex-row"
                 data-testid={`why-block-${index}`}
               >
-                <img
-                  src={block.image}
-                  alt={block.title}
-                  className="w-full h-48 sm:h-52 object-cover"
-                  loading="lazy"
-                />
-                <div className="p-6 sm:p-8 flex-1">
+                <div className="md:w-[320px] flex-shrink-0">
+                  <img
+                    src={block.image}
+                    alt={block.title}
+                    className="w-full h-48 sm:h-52 md:h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
                   <h3
                     className="text-lg sm:text-xl font-medium text-[#E6EDF3] mb-3"
                     style={{ fontFamily: "Fraunces, serif" }}
@@ -295,7 +257,7 @@ const LandingPage = () => {
         </section>
 
         {/* How It Works Section */}
-        <section className="mt-32" id="how">
+        <section className="mt-32 max-w-6xl mx-auto" id="how">
           <h2 className="text-4xl md:text-5xl font-light text-[#E6EDF3] mb-16" style={{ fontFamily: 'Fraunces, serif' }}>
             How TrustLens Works
           </h2>
@@ -306,12 +268,8 @@ const LandingPage = () => {
               { step: "03", title: "Gain Clarity", desc: "Receive insights and suggested actions to improve communication" },
             ].map((item, i) => (
               <div key={i} className="relative">
-                <span className="text-7xl font-light text-[#3DD9C5]/20" style={{ fontFamily: 'Fraunces, serif' }}>
-                  {item.step}
-                </span>
-                <h3 className="text-xl font-medium text-[#E6EDF3] mt-4 mb-2">
-                  {item.title}
-                </h3>
+                <span className="text-7xl font-light text-[#3DD9C5]/20" style={{ fontFamily: 'Fraunces, serif' }}>{item.step}</span>
+                <h3 className="text-xl font-medium text-[#E6EDF3] mt-4 mb-2">{item.title}</h3>
                 <p className="text-muted-foreground">{item.desc}</p>
               </div>
             ))}
@@ -319,7 +277,7 @@ const LandingPage = () => {
         </section>
 
         {/* Privacy Section */}
-        <section className="mt-32 glass-card rounded-3xl p-12" id="privacy">
+        <section className="mt-32 max-w-6xl mx-auto glass-card rounded-3xl p-12" id="privacy">
           <div className="flex items-start gap-6">
             <Shield className="w-12 h-12 text-[#3DD9C5] flex-shrink-0" />
             <div>
@@ -341,9 +299,7 @@ const LandingPage = () => {
       <footer className="border-t border-white/10 py-12">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <img src="/trustlens-logo.png" alt="TrustLens" className="h-8 w-auto" />
-          <p className="text-sm text-muted-foreground">
-            Empathetic relationship analysis powered by AI
-          </p>
+          <p className="text-sm text-muted-foreground">Empathetic relationship analysis powered by AI</p>
         </div>
       </footer>
     </div>
