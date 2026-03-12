@@ -78,9 +78,15 @@ const LandingPage = () => {
 
         {/* Navigation */}
         <header className="relative z-50">
-          <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
-            <Link to="/" data-testid="logo-link">
-              <img src="/trustlens-logo.png" alt="TrustLens" className="h-10 md:h-12 w-auto" data-testid="trustlens-logo" />
+          <nav className="px-6 md:px-8 py-6 md:py-8 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
+              <span
+                className="text-white text-xl md:text-2xl font-light tracking-tight drop-shadow-[0_1px_6px_rgba(255,255,255,0.2)]"
+                style={{ fontFamily: 'Fraunces, serif' }}
+                data-testid="trustlens-logo"
+              >
+                Trust<span className="text-[#3DD9C5]">Lens</span>
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
               {navItems.map((item) => (
@@ -296,7 +302,9 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 py-12">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <img src="/trustlens-logo.png" alt="TrustLens" className="h-8 w-auto" />
+          <span className="text-white text-lg font-light tracking-tight" style={{ fontFamily: 'Fraunces, serif' }}>
+            Trust<span className="text-[#3DD9C5]">Lens</span>
+          </span>
           <p className="text-sm text-muted-foreground">Empathetic relationship analysis powered by AI</p>
         </div>
       </footer>
