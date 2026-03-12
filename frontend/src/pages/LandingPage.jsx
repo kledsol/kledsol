@@ -49,27 +49,23 @@ const LandingPage = () => {
   const whyBlocks = [
     {
       icon: Activity,
-      accent: "#FF4D6D",
       title: "The Reality of Infidelity",
-      description: "20-40% of relationships face infidelity. If something feels off, your instincts are worth exploring — not dismissing.",
+      description: "Studies suggest that 20-40% of relationships experience some form of infidelity. If you're questioning your partner's behavior, you're not alone — and your instincts deserve to be explored.",
     },
     {
       icon: Brain,
-      accent: "#FCA311",
       title: "Why People Miss the Signs",
-      description: "Love creates blind spots. When emotions run deep, small behavioral shifts get rationalized. Objective analysis becomes nearly impossible alone.",
+      description: "Emotions cloud judgment. Love creates blind spots. When you're emotionally invested, it's nearly impossible to analyze behavioral changes objectively. Small shifts get rationalized away.",
     },
     {
       icon: Activity,
-      accent: "#3DD9C5",
       title: "What TrustLens Does",
-      description: "Maps relationship patterns — communication shifts, emotional distance, routine changes — using behavioral psychology and AI to reveal what they may mean.",
+      description: "TrustLens uses behavioral psychology and AI to help you map relationship patterns — communication shifts, emotional distance, routine changes — and identify what they may actually mean.",
     },
     {
       icon: Shield,
-      accent: "#6EE7B7",
       title: "Not Accusations, Only Clarity",
-      description: "We don't tell you what to think. We give you structured analysis so you can see clearly and decide with empathy, not paranoia.",
+      description: "We don't tell you what to think. We help you see clearly. TrustLens provides structured analysis so you can make informed decisions about your own relationship — with empathy, not paranoia.",
     },
   ];
 
@@ -249,84 +245,37 @@ const LandingPage = () => {
           id="why"
         >
           <h2
-            className="text-3xl sm:text-4xl font-light text-[#E6EDF3] mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl font-light text-[#E6EDF3] mb-6"
             style={{ fontFamily: "Fraunces, serif" }}
           >
-            Why TrustLens Exists
+            Why TrustLens
           </h2>
-          <div className="max-w-xl mb-16 space-y-3">
-            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
-              Millions of people suspect something in their relationship but struggle to interpret the signs.
-            </p>
-            <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
-              Small changes in behavior — late nights, secrecy, emotional distance — can create doubt.
-              But doubt alone doesn't give clarity.
-            </p>
-            <p className="text-sm sm:text-base text-[#E6EDF3]/80 leading-relaxed font-medium">
-              TrustLens helps analyze these signals objectively.
-            </p>
-          </div>
+          <p className="text-base sm:text-lg text-[#8899A6] max-w-2xl mb-16 leading-relaxed">
+            Understanding what's really happening in your relationship shouldn't require guesswork.
+          </p>
 
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 + index * 0.15 }}
-                className="glass-card rounded-2xl overflow-hidden"
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                className="glass-card rounded-2xl p-8 hover:border-[#3DD9C5]/30 transition-all duration-500"
                 data-testid={`why-block-${index}`}
               >
-                {/* Image */}
-                <div className="relative h-48 sm:h-56 overflow-hidden">
-                  <img
-                    src={block.image}
-                    alt={block.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B132B] via-[#0B132B]/40 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-6">
-                    <div className="w-1 h-8 rounded-full mb-3" style={{ backgroundColor: block.accent }} />
-                    <h3 className="text-lg sm:text-xl font-medium text-white" style={{ fontFamily: "Fraunces, serif" }}>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-[#3DD9C5]/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <block.icon className="w-5 h-5 text-[#3DD9C5]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-[#E6EDF3] mb-2">
                       {block.title}
                     </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                      {block.description}
+                    </p>
                   </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 sm:p-8 space-y-3">
-                  {block.paragraphs?.map((p, i) => (
-                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
-                      {p}
-                    </p>
-                  ))}
-
-                  {block.bullets && (
-                    <ul className="space-y-2 pl-1">
-                      {block.bullets.map((b, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm text-[#E6EDF3]/80">
-                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: block.accent }} />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {block.closing && (
-                    <p className="text-sm text-[#E6EDF3]/70 leading-relaxed pt-1">
-                      {block.closing}
-                    </p>
-                  )}
-
-                  {block.quote && (
-                    <p
-                      className="text-base sm:text-lg italic pt-2 leading-relaxed"
-                      style={{ fontFamily: "Fraunces, serif", color: block.accent }}
-                    >
-                      {block.quote}
-                    </p>
-                  )}
                 </div>
               </motion.div>
             ))}

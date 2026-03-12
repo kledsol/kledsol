@@ -42,11 +42,20 @@ TrustLens is an AI-powered relationship intelligence platform providing clarity 
 - 300-case database, Calibrated Suspicion Score, 12-stage progressive reveal
 - Relationship Pulse, Share Report, PDF Export
 
+## Recent Changes
+### "Why TrustLens" Section Restored (Feb 2026)
+- Reverted broken image-based template back to stable 2-column icon+text grid
+- Fixed data/template mismatch (rendering expected fields that didn't exist)
+
 ## Prioritized Backlog
+### P0 - Next
+- [ ] Redesign "Why TrustLens" section with new structure, copy, and images (awaiting user direction)
+
 ### P2 - Future
+- [ ] PDF Export for Conversation Coach guidance
+- [ ] Enhance "My Analyses" Dashboard
 - [ ] Enhanced Demographic Filtering (Phase 2 & 3)
 - [ ] Global Pattern Engine (anonymous contributions)
-- [ ] PDF Export for Conversation Coach guidance
 
 ## Key API Endpoints
 - POST /api/analysis/start, /baseline, /changes, /timeline, /answer, /pulse, /conversation-coach
