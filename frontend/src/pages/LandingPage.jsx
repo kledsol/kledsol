@@ -48,22 +48,22 @@ const LandingPage = () => {
     {
       image: "https://images.unsplash.com/photo-1717381539587-efe2070e4b92?w=800&q=80",
       title: "The Reality of Infidelity",
-      text: "1 in 5 people admits having cheated at least once in a long-term relationship.\n\nYet most partners discover it months or even years later.\n\nWhy? Because the signs usually appear gradually and are easy to misinterpret.",
+      text: "1 in 5 people admits having cheated at least once in a long-term relationship. Yet most partners discover it months or even years later. Why? Because the signs usually appear gradually and are easy to misinterpret.",
     },
     {
       image: "https://images.unsplash.com/photo-1710503701213-6b79941f5660?w=800&q=80",
       title: "Why People Miss the Signs",
-      text: "When emotions are involved, it becomes difficult to evaluate situations objectively.\n\nPeople often ignore warning signs, rationalize unusual behavior, or doubt their own perception.\n\nTrustLens helps structure these signals into a clearer analysis.",
+      text: "When emotions are involved, it becomes difficult to evaluate situations objectively. People often ignore warning signs, rationalize unusual behavior, or doubt their own perception. TrustLens helps structure these signals into a clearer analysis.",
     },
     {
-      image: "https://images.unsplash.com/photo-1657495183151-0a0d86fb130c?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1654764450273-59862da1a259?w=800&q=80",
       title: "What TrustLens Actually Does",
-      text: "TrustLens analyzes patterns such as behavioral changes, secrecy around phone or schedule, emotional distancing, and inconsistencies in explanations.\n\nYour responses are compared with documented relationship patterns to provide an objective clarity score.",
+      text: "TrustLens analyzes patterns such as behavioral changes, secrecy around phone or schedule, emotional distancing, and inconsistencies in explanations. Your responses are compared with documented relationship patterns to provide an objective clarity score.",
     },
     {
-      image: "https://images.unsplash.com/photo-1679059184936-64fdd4d4700e?w=800&q=80",
+      image: "https://images.unsplash.com/photo-1663361963652-e7c0a08c06d3?w=800&q=80",
       title: "Not Accusations, Only Clarity",
-      text: "TrustLens does not accuse anyone.\n\nInstead, it helps answer a question many people quietly ask themselves:\n\n\"Is something really going on, or am I imagining things?\"",
+      text: "TrustLens does not accuse anyone. Instead, it helps answer a question many people quietly ask themselves: \"Is something really going on, or am I imagining things?\"",
     },
   ];
 
@@ -261,7 +261,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {whyBlocks.map((block, index) => (
               <motion.div
                 key={block.title}
@@ -269,29 +269,25 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex flex-col md:flex-row gap-6 md:gap-10 items-start"
+                className="glass-card rounded-2xl overflow-hidden flex flex-col"
                 data-testid={`why-block-${index}`}
               >
-                <div className="w-full md:w-[340px] flex-shrink-0 rounded-xl overflow-hidden">
-                  <img
-                    src={block.image}
-                    alt={block.title}
-                    className="w-full h-48 sm:h-56 md:h-52 object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="flex-1 pt-1">
+                <img
+                  src={block.image}
+                  alt={block.title}
+                  className="w-full h-48 sm:h-52 object-cover"
+                  loading="lazy"
+                />
+                <div className="p-6 sm:p-8 flex-1">
                   <h3
                     className="text-lg sm:text-xl font-medium text-[#E6EDF3] mb-3"
                     style={{ fontFamily: "Fraunces, serif" }}
                   >
                     {block.title}
                   </h3>
-                  {block.text.split("\n\n").map((para, i) => (
-                    <p key={i} className="text-sm sm:text-base text-[#8899A6] leading-relaxed mb-2 last:mb-0">
-                      {para}
-                    </p>
-                  ))}
+                  <p className="text-sm sm:text-base text-[#8899A6] leading-relaxed">
+                    {block.text}
+                  </p>
                 </div>
               </motion.div>
             ))}
