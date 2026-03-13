@@ -1,0 +1,119 @@
+{
+  "summary": "P3 Features Testing - Enhanced Demographic Filtering and Global Pattern Engine. Fixed a bug where age_range and cohabitation_status were not being stored in session baseline_data. All 16 backend tests passed and frontend UI tests verified.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "bug_fixed": {
+    "file": "/app/backend/server.py",
+    "function": "submit_baseline",
+    "issue": "age_range and cohabitation_status were accepted by BaselineInput model but NOT stored in baseline_data dict",
+    "fix": "Added age_range and cohabitation_status to baseline_data dict in submit_baseline function"
+  },
+
+  "passed_tests": [
+    "Backend: POST /api/analysis/start returns session_id (deep analysis)",
+    "Backend: POST /api/analysis/baseline accepts optional age_range and cohabitation_status",
+    "Backend: POST /api/analysis/baseline works WITHOUT age_range/cohabitation_status (backward compatible)",
+    "Backend: POST /api/analysis/baseline accepts all age_range values (18-25, 25-35, 35-45, 45-55, 55+)",
+    "Backend: POST /api/analysis/baseline accepts all cohabitation_status values (living_together, living_apart, part_time)",
+    "Backend: GET /api/cases/stats returns total_cases, user_contributed, seeded counts",
+    "Backend: POST /api/cases/contribute-from-session with valid outcome returns accepted/case_id",
+    "Backend: POST /api/cases/contribute-from-session rejects invalid outcome with 400",
+    "Backend: POST /api/cases/contribute-from-session returns already_contributed on duplicate",
+    "Backend: POST /api/cases/contribute-from-session returns 400 for missing fields",
+    "Backend: POST /api/cases/contribute-from-session returns 404 for invalid session",
+    "Backend: Full analysis flow produces results with demographic filtering (case_comparison.demographic_filtered)",
+    "Backend: POST /api/auth/login returns token for syscheck@test.com",
+    "Backend: POST /api/auth/register creates new user",
+    "Backend: GET /api/auth/my-analyses returns enhanced data with analyses array",
+    "Backend: GET /api/ returns active status (health check)",
+    "Backend: POST /api/analysis/conversation-coach/pdf returns valid PDF",
+    "Frontend: Landing page loads with hero headline 'Is my partner cheating'",
+    "Frontend: Pink CTA 'Start Relationship Analysis' button visible and clickable",
+    "Frontend: Deep Analysis baseline form shows 'Your age range' selector (data-testid='age-range-select')",
+    "Frontend: Deep Analysis baseline form shows 'Living situation' selector (data-testid='cohabitation-select')",
+    "Frontend: Baseline form accepts and displays selected age_range (25-35)",
+    "Frontend: Baseline form accepts and displays selected cohabitation (Living together)",
+    "Frontend: Changes page shows change categories with checkmarks",
+    "Frontend: Investigation page shows core analysis questions",
+    "Frontend: Conversation Coach page loads with tone/topic selectors"
+  ],
+
+  "verified_features": {
+    "enhanced_demographic_filtering": {
+      "endpoint": "POST /api/analysis/baseline",
+      "new_optional_fields": ["age_range", "cohabitation_status"],
+      "frontend_selectors": {
+        "age_range": "data-testid='age-range-select'",
+        "cohabitation": "data-testid='cohabitation-select'"
+      },
+      "values": {
+        "age_range": ["18-25", "25-35", "35-45", "45-55", "55+"],
+        "cohabitation_status": ["living_together", "living_apart", "part_time"]
+      },
+      "filtering_in_results": "case_comparison.demographic_filtered, case_comparison.demographic_label"
+    },
+    "global_pattern_engine": {
+      "contribute_endpoint": "POST /api/cases/contribute-from-session",
+      "stats_endpoint": "GET /api/cases/stats",
+      "valid_outcomes": ["confirmed_infidelity", "emotional_disengagement", "misunderstanding", "personal_crisis", "unresolved_conflict"],
+      "frontend_section": "data-testid='contribute-section' (in ResultsDashboard at stage 12+)",
+      "outcome_buttons": "data-testid='outcome-{value}'",
+      "confirm_button": "data-testid='confirm-contribute-btn'"
+    },
+    "case_stats": {
+      "total_cases": 310,
+      "user_contributed": 10,
+      "seeded": 300
+    }
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_p3_demographic_and_contribute.py",
+    "/app/test_reports/pytest/p3_features_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "server.py line 1102-1123: submit_baseline now correctly stores age_range and cohabitation_status in baseline_data",
+    "server.py line 1629-1707: contribute_from_session extracts anonymized data from session and adds to case database",
+    "server.py line 1710-1715: get_case_stats returns total, user_contributed, and seeded counts",
+    "server.py line 906-949: compare_with_case_database applies multi-dimensional demographic filtering with graceful fallback",
+    "DeepAnalysis.jsx line 286-327: New age_range and cohabitation selectors in baseline form",
+    "ResultsDashboard.jsx line 1481-1557: Contribute section with outcome buttons and confirm button",
+    "api.js line 173-184: contributeCase and getCaseStats functions"
+  ],
+
+  "updated_files": [
+    "/app/backend/server.py (BUG FIX: added age_range/cohabitation_status to baseline_data)",
+    "/app/backend/tests/test_p3_demographic_and_contribute.py (new test file)"
+  ],
+
+  "success_rate": {
+    "backend": "100% (16/16 pytest tests passed)",
+    "frontend": "100% (all UI elements verified via Playwright)"
+  },
+
+  "test_credentials": {
+    "email": "syscheck@test.com",
+    "password": "test1234"
+  },
+
+  "seed_data_creation": "Created TEST_ prefixed users during registration tests",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "P3 features fully tested: (1) Enhanced Demographic Filtering - age_range and cohabitation_status optional fields now properly stored in baseline_data and used in demographic filtering during pattern comparison. (2) Global Pattern Engine - POST /api/cases/contribute-from-session auto-extracts anonymized data from completed sessions. GET /api/cases/stats returns total/contributed/seeded counts. Frontend contribute section appears at stage 12+ in ResultsDashboard with outcome buttons. Test file: /app/backend/tests/test_p3_demographic_and_contribute.py (16 tests). Fixed bug in server.py submit_baseline function that wasn't storing demographic fields."
+}

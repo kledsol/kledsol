@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrustLensLogo, HeartLensIcon } from "@/components/custom/Logo";
 import { TrustGauge, TrustIndexLabel } from "@/components/custom/TrustGauge";
 import { useAnalysis } from "@/App";
-import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport, createMirrorSession, getMirrorStatus, consentMirror, linkAnalysis, getSignalTrends } from "@/lib/api";
+import { getResults, getTimelineHistory, saveTimelineEntry, createSharedReport, createMirrorSession, getMirrorStatus, consentMirror, linkAnalysis, getSignalTrends, contributeCase } from "@/lib/api";
 import { toast } from "sonner";
 import AuthModal from "@/components/custom/AuthModal";
 import {
@@ -34,6 +34,7 @@ import {
   BarChart3,
   TrendingDown,
   Save,
+  Globe,
 } from "lucide-react";
 
 // Animated counter hook
@@ -285,6 +286,9 @@ const ResultsDashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("trustlens_user"));
   const [analysisSaved, setAnalysisSaved] = useState(false);
   const [signalTrends, setSignalTrends] = useState(null);
+  const [contributed, setContributed] = useState(false);
+  const [contributingOutcome, setContributingOutcome] = useState(null);
+  const [contributingLoading, setContributingLoading] = useState(false);
   // Stages: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=signal-strength, 7=perception, 8=perspective, 9=comparison, 10=timeline, 11=actions, 12=complete
 
   useEffect(() => {
@@ -1469,6 +1473,99 @@ const ResultsDashboard = () => {
                   >
                     View all analyses
                   </button>
+                </p>
+              </motion.div>
+            )}
+
+            {/* Global Pattern Engine — Contribute */}
+            {revealStage >= 12 && !contributed && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-card rounded-2xl p-8 text-center"
+                data-testid="contribute-section"
+              >
+                <Globe className="w-8 h-8 text-[#3DD9C5]/60 mx-auto mb-3" />
+                <h3 className="text-lg text-[#E6EDF3] mb-2" style={{ fontFamily: "Fraunces, serif" }}>
+                  Help Others Gain Clarity
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                  Anonymously contribute your experience to improve TrustLens for everyone. No personal data is shared — only the behavioral patterns and outcome.
+                </p>
+
+                {!contributingOutcome ? (
+                  <div>
+                    <p className="text-xs text-white/40 mb-3 uppercase tracking-wider">What best describes the outcome?</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {[
+                        { value: "confirmed_infidelity", label: "Confirmed infidelity" },
+                        { value: "emotional_disengagement", label: "Emotional disengagement" },
+                        { value: "misunderstanding", label: "It was a misunderstanding" },
+                        { value: "personal_crisis", label: "Partner going through crisis" },
+                        { value: "unresolved_conflict", label: "Still unresolved" },
+                      ].map((opt) => (
+                        <Button
+                          key={opt.value}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setContributingOutcome(opt.value)}
+                          className="border-white/15 text-white/70 hover:bg-white/10 hover:text-white rounded-full text-xs px-4"
+                          data-testid={`outcome-${opt.value}`}
+                        >
+                          {opt.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-white/60">
+                      Outcome: <span className="text-white/80">{contributingOutcome.replace(/_/g, " ")}</span>
+                    </p>
+                    <div className="flex justify-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setContributingOutcome(null)}
+                        className="border-white/15 text-white/50 hover:bg-white/5 rounded-full"
+                      >
+                        Change
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={contributingLoading}
+                        onClick={async () => {
+                          setContributingLoading(true);
+                          try {
+                            await contributeCase(sessionId, contributingOutcome);
+                            setContributed(true);
+                            toast.success("Thank you for contributing anonymously");
+                          } catch {
+                            toast.error("Contribution failed");
+                          } finally {
+                            setContributingLoading(false);
+                          }
+                        }}
+                        className="bg-[#3DD9C5] text-black hover:bg-[#28A89A] rounded-full px-6"
+                        data-testid="confirm-contribute-btn"
+                      >
+                        {contributingLoading ? "Contributing..." : "Contribute Anonymously"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {contributed && revealStage >= 12 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center"
+              >
+                <p className="text-sm text-[#3DD9C5] flex items-center justify-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Thank you. Your anonymous contribution helps improve pattern analysis for everyone.
                 </p>
               </motion.div>
             )}

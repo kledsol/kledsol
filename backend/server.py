@@ -132,6 +132,8 @@ class BaselineInput(BaseModel):
     communication_habits: str
     emotional_closeness: int
     transparency_level: int
+    age_range: Optional[str] = None
+    cohabitation_status: Optional[str] = None  # "living_together", "living_apart", "part_time"
 
 class ChangesInput(BaseModel):
     session_id: str
@@ -900,26 +902,51 @@ async def compare_with_case_database(session: dict) -> dict:
     similar = [(c, s) for c, s in scored if s >= 0.3]
     similar.sort(key=lambda x: x[1], reverse=True)
     
-    # --- Demographic filtering ---
+    # --- Demographic filtering (multi-dimensional) ---
     baseline = session.get('baseline_data') or {}
     duration_map = {
-        "0-1 years": "0-1 years", "1-3 years": "1-3 years",
-        "2-5 years": "3-5 years", "3-5 years": "3-5 years",
-        "5-10 years": "5-10 years", "10+ years": "10+ years",
+        "0-1 years": "0-1 years", "less_than_1": "0-1 years",
+        "1-3 years": "1-3 years", "1_to_3": "1-3 years",
+        "2-5 years": "3-5 years", "3-5 years": "3-5 years", "3_to_5": "3-5 years",
+        "5-10 years": "5-10 years", "5_to_10": "5-10 years", "5_plus_years": "5-10 years",
+        "10+ years": "10+ years", "more_than_10": "10+ years",
+    }
+    cohabitation_map = {
+        "living_together": True, "living_apart": False, "part_time": True,
     }
     user_duration = duration_map.get(baseline.get('relationship_duration', ''), '')
+    user_age_range = baseline.get('age_range', '')
+    user_cohabitation = cohabitation_map.get(baseline.get('cohabitation_status', ''), None)
     MIN_DEMOGRAPHIC_SAMPLE = 8
-    
-    demographic_filtered = []
+
+    # Try multi-dimensional filtering with graceful fallback
+    demographic_filtered = list(similar)
+    active_filters = []
+
+    # Filter 1: Duration
     if user_duration:
-        demographic_filtered = [
-            (c, s) for c, s in similar
-            if c.get("relationship_duration") == user_duration
-        ]
-    
-    used_demographic = len(demographic_filtered) >= MIN_DEMOGRAPHIC_SAMPLE
+        filtered = [(c, s) for c, s in demographic_filtered if c.get("relationship_duration") == user_duration]
+        if len(filtered) >= MIN_DEMOGRAPHIC_SAMPLE:
+            demographic_filtered = filtered
+            active_filters.append(f"duration: {user_duration}")
+
+    # Filter 2: Cohabitation
+    if user_cohabitation is not None:
+        filtered = [(c, s) for c, s in demographic_filtered if c.get("cohabitation") == user_cohabitation]
+        if len(filtered) >= MIN_DEMOGRAPHIC_SAMPLE:
+            demographic_filtered = filtered
+            active_filters.append("cohabiting" if user_cohabitation else "living apart")
+
+    # Filter 3: Age range
+    if user_age_range:
+        filtered = [(c, s) for c, s in demographic_filtered if c.get("age_range") == user_age_range]
+        if len(filtered) >= MIN_DEMOGRAPHIC_SAMPLE:
+            demographic_filtered = filtered
+            active_filters.append(f"age {user_age_range}")
+
+    used_demographic = len(active_filters) > 0
     analysis_set = demographic_filtered if used_demographic else similar
-    demographic_label = f"couples together for {user_duration}" if used_demographic and user_duration else None
+    demographic_label = ", ".join(active_filters) if active_filters else None
     
     # --- Compute outcomes from chosen set ---
     total_similar = len(analysis_set)
@@ -1083,7 +1110,9 @@ async def submit_baseline(data: BaselineInput):
         "prior_satisfaction": data.prior_satisfaction,
         "communication_habits": data.communication_habits,
         "emotional_closeness": data.emotional_closeness,
-        "transparency_level": data.transparency_level
+        "transparency_level": data.transparency_level,
+        "age_range": data.age_range,
+        "cohabitation_status": data.cohabitation_status
     }
     
     await db.analysis_sessions.update_one(
@@ -1569,15 +1598,6 @@ async def save_timeline_entry(data: dict):
     await db.score_timeline.insert_one(entry)
     return {"status": "saved"}
 
-@api_router.get("/cases/stats")
-async def get_case_stats():
-    """Get statistics about the relationship case database."""
-    total = await db.relationship_cases.count_documents({})
-    pipeline = [{"$group": {"_id": "$outcome", "count": {"$sum": 1}}}]
-    outcome_agg = await db.relationship_cases.aggregate(pipeline).to_list(10)
-    outcomes = {r["_id"]: r["count"] for r in outcome_agg}
-    return {"total_cases": total, "outcome_distribution": outcomes}
-
 @api_router.post("/cases/contribute")
 async def contribute_anonymized_case(data: dict):
     """Accept an anonymized user story to enrich the case database."""
@@ -1607,6 +1627,95 @@ async def contribute_anonymized_case(data: dict):
     }
     await db.relationship_cases.insert_one(case)
     return {"status": "accepted", "case_id": case["case_id"]}
+
+@api_router.post("/cases/contribute-from-session")
+async def contribute_from_session(data: dict):
+    """Auto-extract anonymized data from a completed session and contribute it to the case database."""
+    session_id = data.get("session_id")
+    outcome = data.get("outcome")
+    if not session_id or not outcome:
+        raise HTTPException(status_code=400, detail="session_id and outcome are required")
+
+    valid_outcomes = ["confirmed_infidelity", "emotional_disengagement", "misunderstanding", "personal_crisis", "unresolved_conflict"]
+    if outcome not in valid_outcomes:
+        raise HTTPException(status_code=400, detail=f"outcome must be one of: {', '.join(valid_outcomes)}")
+
+    session = await db.analysis_sessions.find_one({"id": session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Check if already contributed
+    existing = await db.relationship_cases.find_one({"source_session": session_id})
+    if existing:
+        return {"status": "already_contributed", "case_id": existing["case_id"]}
+
+    # Extract anonymized data from session
+    changes = session.get("changes_data") or []
+    signals = session.get("signals", {})
+    baseline = session.get("baseline_data") or {}
+    timeline_data = session.get("timeline_data") or {}
+
+    # Map changes to signal names
+    signal_map = {
+        "phone_secrecy": "phone_secrecy",
+        "emotional_distance": "emotional_distance",
+        "schedule_changes": "schedule_inconsistency",
+        "defensive_behavior": "defensive_reactions",
+        "communication": "communication_decline",
+        "intimacy_changes": "reduced_intimacy",
+        "financial_changes": "financial_secrecy",
+        "social_behavior": "social_withdrawal",
+        "routine_changes": "routine_disruption",
+    }
+    mapped_signals = [signal_map.get(c, c) for c in changes]
+
+    # Split into primary (top 3) and secondary
+    sorted_signals = sorted(mapped_signals, key=lambda s: signals.get(s, 0), reverse=True)
+    primary = sorted_signals[:3]
+    secondary = sorted_signals[3:]
+
+    # Determine confidence from signal strength
+    top_signal_values = sorted(signals.values(), reverse=True)[:3]
+    avg_strength = sum(top_signal_values) / max(len(top_signal_values), 1)
+    confidence = "high" if avg_strength > 0.5 else "moderate" if avg_strength > 0.25 else "low"
+
+    # Duration mapping
+    duration_map = {
+        "less_than_1": "0-1 years", "1_to_3": "1-3 years", "3_to_5": "3-5 years",
+        "5_to_10": "5-10 years", "more_than_10": "10+ years",
+    }
+
+    count = await db.relationship_cases.count_documents({})
+    case = {
+        "case_id": f"TL-U{count + 1:04d}",
+        "relationship_type": "unknown",
+        "relationship_duration": duration_map.get(baseline.get("relationship_duration", ""), "unknown"),
+        "age_range": baseline.get("age_range", "unknown"),
+        "cohabitation": baseline.get("cohabitation_status") in ("living_together", "part_time"),
+        "primary_signals": primary,
+        "secondary_signals": secondary,
+        "timeline": timeline_data.get("gradual_or_sudden", "unknown"),
+        "micro_contradictions_present": session.get("narrative_consistency", 100) < 85,
+        "outcome": outcome,
+        "confidence_level": confidence,
+        "source": "user_contributed",
+        "source_session": session_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.relationship_cases.insert_one(case)
+
+    # Update total count
+    new_total = await db.relationship_cases.count_documents({})
+    return {"status": "accepted", "case_id": case["case_id"], "new_total_cases": new_total}
+
+
+@api_router.get("/cases/stats")
+async def get_case_stats():
+    """Get statistics about the case database."""
+    total = await db.relationship_cases.count_documents({})
+    user_contributed = await db.relationship_cases.count_documents({"source": "user_contributed"})
+    return {"total_cases": total, "user_contributed": user_contributed, "seeded": total - user_contributed}
+
 
 @api_router.get("/reports/{report_id}/pdf")
 async def export_report_pdf(report_id: str):

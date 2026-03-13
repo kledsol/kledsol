@@ -169,3 +169,17 @@ export const getSignalTrends = async (sessionId) => {
   const response = await api.get(`/auth/signal-trends/${sessionId}`);
   return response.data;
 };
+
+export const contributeCase = async (sessionId, outcome) => {
+  const response = await api.post("/cases/contribute-from-session", {
+    session_id: sessionId,
+    outcome,
+  });
+  return response.data;
+};
+
+export const getCaseStats = async () => {
+  const response = await api.get("/cases/stats");
+  return response.data;
+};
+

@@ -61,6 +61,8 @@ const DeepAnalysis = () => {
     communication_habits: "",
     emotional_closeness: 7,
     transparency_level: 7,
+    age_range: "",
+    cohabitation_status: "",
   });
   const [selectedChanges, setSelectedChanges] = useState([]);
   const [timeline, setTimeline] = useState({
@@ -277,6 +279,52 @@ const DeepAnalysis = () => {
             </Select>
           </CardContent>
         </Card>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Card className="glass-card rounded-xl">
+            <CardContent className="p-6">
+              <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
+                Your age range
+              </label>
+              <Select
+                value={baseline.age_range}
+                onValueChange={(v) => setBaseline((p) => ({ ...p, age_range: v }))}
+              >
+                <SelectTrigger data-testid="age-range-select">
+                  <SelectValue placeholder="Select age range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="18-25">18-25</SelectItem>
+                  <SelectItem value="25-35">25-35</SelectItem>
+                  <SelectItem value="35-45">35-45</SelectItem>
+                  <SelectItem value="45-55">45-55</SelectItem>
+                  <SelectItem value="55+">55+</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card rounded-xl">
+            <CardContent className="p-6">
+              <label className="block text-sm font-medium text-[#E6EDF3] mb-3">
+                Living situation
+              </label>
+              <Select
+                value={baseline.cohabitation_status}
+                onValueChange={(v) => setBaseline((p) => ({ ...p, cohabitation_status: v }))}
+              >
+                <SelectTrigger data-testid="cohabitation-select">
+                  <SelectValue placeholder="Select situation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="living_together">Living together</SelectItem>
+                  <SelectItem value="living_apart">Living apart</SelectItem>
+                  <SelectItem value="part_time">Part-time together</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card className="glass-card rounded-xl">
           <CardContent className="p-6">
