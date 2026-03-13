@@ -21,6 +21,7 @@ import {
   Clock,
   Brain,
   Sparkles,
+  Download,
 } from "lucide-react";
 
 const tones = [
@@ -60,9 +61,38 @@ const ConversationCoach = () => {
   const { sessionId } = useAnalysis();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [step, setStep] = useState("input");
   const [guidance, setGuidance] = useState(null);
   const [formData, setFormData] = useState({ tone: "", topic: "" });
+
+  const handleDownloadPdf = async () => {
+    if (!sessionId || !formData.tone || !formData.topic) return;
+    setDownloadingPdf(true);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/analysis/conversation-coach/pdf`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, tone: formData.tone, topic: formData.topic }),
+        }
+      );
+      if (!response.ok) throw new Error("PDF generation failed");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "trustlens-conversation-guide.pdf";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("Conversation guide downloaded");
+    } catch (err) {
+      toast.error("Failed to download PDF");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   const handleGetGuidance = async () => {
     if (!formData.tone || !formData.topic) {
@@ -240,6 +270,16 @@ const ConversationCoach = () => {
                 >
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Adjust Approach
+                </Button>
+                <Button
+                  onClick={handleDownloadPdf}
+                  disabled={downloadingPdf}
+                  variant="outline"
+                  className="border-[#3DD9C5]/30 text-[#3DD9C5] hover:bg-[#3DD9C5]/10 rounded-full px-8 py-6"
+                  data-testid="download-coach-pdf-btn"
+                >
+                  {downloadingPdf ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Download className="w-5 h-5 mr-2" />}
+                  Download PDF
                 </Button>
                 <Button
                   onClick={() => navigate("/results")}
