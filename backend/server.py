@@ -170,29 +170,11 @@ class ConversationCoachInput(BaseModel):
 
 # ============= AI Engine =============
 
-SYSTEM_PROMPT = """You are TrustLens, an empathetic relationship intelligence assistant. Your role is to help users understand behavioral changes in their relationships through careful, non-judgmental analysis.
+SYSTEM_PROMPT = """You are TrustLens — a direct, emotionally intelligent relationship analyst. People come to you because they suspect something is wrong in their relationship. They deserve honesty, not corporate disclaimers.
 
-CORE PRINCIPLES:
-1. Never accuse or make definitive statements
-2. Focus on behavioral patterns, not conclusions
-3. Be empathetic and supportive
-4. Provide psychological insights
-5. Help users gain clarity, not anxiety
+Your role: analyze behavioral signals, compare them with real patterns, and tell people clearly what the data suggests. You validate feelings. You name patterns directly. You don't hide behind vague language like "may suggest" or "could reflect."
 
-ANALYSIS CATEGORIES:
-- Emotional distance patterns
-- Communication breakdown indicators
-- External stress factors
-- Trust erosion signals
-- Lifestyle divergence
-- Unresolved conflict patterns
-- Intimacy decline indicators
-
-When generating questions or insights, always be:
-- Calm and measured
-- Psychologically informed
-- Non-accusatory
-- Supportive of the user's emotional state"""
+You always clarify that your analysis is not legal proof. But you never use that as an excuse to say nothing meaningful. You speak like a sharp, caring friend who has seen hundreds of similar situations — because you have."""
 
 async def get_ai_response(session_id: str, prompt: str, system_override: str = None) -> str:
     try:
@@ -509,7 +491,7 @@ Use these gaps to suggest targeted discussion areas where perceptions differ mos
     for qa in qa_history[-5:]:
         recent_answers += f"- {qa.get('category', 'general')}: {qa.get('answer', '')}\n"
 
-    prompt = f"""You are TrustLens Conversation Coach — a supportive, empathetic guide helping someone prepare for a constructive conversation with their partner about relationship concerns.
+    prompt = f"""You are TrustLens Conversation Coach — a direct, caring guide helping someone prepare for a real conversation with their partner. Not a therapy exercise. A real conversation that matters.
 
 USER CONTEXT:
 - Suspicion Score: {suspicion_score}/100 ({score_label})
@@ -527,7 +509,10 @@ CONVERSATION PARAMETERS:
 - Preferred tone: {tone}
 - Topic to discuss: {topic}
 
-GENERATE a comprehensive conversation guide. Be specific to the user's situation — reference the actual signals and patterns detected. Never accuse the partner. Focus on understanding and clarity.
+GENERATE a practical, honest conversation guide. Reference the actual signals detected. The opening lines should sound like real things a real person would say — not therapy scripts. The questions should be specific enough to get real answers. The "avoid" section should warn about traps that actually derail these conversations.
+
+If the score is high (65+), don't pretend the situation is casual. Help them prepare emotionally for a difficult truth.
+If the score is low (under 35), help them open the conversation without making their partner feel accused.
 
 Respond STRICTLY in this JSON format:
 {{
@@ -1514,33 +1499,84 @@ async def generate_narrative_analysis(
     """Generate an AI-powered narrative explanation using the LLM.
     Falls back to a template if the LLM call fails."""
     
-    prompt = f"""You are TrustLens, a relationship intelligence system. Write a short narrative analysis (4-6 sentences) based on the following data.
+    # === GRADUATED TONE ENGINE ===
+    # The score determines the tone — not the AI's judgment
+    signal_list = ', '.join(s.replace('_', ' ') for s in signals[:4]) if signals else 'general relationship changes'
 
-Suspicion Score: {suspicion_score}/100 ({suspicion_label})
-Behavioral signals detected: {', '.join(signals) if signals else 'none'}
-Dominant pattern: {dominant_pattern}
-Pattern comparison: {', '.join(case_insights) if case_insights else 'no case data'}
-Micro-contradictions: {'detected — ' + perception.get('insight', '') if perception.get('has_inconsistencies') else 'none detected'}
-Timeline: changes described as {timeline_data.get('gradual_or_sudden', 'unknown')}, started {timeline_data.get('when_started', 'unknown timeframe')}
+    if suspicion_score <= 25:
+        tone_bracket = "REASSURING"
+        tone_directive = f"""TONE: Reassuring and warm. The data does not paint an alarming picture.
+PIVOT PHRASE (you MUST include a variation of this): "The signals you've described don't form a concerning pattern. Based on what we see, this looks more like normal relationship friction."
+STANCE: Validate their feelings for coming here, but clearly communicate that the data is reassuring. Don't invent concerns that aren't there.
+CLOSING: Suggest a simple, low-stakes conversation with their partner about recent feelings."""
 
-Rules:
-- NEVER state certainty about infidelity or any conclusion
-- Use careful, analytical language: "may suggest", "patterns indicate", "could reflect"
-- Explain what signals were detected and how they relate to known patterns
-- Indicate what level of concern may be appropriate given the score
-- Suggest 1-2 next steps (open conversation, professional guidance, continued observation)
-- Tone: empathetic, intelligent, measured — like a thoughtful counselor
-- Keep it under 100 words"""
+    elif suspicion_score <= 45:
+        tone_bracket = "ATTENTIVE"
+        tone_directive = f"""TONE: Attentive and honest. Some signals deserve attention without being alarmist.
+PIVOT PHRASE (you MUST include a variation of this): "Certain elements in what you describe merit attention — particularly {signal_list}. This doesn't mean something is wrong, but it's not nothing either."
+STANCE: Name the specific signals that stand out. Explain why they matter as a combination. Don't dramatize, but don't minimize.
+CLOSING: Recommend paying closer attention and having a direct conversation about the specific changes they've noticed."""
+
+    elif suspicion_score <= 65:
+        tone_bracket = "CLEAR"
+        tone_directive = f"""TONE: Clear and direct. The data suggests something is happening that deserves to be addressed.
+PIVOT PHRASE (you MUST include a variation of this): "Based on the data we have, it appears that something is going on. The combination of {signal_list} is not random — this pattern is consistent with situations where trust has been compromised."
+STANCE: Be unambiguous. Name the pattern. Say clearly that the data points toward a real problem, while specifying this is analysis, not proof. Don't soften the message to the point of meaninglessness.
+CLOSING: Recommend preparing emotionally and having a serious, structured conversation — or seeking professional support."""
+
+    elif suspicion_score <= 80:
+        tone_bracket = "DIRECT"
+        tone_directive = f"""TONE: Direct and compassionate. The signals are concerning and the person deserves to hear it clearly.
+PIVOT PHRASE (you MUST include a variation of this): "What you're describing is concerning. The pattern formed by {signal_list} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded."
+STANCE: Don't hedge. The data is concerning and saying otherwise would be dishonest. Validate their suspicion clearly. Acknowledge the emotional weight of what they're facing.
+CLOSING: Strongly recommend professional support (therapist, trusted confidant) before any confrontation. Help them understand they're not overreacting."""
+
+    else:
+        tone_bracket = "URGENT"
+        tone_directive = f"""TONE: Urgent and deeply empathetic. The signals are seriously alarming and the person needs to hear that with care.
+PIVOT PHRASE (you MUST include a variation of this): "The signals you've shared are seriously alarming. The combination of {signal_list} forms a pattern that, in documented cases, almost always indicates a significant breach of trust. This is not legal proof — but ignoring these signs would be a mistake."
+STANCE: Be absolutely clear. Don't sugarcoat. This person came here because they already know something is wrong — the data confirms their instinct. Show them you take their situation seriously.
+CLOSING: Urge them to seek support immediately. Help them prepare emotionally. Remind them they deserve clarity and respect."""
+
+    prompt = f"""You are TrustLens — a relationship analyst who speaks with graduated honesty proportional to the severity of what the data reveals.
+
+ANALYSIS DATA:
+- Suspicion Score: {suspicion_score}/100 ({suspicion_label})
+- Tone bracket: {tone_bracket}
+- Signals detected: {', '.join(signals) if signals else 'none'}
+- Dominant pattern: {dominant_pattern}
+- Pattern comparison: {', '.join(case_insights) if case_insights else 'no comparable cases'}
+- Micro-contradictions: {'detected — ' + perception.get('insight', '') if perception.get('has_inconsistencies') else 'none detected'}
+- Timeline: changes {timeline_data.get('gradual_or_sudden', 'unknown')}, started {timeline_data.get('when_started', 'unknown timeframe')}
+
+{tone_directive}
+
+RULES:
+- Write 5-7 sentences maximum
+- You MUST include the pivot phrase (adapted naturally, not copy-pasted)
+- Name the specific signals and explain what they mean TOGETHER as a pattern
+- Briefly mention this is not legal evidence — then move on. Don't hide behind it.
+- End with ONE clear, actionable next step
+- Keep it under 130 words
+- Match the language of the user's context (French if signals suggest French-speaking user)"""
 
     try:
         api_key = os.environ.get('EMERGENT_LLM_KEY')
         if not api_key:
             raise ValueError("EMERGENT_LLM_KEY not found")
         
+        system_tone_map = {
+            "REASSURING": "You are warm and reassuring. The data is not alarming — communicate that clearly while validating the person's feelings.",
+            "ATTENTIVE": "You are attentive and honest. Some signals deserve mention without being alarmist. Name them, explain the pattern, stay grounded.",
+            "CLEAR": "You are clear and direct. The data suggests a real problem. Don't soften the message to meaninglessness. Say what the pattern indicates.",
+            "DIRECT": "You are direct and compassionate. The signals are concerning. Say so clearly. Validate their instinct. Don't hedge.",
+            "URGENT": "You are urgent and deeply empathetic. The signals are seriously alarming. The person deserves absolute clarity delivered with care, not corporate disclaimers.",
+        }
+
         chat = LlmChat(
             api_key=api_key,
             session_id=f"trustlens-narrative-{uuid.uuid4().hex[:8]}",
-            system_message="You are TrustLens, an empathetic relationship analysis system. You provide careful, non-accusatory behavioral pattern analysis. Never claim certainty. Always use measured language."
+            system_message=f"You are TrustLens — a relationship analyst with graduated honesty. Current bracket: {tone_bracket}. {system_tone_map.get(tone_bracket, '')} You always briefly clarify this is not legal proof, but you never use that as an excuse to say nothing meaningful."
         )
         chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
         
@@ -1554,17 +1590,19 @@ Rules:
 
 
 def generate_perspective_fallback(score: int, label: str, signals: list, dominant: str) -> str:
-    """Template fallback when LLM is unavailable."""
+    """Graduated fallback when LLM is unavailable — tone proportional to score."""
     signal_text = ", ".join(s.replace("_", " ") for s in signals[:3]) if signals else "relationship dynamics"
     
-    if score <= 30:
-        return f"Based on the signals you described, your relationship appears to be in a relatively stable state. The changes you've noticed around {signal_text} may be normal variations in relationship dynamics. Continue nurturing open communication."
-    elif score <= 60:
-        return f"Your situation shows some patterns that may warrant attention, particularly around {signal_text}. While these signals don't indicate a crisis, they suggest shifts in your relationship dynamics. An open, non-confrontational conversation could help clarify what's happening."
+    if score <= 25:
+        return f"The signals you've described don't form a concerning pattern. Based on what we see — {signal_text} — this looks more like normal relationship friction than anything alarming. That said, you came here because something felt off, and that matters. The best next step is a simple, honest conversation with your partner about how you've both been feeling lately. This is not a diagnosis — it's a reading of the signals you shared, and right now, those signals are reassuring."
+    elif score <= 45:
+        return f"Certain elements in what you describe merit attention — particularly {signal_text}. This doesn't mean something is wrong, but it's not nothing either. These signals, taken together, suggest a shift in your relationship dynamics that's worth understanding better. This is not proof of anything. However, paying closer attention and having a direct conversation with your partner about these specific changes would be a wise next step. Their reaction will tell you a lot."
+    elif score <= 65:
+        return f"Based on the data we have, it appears that something is going on. The combination of {signal_text} is not random — this pattern is consistent with situations where trust has been compromised. This is analysis, not proof. However, the signals are clear enough that ignoring them would be a disservice to yourself. The next step is serious: prepare yourself emotionally and consider having a structured conversation with your partner, or seek the support of a professional who can help you navigate this."
     elif score <= 80:
-        return f"The behavioral patterns detected — particularly {signal_text} — show similarities with situations involving significant relationship strain. Your concerns appear understandable given the {label.lower()} assessment. Consider having an honest conversation with your partner or seeking professional guidance."
+        return f"What you're describing is concerning. The pattern formed by {signal_text} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded. The data supports what you've been feeling. Don't dismiss this. The most important thing now is to seek support — a trusted friend, a therapist, or a counselor — before taking any direct action. You are not overreacting."
     else:
-        return f"The signals you described, including {signal_text}, form a pattern that suggests substantial changes in your relationship trust dynamics. This analysis doesn't confirm any specific conclusion, but the {label.lower()} assessment validates your concerns. Professional support may be beneficial at this stage."
+        return f"The signals you've shared are seriously alarming. The combination of {signal_text} forms a pattern that, in documented cases, almost always indicates a significant breach of trust. This is not legal proof — but ignoring these signs would be a mistake. You came here because you already knew something was wrong. The data confirms that instinct. Seek professional support immediately. Prepare yourself emotionally. You deserve clarity, and you deserve respect."
 
 @api_router.get("/analysis/{session_id}/status")
 async def get_session_status(session_id: str):
@@ -2291,7 +2329,7 @@ async def generate_dual_narrative(a_score, b_score, perception_gaps, avg_gap, a_
         for k, v in perception_gaps.items()
     )
 
-    prompt = f"""You are TrustLens, a relationship intelligence system. Write a short narrative (4-6 sentences) analyzing the perception gap between two partners who independently completed a relationship analysis.
+    prompt = f"""You are TrustLens — analyzing a Mirror Mode report where two partners independently assessed their relationship. Be honest about what the gaps reveal.
 
 Partner A Suspicion Score: {a_score}/100
 Partner B Suspicion Score: {b_score}/100
@@ -2305,13 +2343,13 @@ Average gap: {avg_gap:.0f}%
 Partner A detected signals: {', '.join(a_changes) if a_changes else 'none'}
 Partner B detected signals: {', '.join(b_changes) if b_changes else 'none'}
 
-Rules:
-- NEVER accuse either partner
-- Use careful language: "may suggest", "could reflect", "appears to indicate"
-- Explain what the gap means for communication and understanding
-- Suggest constructive next steps (open dialogue, shared reflection)
-- Tone: empathetic, measured, constructive — like a thoughtful couples counselor
-- Keep it under 120 words"""
+Write 5-7 sentences. Be direct:
+- If the gap is small: say clearly that both partners see the relationship similarly — that's a good foundation
+- If the gap is moderate: name the specific areas of disconnect and what it means for their communication
+- If the gap is large: be honest that one partner is perceiving problems the other doesn't see (or won't admit) — this disconnect itself is a problem
+- Don't accuse either partner of lying, but don't pretend a 40-point gap is "just a difference of perspective"
+- End with a clear recommendation
+- Keep it under 130 words"""
 
     try:
         api_key = os.environ.get('EMERGENT_LLM_KEY')
@@ -2321,7 +2359,7 @@ Rules:
         chat = LlmChat(
             api_key=api_key,
             session_id=f"trustlens-dual-{uuid.uuid4().hex[:8]}",
-            system_message="You are TrustLens, an empathetic relationship analysis system providing dual perspective analysis. Never accuse. Always use measured, constructive language."
+            system_message="You are TrustLens — direct and emotionally honest. In Mirror Mode, you compare how two partners perceive their relationship. You name the gaps clearly, explain what they mean, and don't pretend large disconnects are normal. You are fair to both partners but never vague."
         )
         chat.with_model("anthropic", "claude-sonnet-4-5-20250929")
 

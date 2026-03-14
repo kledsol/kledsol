@@ -993,7 +993,7 @@ const ResultsDashboard = () => {
                     <div className="flex flex-col items-center text-center">
                       <HeartLensIcon size={48} />
                       <h3 className="text-xl font-light text-[#E6EDF3] mt-6 mb-6" style={{ fontFamily: 'Fraunces, serif' }}>
-                        TrustLens Perspective
+                        What This Actually Means
                       </h3>
                       <p className="text-muted-foreground leading-relaxed max-w-2xl text-lg">
                         {results.trustlens_perspective}
