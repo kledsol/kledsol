@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 class TrustLensAPITester:
-    def __init__(self, base_url="https://behavioral-intel-2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://signal-analysis-5.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.session_id = None

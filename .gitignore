@@ -8,3 +8,4 @@ __pycache__/
 .emergent/
 /app/test_reports/
 *.log
+frontend/node_modules/.cache/default-development/0.pack

@@ -77,7 +77,7 @@
 
   "should_main_agent_self_test": false,
 
-  "context_for_next_testing_agent": "Auth and Signal Trend features fully tested. Backend endpoints at https://behavioral-intel-2.preview.emergentagent.com/api/auth/*. Test file: /app/backend/tests/test_auth_and_trends.py (18 tests). JWT tokens use HS256 with dynamic secret per pod. Signal trends compare current analysis with immediately previous one - delta values show percentage change. Frontend ResultsDashboard reveals content in 12 stages - save prompt appears at stage 12 (after ~12 seconds). TrendingUp icons shown for positive deltas (red #FF4D6D), TrendingDown for negative (green #6EE7B7).",
+  "context_for_next_testing_agent": "Auth and Signal Trend features fully tested. Backend endpoints at https://signal-analysis-5.preview.emergentagent.com/api/auth/*. Test file: /app/backend/tests/test_auth_and_trends.py (18 tests). JWT tokens use HS256 with dynamic secret per pod. Signal trends compare current analysis with immediately previous one - delta values show percentage change. Frontend ResultsDashboard reveals content in 12 stages - save prompt appears at stage 12 (after ~12 seconds). TrendingUp icons shown for positive deltas (red #FF4D6D), TrendingDown for negative (green #6EE7B7).",
 
   "verified_features": {
     "auth_endpoints": {
