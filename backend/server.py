@@ -1499,42 +1499,87 @@ async def generate_narrative_analysis(
     """Generate an AI-powered narrative explanation using the LLM.
     Falls back to a template if the LLM call fails."""
     
-    # === GRADUATED TONE ENGINE ===
-    # The score determines the tone — not the AI's judgment
+    # === GRADUATED TONE ENGINE WITH VARIATION ===
     signal_list = ', '.join(s.replace('_', ' ') for s in signals[:4]) if signals else 'general relationship changes'
+    
+    import random
+
+    # Each bracket has multiple pivot phrases to avoid template effect
+    PIVOTS = {
+        "REASSURING": [
+            f"The signals you've described don't form a concerning pattern. What we see here looks more like normal relationship friction.",
+            f"Honestly, based on what you've shared, there's nothing here that should keep you up at night. The changes around {signal_list} fall within what we'd call ordinary relationship variance.",
+            f"Looking at the full picture — your score, the signals, the timeline — this doesn't read as alarming. It reads as two people navigating life together, which is inherently messy.",
+            f"What you've described doesn't match the patterns we typically see when trust is being broken. The signals around {signal_list} are present but mild.",
+            f"Your instinct to check was healthy, and the good news is: the data is reassuring. The changes you've noticed appear to fall within the range of normal relationship ebb and flow.",
+        ],
+        "ATTENTIVE": [
+            f"Certain elements in what you describe merit attention — particularly {signal_list}. This doesn't mean something is wrong, but it's not nothing either.",
+            f"There's a signal here worth paying attention to. The combination of {signal_list} isn't alarming on its own, but it's the kind of pattern that tends to evolve — one way or another.",
+            f"Let's be honest: a few things in what you've shared stand out. {signal_list.capitalize()} together create a pattern that's too specific to dismiss as coincidence, but too mild to call a crisis.",
+            f"You're not imagining things. The changes around {signal_list} are real and they form a recognizable pattern. Whether it leads somewhere concerning or resolves naturally — that part isn't written yet.",
+            f"The data doesn't scream alarm, but it does whisper. {signal_list.capitalize()} — taken together — suggest something has shifted in your relationship that deserves a real conversation.",
+        ],
+        "CLEAR": [
+            f"Based on the data we have, it appears that something is going on. The combination of {signal_list} is not random — this pattern is consistent with situations where trust has been compromised.",
+            f"Let me be straightforward: what you're describing follows a pattern we see regularly, and it's not a benign one. {signal_list.capitalize()} together tell a story that's hard to explain away.",
+            f"The signals are clear enough to name directly. {signal_list.capitalize()} forming simultaneously over this timeframe — that's not relationship noise. That's a pattern with meaning.",
+            f"Something is happening in your relationship that goes beyond normal friction. The convergence of {signal_list} paints a picture that, in our data, correlates with genuine trust issues.",
+            f"You came here because something felt wrong. The data backs up that feeling. The way {signal_list} have appeared together is a recognizable pattern — and not a reassuring one.",
+        ],
+        "DIRECT": [
+            f"What you're describing is concerning. The pattern formed by {signal_list} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded.",
+            f"I'm not going to soften this: the signals you've described — {signal_list} — are a textbook cluster for trust violations. That doesn't make it proof. But it makes your concerns entirely legitimate.",
+            f"The data is telling a clear story here. {signal_list.capitalize()} don't appear together by accident. In the cases we've documented, this combination overwhelmingly points to a real breach of trust.",
+            f"Your gut brought you here, and the analysis confirms what you've been feeling. {signal_list.capitalize()} forming this pattern is significant. You're not being paranoid — you're being perceptive.",
+            f"There's no gentle way to frame this: the pattern around {signal_list} is one we see in situations of genuine betrayal. This isn't a diagnosis, but it would be dishonest to tell you everything looks fine.",
+        ],
+        "URGENT": [
+            f"The signals you've shared are seriously alarming. The combination of {signal_list} forms a pattern that, in documented cases, almost always indicates a significant breach of trust.",
+            f"I have to be direct with you: what you've described is among the most concerning patterns we analyze. {signal_list.capitalize()} at this intensity level leaves very little room for innocent explanation.",
+            f"This is not a drill. The convergence of {signal_list} at the levels you've described matches the most severe cases in our database. Your situation demands immediate attention.",
+            f"Everything you've shared points in one direction, and pretending otherwise would be a disservice. {signal_list.capitalize()} — all at once, at this intensity — is a pattern that rarely has a benign explanation.",
+            f"You already know something is deeply wrong. The data confirms it. {signal_list.capitalize()} together, at this level, represent one of the strongest signal clusters we encounter. This is real.",
+        ],
+    }
 
     if suspicion_score <= 25:
         tone_bracket = "REASSURING"
+        pivot = random.choice(PIVOTS["REASSURING"])
         tone_directive = f"""TONE: Reassuring and warm. The data does not paint an alarming picture.
-PIVOT PHRASE (you MUST include a variation of this): "The signals you've described don't form a concerning pattern. Based on what we see, this looks more like normal relationship friction."
+PIVOT PHRASE (you MUST weave this naturally into your analysis): "{pivot}"
 STANCE: Validate their feelings for coming here, but clearly communicate that the data is reassuring. Don't invent concerns that aren't there.
 CLOSING: Suggest a simple, low-stakes conversation with their partner about recent feelings."""
 
     elif suspicion_score <= 45:
         tone_bracket = "ATTENTIVE"
+        pivot = random.choice(PIVOTS["ATTENTIVE"])
         tone_directive = f"""TONE: Attentive and honest. Some signals deserve attention without being alarmist.
-PIVOT PHRASE (you MUST include a variation of this): "Certain elements in what you describe merit attention — particularly {signal_list}. This doesn't mean something is wrong, but it's not nothing either."
+PIVOT PHRASE (you MUST weave this naturally into your analysis): "{pivot}"
 STANCE: Name the specific signals that stand out. Explain why they matter as a combination. Don't dramatize, but don't minimize.
 CLOSING: Recommend paying closer attention and having a direct conversation about the specific changes they've noticed."""
 
     elif suspicion_score <= 65:
         tone_bracket = "CLEAR"
+        pivot = random.choice(PIVOTS["CLEAR"])
         tone_directive = f"""TONE: Clear and direct. The data suggests something is happening that deserves to be addressed.
-PIVOT PHRASE (you MUST include a variation of this): "Based on the data we have, it appears that something is going on. The combination of {signal_list} is not random — this pattern is consistent with situations where trust has been compromised."
+PIVOT PHRASE (you MUST weave this naturally into your analysis): "{pivot}"
 STANCE: Be unambiguous. Name the pattern. Say clearly that the data points toward a real problem, while specifying this is analysis, not proof. Don't soften the message to the point of meaninglessness.
 CLOSING: Recommend preparing emotionally and having a serious, structured conversation — or seeking professional support."""
 
     elif suspicion_score <= 80:
         tone_bracket = "DIRECT"
+        pivot = random.choice(PIVOTS["DIRECT"])
         tone_directive = f"""TONE: Direct and compassionate. The signals are concerning and the person deserves to hear it clearly.
-PIVOT PHRASE (you MUST include a variation of this): "What you're describing is concerning. The pattern formed by {signal_list} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded."
+PIVOT PHRASE (you MUST weave this naturally into your analysis): "{pivot}"
 STANCE: Don't hedge. The data is concerning and saying otherwise would be dishonest. Validate their suspicion clearly. Acknowledge the emotional weight of what they're facing.
 CLOSING: Strongly recommend professional support (therapist, trusted confidant) before any confrontation. Help them understand they're not overreacting."""
 
     else:
         tone_bracket = "URGENT"
+        pivot = random.choice(PIVOTS["URGENT"])
         tone_directive = f"""TONE: Urgent and deeply empathetic. The signals are seriously alarming and the person needs to hear that with care.
-PIVOT PHRASE (you MUST include a variation of this): "The signals you've shared are seriously alarming. The combination of {signal_list} forms a pattern that, in documented cases, almost always indicates a significant breach of trust. This is not legal proof — but ignoring these signs would be a mistake."
+PIVOT PHRASE (you MUST weave this naturally into your analysis): "{pivot}"
 STANCE: Be absolutely clear. Don't sugarcoat. This person came here because they already know something is wrong — the data confirms their instinct. Show them you take their situation seriously.
 CLOSING: Urge them to seek support immediately. Help them prepare emotionally. Remind them they deserve clarity and respect."""
 
@@ -1590,19 +1635,48 @@ RULES:
 
 
 def generate_perspective_fallback(score: int, label: str, signals: list, dominant: str) -> str:
-    """Graduated fallback when LLM is unavailable — tone proportional to score."""
+    """Graduated fallback with variation — multiple templates per bracket."""
+    import random
     signal_text = ", ".join(s.replace("_", " ") for s in signals[:3]) if signals else "relationship dynamics"
-    
+
+    FALLBACKS = {
+        "reassuring": [
+            f"The signals you've described don't form a concerning pattern. What we see around {signal_text} looks more like ordinary relationship friction than deception. You were right to check — and the good news is the data is reassuring. A simple, honest conversation about how you're both feeling would be a healthy next step.",
+            f"Looking at the full picture, there's nothing here that should keep you up at night. The changes around {signal_text} fall within normal relationship variance. That said, you came here for a reason — trust that enough to have an open chat with your partner about what's been on your mind.",
+            f"Honestly, the data paints a calm picture. The {signal_text} you noticed are present but mild — nothing that matches the patterns we see in serious trust violations. Your instinct to pay attention is good. Use it to start a relaxed, genuine conversation.",
+        ],
+        "attentive": [
+            f"Certain elements merit attention — particularly {signal_text}. This doesn't mean something is wrong, but it's not nothing either. These signals together suggest a shift worth understanding. Have a direct conversation with your partner about these specific changes. Their reaction will tell you a lot.",
+            f"You're not imagining things. The changes around {signal_text} are real and form a recognizable pattern. Whether it leads somewhere concerning or resolves naturally isn't written yet. The next step: bring up these changes calmly and see how your partner responds.",
+            f"The data doesn't scream alarm, but it does whisper. {signal_text.capitalize()} taken together suggest something has shifted that deserves a real conversation. This isn't proof of anything — but paying closer attention from here is wise.",
+        ],
+        "clear": [
+            f"Based on the data, it appears something is going on. The combination of {signal_text} is not random — this pattern is consistent with situations where trust has been compromised. This is analysis, not proof. But ignoring it would be a disservice to yourself. Prepare emotionally and consider a structured conversation or professional support.",
+            f"Something is happening that goes beyond normal friction. The convergence of {signal_text} paints a picture that, in documented cases, correlates with genuine trust issues. You came here because something felt wrong — the data backs up that feeling. Time for a serious next step.",
+            f"Let me be straightforward: what you're describing follows a recognizable pattern, and it's not a benign one. {signal_text.capitalize()} together tell a story that's hard to explain away. This isn't a verdict, but it's clear enough to act on. Seek support and prepare for an honest conversation.",
+        ],
+        "direct": [
+            f"What you're describing is concerning. The pattern formed by {signal_text} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded. Seek support from a therapist or trusted person before taking action. You are not overreacting.",
+            f"The data tells a clear story. {signal_text.capitalize()} don't appear together by accident. In our documented cases, this combination overwhelmingly points to a real breach of trust. Don't dismiss what you're feeling. Get support before any confrontation.",
+            f"Your gut brought you here, and the analysis confirms what you've been sensing. {signal_text.capitalize()} forming this pattern is significant. You're not paranoid — you're perceptive. Talk to someone you trust before your next move.",
+        ],
+        "urgent": [
+            f"The signals are seriously alarming. The combination of {signal_text} forms a pattern that, in documented cases, almost always indicates a significant breach of trust. This is not legal proof — but ignoring these signs would be a mistake. Seek professional support immediately. You deserve clarity.",
+            f"Everything you've shared points in one direction. {signal_text.capitalize()} at this intensity leaves very little room for innocent explanation. You already knew something was deeply wrong. The data confirms it. Get support now and prepare yourself emotionally.",
+            f"This is not subtle. The convergence of {signal_text} at the levels you've described matches the most severe cases in our database. Pretending otherwise would be dishonest. Your situation demands immediate attention — reach out to a professional who can help you navigate what comes next.",
+        ],
+    }
+
     if score <= 25:
-        return f"The signals you've described don't form a concerning pattern. Based on what we see — {signal_text} — this looks more like normal relationship friction than anything alarming. That said, you came here because something felt off, and that matters. The best next step is a simple, honest conversation with your partner about how you've both been feeling lately. This is not a diagnosis — it's a reading of the signals you shared, and right now, those signals are reassuring."
+        return random.choice(FALLBACKS["reassuring"])
     elif score <= 45:
-        return f"Certain elements in what you describe merit attention — particularly {signal_text}. This doesn't mean something is wrong, but it's not nothing either. These signals, taken together, suggest a shift in your relationship dynamics that's worth understanding better. This is not proof of anything. However, paying closer attention and having a direct conversation with your partner about these specific changes would be a wise next step. Their reaction will tell you a lot."
+        return random.choice(FALLBACKS["attentive"])
     elif score <= 65:
-        return f"Based on the data we have, it appears that something is going on. The combination of {signal_text} is not random — this pattern is consistent with situations where trust has been compromised. This is analysis, not proof. However, the signals are clear enough that ignoring them would be a disservice to yourself. The next step is serious: prepare yourself emotionally and consider having a structured conversation with your partner, or seek the support of a professional who can help you navigate this."
+        return random.choice(FALLBACKS["clear"])
     elif score <= 80:
-        return f"What you're describing is concerning. The pattern formed by {signal_text} closely matches situations involving a genuine breach of trust. This is not a verdict — but your instincts appear well-founded. The data supports what you've been feeling. Don't dismiss this. The most important thing now is to seek support — a trusted friend, a therapist, or a counselor — before taking any direct action. You are not overreacting."
+        return random.choice(FALLBACKS["direct"])
     else:
-        return f"The signals you've shared are seriously alarming. The combination of {signal_text} forms a pattern that, in documented cases, almost always indicates a significant breach of trust. This is not legal proof — but ignoring these signs would be a mistake. You came here because you already knew something was wrong. The data confirms that instinct. Seek professional support immediately. Prepare yourself emotionally. You deserve clarity, and you deserve respect."
+        return random.choice(FALLBACKS["urgent"])
 
 @api_router.get("/analysis/{session_id}/status")
 async def get_session_status(session_id: str):
