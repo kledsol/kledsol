@@ -103,7 +103,39 @@ After the frontend is deployed, copy its URL (e.g., `https://trustlens.onrender.
 
 ---
 
-## Step 6: Verify
+## Step 6: Custom Domain (Optional)
+
+You can connect your own domain (e.g., `trustlens.com`) to give your app a professional look. Render provides free custom domains with automatic HTTPS.
+
+### For the Frontend (Static Site):
+
+1. Go to your **frontend service** on Render → **Settings** → **Custom Domains**
+2. Click **"Add Custom Domain"**
+3. Enter your domain: `trustlens.com` (or `app.trustlens.com` for a subdomain)
+4. Render will show you a **DNS record** to add:
+   - For root domain (`trustlens.com`): Add an **A record** pointing to Render's IP
+   - For subdomain (`app.trustlens.com`): Add a **CNAME record** pointing to `trustlens.onrender.com`
+5. Go to your **domain registrar** (GoDaddy, Namecheap, Google Domains, OVH, etc.) and add the DNS record
+6. Wait for DNS propagation (usually 5-30 minutes, can take up to 48h)
+7. Render will automatically provision a **free SSL certificate** (HTTPS)
+
+### For the Backend API (optional):
+
+1. Go to your **backend service** → **Settings** → **Custom Domains**
+2. Add `api.trustlens.com`
+3. Add the corresponding **CNAME record** at your registrar pointing to `trustlens-api.onrender.com`
+
+### After Custom Domain Setup:
+
+1. Update `REACT_APP_BACKEND_URL` in your frontend to `https://api.trustlens.com` (if you added a backend domain)
+2. Update `CORS_ORIGINS` in your backend to `https://trustlens.com` (your new frontend domain)
+3. Both services will automatically redeploy
+
+> **Tip:** If you don't have a domain yet, providers like **Namecheap** (~$9/year) or **Google Domains** offer affordable `.com` domains. For a French audience, consider a `.fr` domain via **OVH**.
+
+---
+
+## Step 7: Verify
 
 1. Open your frontend URL in a browser
 2. Click **"Start Relationship Analysis"**
