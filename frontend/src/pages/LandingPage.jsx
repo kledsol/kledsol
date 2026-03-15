@@ -33,8 +33,10 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    const textTimer = setTimeout(() => setTextVisible(true), currentSlide === 0 ? 400 : 1000);
-    const slideTimer = setTimeout(advanceSlide, 6000);
+    const durations = [5000, 8000, 7000];
+    const textDelays = [400, 1200, 1200];
+    const textTimer = setTimeout(() => setTextVisible(true), textDelays[currentSlide]);
+    const slideTimer = setTimeout(advanceSlide, durations[currentSlide]);
     return () => { clearTimeout(textTimer); clearTimeout(slideTimer); };
   }, [currentSlide, advanceSlide]);
 
@@ -170,13 +172,13 @@ const LandingPage = () => {
           </div>
 
           {/* Centered hero text — 3-act storytelling */}
-          <div className="w-full max-w-[620px] mx-auto px-6 sm:px-10 text-center">
+          <div className="w-full max-w-[680px] mx-auto px-6 sm:px-10 text-center -mt-12">
             {/* ACT 1: The Question (Slide 1 — Woman) */}
             {currentSlide === 0 && (
               <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
                 <h1
                   className="text-white font-light tracking-tight mb-10 leading-[1.1]"
-                  style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(38px, 8vw, 72px)' }}
+                  style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(46px, 9.6vw, 86px)' }}
                   data-testid="hero-headline"
                 >
                   Is my partner cheating?
@@ -223,10 +225,10 @@ const LandingPage = () => {
               >
                 {loading ? "Starting..." : "Start Relationship Analysis"}
               </Button>
-              <p className="text-white/50 text-sm mt-4" data-testid="hero-duration">
+              <p className="text-white/60 text-base mt-4" data-testid="hero-duration">
                 3-minute relationship analysis
               </p>
-              <p className="text-white/35 text-xs tracking-wide mt-1" data-testid="privacy-reassurance">
+              <p className="text-white/45 text-sm tracking-wide mt-1" data-testid="privacy-reassurance">
                 Private &bull; Anonymous &bull; No account required
               </p>
             </div>
