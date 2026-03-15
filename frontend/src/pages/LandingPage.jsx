@@ -172,7 +172,7 @@ const LandingPage = () => {
           </div>
 
           {/* Centered hero text — 3-act storytelling */}
-          <div className="w-full max-w-[680px] mx-auto px-6 sm:px-10 text-center -mt-12">
+          <div className="w-full max-w-[680px] mx-auto px-6 sm:px-10 text-center -mt-28">
             {/* ACT 1: The Question (Slide 1 — Woman) */}
             {currentSlide === 0 && (
               <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
