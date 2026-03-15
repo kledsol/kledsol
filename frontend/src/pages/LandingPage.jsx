@@ -67,22 +67,22 @@ const LandingPage = () => {
 
   const whyBlocks = [
     {
-      image: "https://images.unsplash.com/photo-1654541697091-2a68715c6a4f?w=800&q=80",
+      image: "/why_trustlens_1.jpg",
       title: "The Reality of Infidelity",
       text: "1 in 5 people admits having cheated at least once in a long-term relationship. Yet most partners discover it months or even years later. Why? Because the signs usually appear gradually and are easy to misinterpret.",
     },
     {
-      image: "https://images.unsplash.com/photo-1554283490-201f0abd4493?w=800&q=80",
+      image: "/why_trustlens_2.jpg",
       title: "Why People Miss the Signs",
       text: "When emotions are involved, it becomes difficult to evaluate situations objectively. People often ignore warning signs, rationalize unusual behavior, or doubt their own perception. TrustLens helps structure these signals into a clearer analysis.",
     },
     {
-      image: "https://images.unsplash.com/photo-1586287011589-1477d062ab16?w=800&q=80",
+      image: "/why_trustlens_3.jpg",
       title: "What TrustLens Actually Does",
       text: "TrustLens analyzes patterns such as behavioral changes, secrecy around phone or schedule, emotional distancing, and inconsistencies in explanations. Your responses are compared with documented relationship patterns to provide an objective clarity score.",
     },
     {
-      image: "https://images.unsplash.com/photo-1727001503444-6ea51e6105f2?w=800&q=80",
+      image: "/why_trustlens_4.jpg",
       title: "Not Accusations, Only Clarity",
       text: "TrustLens does not accuse anyone. Instead, it helps answer a question many people quietly ask themselves: \"Is something really going on, or am I imagining things?\"",
     },
