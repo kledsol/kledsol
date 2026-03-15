@@ -14,6 +14,27 @@ import {
   Sun,
 } from "lucide-react";
 
+const ScannerLogo = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" className="mx-[3px]">
+    {/* Outer ring */}
+    <circle cx="20" cy="20" r="16" fill="none" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.5" />
+    {/* Middle ring */}
+    <circle cx="20" cy="20" r="11" fill="none" stroke="#3DD9C5" strokeWidth="1.8" opacity="0.7" />
+    {/* Inner dot */}
+    <circle cx="20" cy="20" r="5" fill="#3DD9C5" opacity="0.8" />
+    {/* Scanner tick marks — cardinal */}
+    <line x1="20" y1="1" x2="20" y2="6" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.6" />
+    <line x1="20" y1="34" x2="20" y2="39" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.6" />
+    <line x1="1" y1="20" x2="6" y2="20" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.6" />
+    <line x1="34" y1="20" x2="39" y2="20" stroke="#3DD9C5" strokeWidth="1.5" opacity="0.6" />
+    {/* Scanner tick marks — diagonal */}
+    <line x1="7.5" y1="7.5" x2="10.5" y2="10.5" stroke="#3DD9C5" strokeWidth="1.2" opacity="0.4" />
+    <line x1="29.5" y1="7.5" x2="32.5" y2="10.5" stroke="#3DD9C5" strokeWidth="1.2" opacity="0.4" style={{ transform: 'rotate(90deg)', transformOrigin: '31px 9px' }} />
+    <line x1="7.5" y1="32.5" x2="10.5" y2="29.5" stroke="#3DD9C5" strokeWidth="1.2" opacity="0.4" />
+    <line x1="29.5" y1="29.5" x2="32.5" y2="32.5" stroke="#3DD9C5" strokeWidth="1.2" opacity="0.4" />
+  </svg>
+);
+
 const LandingPage = () => {
   const { setSessionId, setAnalysisType } = useAnalysis();
   const navigate = useNavigate();
@@ -117,9 +138,7 @@ const LandingPage = () => {
                 data-testid="trustlens-logo"
               >
                 Trust
-                <span className="inline-flex items-center justify-center w-5 h-5 md:w-6 md:h-6 mx-[2px] rounded-full border-2 border-[#3DD9C5] relative">
-                  <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#3DD9C5]/60" />
-                </span>
+                <ScannerLogo size={28} />
                 <span className="text-[#3DD9C5]">Lens</span>
               </span>
             </Link>
@@ -352,9 +371,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <span className="text-white text-lg font-light tracking-tight flex items-center" style={{ fontFamily: 'Fraunces, serif' }}>
             Trust
-            <span className="inline-flex items-center justify-center w-4 h-4 mx-[1px] rounded-full border-[1.5px] border-[#3DD9C5]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3DD9C5]/60" />
-            </span>
+            <ScannerLogo size={22} />
             <span className="text-[#3DD9C5]">Lens</span>
           </span>
           <p className="text-sm text-muted-foreground">Empathetic relationship analysis powered by AI</p>
