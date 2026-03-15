@@ -17,10 +17,14 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 from seed_cases import generate_all_cases
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+env_path = ROOT_DIR / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', '')
+if not mongo_url:
+    raise RuntimeError("MONGO_URL environment variable is required")
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
@@ -2449,6 +2453,10 @@ Write 5-7 sentences. Be direct:
             return f"There are moderate differences in how each partner perceives the relationship. The perception gap of {avg_gap:.0f}% suggests some areas where expectations or experiences may not be fully aligned. This is common and doesn't necessarily indicate a problem — but discussing these differences openly could strengthen mutual understanding."
         else:
             return f"Both analyses show relatively aligned perceptions of the relationship. The small gap of {avg_gap:.0f}% suggests that you and your partner share a similar view of where things stand. This alignment is a positive sign and a strong foundation for open communication."
+
+@api_router.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 app.include_router(api_router)
 
