@@ -128,7 +128,7 @@ const LandingPage = () => {
         </header>
 
         {/* Hero Content */}
-        <section className="relative z-10 min-h-[72vh] md:min-h-[88vh] flex items-center">
+        <section className="relative z-10 min-h-screen flex items-center">
           {/* Side margin — left (desktop only) */}
           <div className="hidden lg:flex absolute left-6 top-1/2 -translate-y-1/2 z-20">
             <p className="text-[11px] text-white/30 tracking-wide [writing-mode:vertical-lr] rotate-180">

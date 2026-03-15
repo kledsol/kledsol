@@ -94,6 +94,10 @@ code, .mono {
     position: absolute;
     inset: 0;
     z-index: 0;
+    width: 100vw;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .hero-slide {
@@ -101,16 +105,17 @@ code, .mono {
     inset: 0;
     background-size: cover;
     background-position: center center;
-    animation: hero-crossfade 12s ease-in-out infinite;
+    animation: hero-crossfade 14s ease-in-out infinite;
+    image-rendering: auto;
 }
 
 .hero-slide:nth-child(2) {
-    animation-delay: -6s;
+    animation-delay: -7s;
 }
 
 @media (max-width: 767px) {
     .hero-slide {
-        background-position: 60% center;
+        background-position: 55% center;
     }
 }
 
@@ -123,7 +128,13 @@ code, .mono {
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(rgba(10,15,25,0.42), rgba(10,15,25,0.25));
+    background: linear-gradient(
+        to bottom,
+        rgba(10,15,25,0.35) 0%,
+        rgba(10,15,25,0.20) 40%,
+        rgba(10,15,25,0.30) 70%,
+        rgba(10,15,25,0.55) 100%
+    );
     z-index: 1;
 }
 
