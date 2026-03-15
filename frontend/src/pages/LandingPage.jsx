@@ -9,6 +9,9 @@ import {
   Shield,
   Menu,
   X,
+  MessageCircle,
+  Brain,
+  Sun,
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -300,15 +303,27 @@ const LandingPage = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: "01", title: "Share Your Experience", desc: "Answer questions about recent changes you've noticed in your relationship" },
-              { step: "02", title: "AI Analysis", desc: "Our empathetic AI analyzes patterns using relationship psychology principles" },
-              { step: "03", title: "Gain Clarity", desc: "Receive insights and suggested actions to improve communication" },
+              { step: "01", icon: <MessageCircle className="w-10 h-10" />, title: "Share Your Experience", desc: "Answer questions about recent changes you've noticed in your relationship" },
+              { step: "02", icon: <Brain className="w-10 h-10" />, title: "AI Analysis", desc: "Our empathetic AI analyzes patterns using relationship psychology principles" },
+              { step: "03", icon: <Sun className="w-10 h-10" />, title: "Gain Clarity", desc: "Receive insights and suggested actions to improve communication" },
             ].map((item, i) => (
-              <div key={i} className="relative">
-                <span className="text-7xl font-light text-[#3DD9C5]/20" style={{ fontFamily: 'Fraunces, serif' }}>{item.step}</span>
-                <h3 className="text-xl font-medium text-[#E6EDF3] mt-4 mb-2">{item.title}</h3>
-                <p className="text-muted-foreground">{item.desc}</p>
-              </div>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className="relative bg-[#111B33]/50 border border-white/[0.07] rounded-2xl p-8"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="text-5xl font-light text-[#3DD9C5]/20" style={{ fontFamily: 'Fraunces, serif' }}>{item.step}</span>
+                  <div className="w-14 h-14 rounded-full bg-[#3DD9C5]/10 border border-[#3DD9C5]/20 flex items-center justify-center text-[#3DD9C5]">
+                    {item.icon}
+                  </div>
+                </div>
+                <h3 className="text-xl font-medium text-[#E6EDF3] mb-3">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
             ))}
           </div>
         </section>
