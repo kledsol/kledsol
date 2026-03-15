@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,27 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [textVisible, setTextVisible] = useState(false);
+
+  const slides = [
+    { image: "/hero_scene_1.jpg" },
+    { image: "/hero_scene_2.jpg" },
+    { image: "/hero_scene_3.jpg" },
+  ];
+
+  const advanceSlide = useCallback(() => {
+    setTextVisible(false);
+    setTimeout(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3);
+    }, 600);
+  }, []);
+
+  useEffect(() => {
+    const textTimer = setTimeout(() => setTextVisible(true), currentSlide === 0 ? 400 : 1000);
+    const slideTimer = setTimeout(advanceSlide, 6000);
+    return () => { clearTimeout(textTimer); clearTimeout(slideTimer); };
+  }, [currentSlide, advanceSlide]);
 
   const handleStartAnalysis = async (type) => {
     setLoading(true);
@@ -70,8 +91,13 @@ const LandingPage = () => {
       {/* ===== HERO ===== */}
       <div className="relative overflow-hidden">
         <div className="hero-slideshow">
-          <div className="hero-slide" style={{ backgroundImage: "url(/hero_scene_1.jpg)" }} />
-          <div className="hero-slide" style={{ backgroundImage: "url(/hero_scene_2.jpg)" }} />
+          {slides.map((slide, i) => (
+            <div
+              key={i}
+              className={`hero-slide ${currentSlide === i ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${slide.image})` }}
+            />
+          ))}
         </div>
         <div className="hero-overlay" />
         <div className="absolute inset-0 hero-glow opacity-30 z-[2]" />
@@ -143,50 +169,51 @@ const LandingPage = () => {
             </p>
           </div>
 
-          {/* Centered hero text */}
+          {/* Centered hero text — 3-act storytelling */}
           <div className="w-full max-w-[620px] mx-auto px-6 sm:px-10 text-center">
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="text-white font-light tracking-tight mb-10 leading-[1.1]"
-              style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(36px, 8vw, 68px)' }}
-              data-testid="hero-headline"
-            >
-              Is my partner cheating?
-            </motion.h1>
+            {/* ACT 1: The Question (Slide 1 — Woman) */}
+            {currentSlide === 0 && (
+              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
+                <h1
+                  className="text-white font-light tracking-tight mb-10 leading-[1.1]"
+                  style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(38px, 8vw, 72px)' }}
+                  data-testid="hero-headline"
+                >
+                  Is my partner cheating?
+                </h1>
+              </div>
+            )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-10 space-y-5"
-              data-testid="hero-narrative"
-            >
-              <p className="text-white/70 leading-[1.7]" style={{ fontSize: 'clamp(16px, 3.8vw, 20px)' }}>
-                Sometimes the signs are subtle.
-              </p>
-              <p className="text-white/50 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
-                Late nights.<br />
-                A locked phone.<br />
-                Emotional distance.
-              </p>
-              <p className="text-white/60 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
-                Small changes that slowly start to feel like signals.
-              </p>
-              <p className="text-white/80 leading-[1.7]" style={{ fontSize: 'clamp(15px, 3.5vw, 18px)' }}>
-                TrustLens analyzes relationship behaviors,<br className="hidden sm:block" />
-                compares them with real relationship patterns,<br className="hidden sm:block" />
-                and helps you understand what those signals might actually mean.
-              </p>
-            </motion.div>
+            {/* ACT 2: The Signs (Slide 2 — Gay couple) */}
+            {currentSlide === 1 && (
+              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`} data-testid="hero-narrative">
+                <p className="text-white/80 leading-[1.7] mb-4" style={{ fontSize: 'clamp(17px, 4vw, 22px)' }}>
+                  Sometimes the signs are subtle.
+                </p>
+                <p className="text-white/60 leading-[1.8] mb-4" style={{ fontSize: 'clamp(16px, 3.5vw, 20px)' }}>
+                  Late nights.<br />
+                  A locked phone.<br />
+                  Emotional distance.
+                </p>
+                <p className="text-white/70 leading-[1.7]" style={{ fontSize: 'clamp(16px, 3.5vw, 20px)' }}>
+                  Small changes that slowly start to feel like signals.
+                </p>
+              </div>
+            )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col items-center gap-4"
-            >
+            {/* ACT 3: The Solution (Slide 3 — Mixed couple) */}
+            {currentSlide === 2 && (
+              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
+                <p className="text-white/90 leading-[1.7]" style={{ fontSize: 'clamp(16px, 3.8vw, 21px)' }}>
+                  TrustLens analyzes relationship behaviors,<br className="hidden sm:block" />
+                  compares them with real relationship patterns,<br className="hidden sm:block" />
+                  and helps you understand what those signals might actually mean.
+                </p>
+              </div>
+            )}
+
+            {/* CTA — always visible */}
+            <div className="mt-10">
               <Button
                 onClick={() => handleStartAnalysis("deep")}
                 disabled={loading}
@@ -196,13 +223,13 @@ const LandingPage = () => {
               >
                 {loading ? "Starting..." : "Start Relationship Analysis"}
               </Button>
-              <p className="text-white/50 text-sm" data-testid="hero-duration">
+              <p className="text-white/50 text-sm mt-4" data-testid="hero-duration">
                 3-minute relationship analysis
               </p>
-              <p className="text-white/35 text-xs tracking-wide" data-testid="privacy-reassurance">
+              <p className="text-white/35 text-xs tracking-wide mt-1" data-testid="privacy-reassurance">
                 Private &bull; Anonymous &bull; No account required
               </p>
-            </motion.div>
+            </div>
           </div>
         </section>
       </div>
