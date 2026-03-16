@@ -57,7 +57,7 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    const durations = [5000, 8000, 7000];
+    const durations = [7000, 8000, 7000];
     const textDelays = [400, 1200, 1200];
     const textTimer = setTimeout(() => setTextVisible(true), textDelays[currentSlide]);
     const slideTimer = setTimeout(advanceSlide, durations[currentSlide]);

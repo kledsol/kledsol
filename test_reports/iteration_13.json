@@ -66,7 +66,7 @@
 
   "should_main_agent_self_test": false,
 
-  "context_for_next_testing_agent": "Signal Strength Summary feature fully functional. Backend API at https://signal-analysis-5.preview.emergentagent.com/api/analysis/{session_id}/results returns signal_strength_summary field. Test file: /app/backend/tests/test_signal_strength_summary.py (9 tests). Pre-existing session with full data: 74389d33-3604-422f-af6f-9240b5df74fe. Frontend ResultsDashboard.jsx shows Signal Strength Summary at stage 6 (after ~6 seconds of reveal animation). The stage progression: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=signal-strength, 7=perception, 8=perspective, 9=comparison, 10=timeline, 11=actions, 12=complete.",
+  "context_for_next_testing_agent": "Signal Strength Summary feature fully functional. Backend API at https://trustlens-preview-1.preview.emergentagent.com/api/analysis/{session_id}/results returns signal_strength_summary field. Test file: /app/backend/tests/test_signal_strength_summary.py (9 tests). Pre-existing session with full data: 74389d33-3604-422f-af6f-9240b5df74fe. Frontend ResultsDashboard.jsx shows Signal Strength Summary at stage 6 (after ~6 seconds of reveal animation). The stage progression: 0=loading, 1=analysis-sequence, 2=suspicion-score, 3=hearts, 4=diagnosis, 5=patterns, 6=signal-strength, 7=perception, 8=perspective, 9=comparison, 10=timeline, 11=actions, 12=complete.",
 
   "verified_features": {
     "signal_strength_summary_endpoint": {

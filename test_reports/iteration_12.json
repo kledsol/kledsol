@@ -71,7 +71,7 @@
 
   "should_main_agent_self_test": false,
 
-  "context_for_next_testing_agent": "Conversation Coach feature fully functional. Backend API at https://signal-analysis-5.preview.emergentagent.com/api/analysis/conversation-coach. Test session with analysis data: 4e85f42d-fe94-4187-ad56-f3cb51abbac4. All 4 tones and 5 topics produce valid guidance. Frontend /coach page requires active session in AnalysisContext (React state) - will redirect to home if no session. Test file: /app/backend/tests/test_conversation_coach.py",
+  "context_for_next_testing_agent": "Conversation Coach feature fully functional. Backend API at https://trustlens-preview-1.preview.emergentagent.com/api/analysis/conversation-coach. Test session with analysis data: 4e85f42d-fe94-4187-ad56-f3cb51abbac4. All 4 tones and 5 topics produce valid guidance. Frontend /coach page requires active session in AnalysisContext (React state) - will redirect to home if no session. Test file: /app/backend/tests/test_conversation_coach.py",
 
   "verified_features": {
     "conversation_coach_endpoint": {
