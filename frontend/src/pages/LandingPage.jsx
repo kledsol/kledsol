@@ -194,50 +194,53 @@ const LandingPage = () => {
           </div>
 
           {/* Centered hero text — 3-act storytelling */}
-          <div className="w-full max-w-[680px] mx-auto px-6 sm:px-10 text-center -mt-36 ml-auto mr-auto md:mr-[15%] md:ml-[5%]">
-            {/* ACT 1: The Question (Slide 1 — Woman) */}
-            {currentSlide === 0 && (
-              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
-                <h1
-                  className="text-white font-light tracking-tight mb-10 leading-[1.1]"
-                  style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(46px, 9.6vw, 86px)' }}
-                  data-testid="hero-headline"
-                >
-                  Is my partner cheating?
-                </h1>
-              </div>
-            )}
+          <div className="w-full max-w-[680px] mx-auto px-6 sm:px-10 text-center md:mr-[15%] md:ml-[5%] flex flex-col items-center">
+            {/* Text area — fixed height to prevent CTA from moving */}
+            <div className="h-[220px] md:h-[240px] flex items-center justify-center -mt-36">
+              {/* ACT 1: The Question (Slide 1 — Woman) */}
+              {currentSlide === 0 && (
+                <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
+                  <h1
+                    className="text-white font-light tracking-tight leading-[1.1]"
+                    style={{ fontFamily: 'Fraunces, serif', fontSize: 'clamp(46px, 9.6vw, 86px)' }}
+                    data-testid="hero-headline"
+                  >
+                    Is my partner cheating?
+                  </h1>
+                </div>
+              )}
 
-            {/* ACT 2: The Signs (Slide 2 — Gay couple) */}
-            {currentSlide === 1 && (
-              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`} data-testid="hero-narrative">
-                <p className="text-white/80 leading-[1.7] mb-4" style={{ fontSize: 'clamp(20px, 4.8vw, 26px)' }}>
-                  Sometimes the signs are subtle.
-                </p>
-                <p className="text-white/60 leading-[1.8] mb-4" style={{ fontSize: 'clamp(19px, 4.2vw, 24px)' }}>
-                  Late nights.<br />
-                  A locked phone.<br />
-                  Emotional distance.
-                </p>
-                <p className="text-white/70 leading-[1.7]" style={{ fontSize: 'clamp(19px, 4.2vw, 24px)' }}>
-                  Small changes that slowly start to feel like signals.
-                </p>
-              </div>
-            )}
+              {/* ACT 2: The Signs (Slide 2 — Gay couple) */}
+              {currentSlide === 1 && (
+                <div className={`hero-text-block ${textVisible ? 'visible' : ''}`} data-testid="hero-narrative">
+                  <p className="text-white/80 leading-[1.7] mb-4" style={{ fontSize: 'clamp(20px, 4.8vw, 26px)' }}>
+                    Sometimes the signs are subtle.
+                  </p>
+                  <p className="text-white/60 leading-[1.8] mb-4" style={{ fontSize: 'clamp(19px, 4.2vw, 24px)' }}>
+                    Late nights.<br />
+                    A locked phone.<br />
+                    Emotional distance.
+                  </p>
+                  <p className="text-white/70 leading-[1.7]" style={{ fontSize: 'clamp(19px, 4.2vw, 24px)' }}>
+                    Small changes that slowly start to feel like signals.
+                  </p>
+                </div>
+              )}
 
-            {/* ACT 3: The Solution (Slide 3 — Mixed couple) */}
-            {currentSlide === 2 && (
-              <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
-                <p className="text-white/90 leading-[1.7]" style={{ fontSize: 'clamp(19px, 4.6vw, 25px)' }}>
-                  TrustLens analyzes relationship behaviors,<br className="hidden sm:block" />
-                  compares them with real relationship patterns,<br className="hidden sm:block" />
-                  and helps you understand what those signals might actually mean.
-                </p>
-              </div>
-            )}
+              {/* ACT 3: The Solution (Slide 3 — Mixed couple) */}
+              {currentSlide === 2 && (
+                <div className={`hero-text-block ${textVisible ? 'visible' : ''}`}>
+                  <p className="text-white/90 leading-[1.7]" style={{ fontSize: 'clamp(19px, 4.6vw, 25px)' }}>
+                    TrustLens analyzes relationship behaviors,<br className="hidden sm:block" />
+                    compares them with real relationship patterns,<br className="hidden sm:block" />
+                    and helps you understand what those signals might actually mean.
+                  </p>
+                </div>
+              )}
+            </div>
 
-            {/* CTA — always visible */}
-            <div className="mt-10">
+            {/* CTA — always visible, fixed position */}
+            <div className="mt-6">
               <Button
                 onClick={() => handleStartAnalysis("deep")}
                 disabled={loading}
