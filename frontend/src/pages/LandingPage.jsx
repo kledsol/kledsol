@@ -299,7 +299,7 @@ const LandingPage = () => {
                 <img
                   src={block.image}
                   alt={block.title}
-                  className="w-full h-48 sm:h-52 object-cover"
+                  className="w-full aspect-[3/2] object-cover object-center"
                   loading="lazy"
                 />
                 <div className="p-6 sm:p-8 flex-1">
